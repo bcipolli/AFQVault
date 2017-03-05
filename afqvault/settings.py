@@ -18,7 +18,7 @@ DOMAIN_NAME = "http://afqvault.org"
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
-    (('Chris', 'krzysztof.gorgolewski@gmail.com'))
+    (('Jason Yeatman', 'jyeatman@uw.org'))
 )
 
 MANAGERS = ADMINS
@@ -66,7 +66,7 @@ USE_TZ = True
 
 # Absolute filesystem path to the directory that will hold user-uploaded files.
 # Example: "/var/www/example.com/media/"
-MEDIA_ROOT = os.path.join(BASE_DIR,'media')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/public/media/'
 
 PRIVATE_MEDIA_ROOT = '/var/www/image_data'
@@ -121,7 +121,8 @@ TEMPLATES = [
                                             "django.core.context_processors.static",
                                             "django.core.context_processors.tz",
                                             "django.contrib.messages.context_processors.messages",
-                                            'django.core.context_processors.request'),
+                                            'django.core.context_processors.request',
+                                            'afqvault.context_processors.ga_identifier'),
                     'loaders': ('hamlpy.template.loaders.HamlPyFilesystemLoader',
                                 'hamlpy.template.loaders.HamlPyAppDirectoriesLoader',
                                 'django.template.loaders.filesystem.Loader',
@@ -198,6 +199,7 @@ AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
     'social.backends.facebook.FacebookOAuth2',
     'social.backends.google.GoogleOAuth2',
+    'social_orcid.orcid.OrcidOAuth2',
     'guardian.backends.ObjectPermissionBackend',
 )
 
@@ -318,6 +320,8 @@ DEFAULT_OAUTH_APP_NAME = 'DefaultOAuthApp'
 DEFAULT_OAUTH_APP_OWNER_ID = -2
 DEFAULT_OAUTH_APP_OWNER_USERNAME = 'DefaultAppOwner'
 OAUTH_PERSONAL_TOKEN_LENGTH = 40
+
+GOOGLE_ANALYTICS_ID = 'UA-339450-10'
 
 # Bogus secret key.
 try:

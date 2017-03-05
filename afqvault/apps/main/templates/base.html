@@ -57,7 +57,7 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="{% url 'index' %}">NeuroVault</a>
+            <a class="navbar-brand" href="{% url 'index' %}">AFQVault</a>
         </div>
 
         <!-- Collect the nav links, forms, and other content for toggling -->
@@ -118,9 +118,8 @@
       <div class="container navigation-container">
         <p class="text-muted">
             <a href="/api-docs">API</a>  &middot;
-            <a href="https://github.com/NeuroVault/NeuroVault">Github </a> &middot;
-            <a href="http://www.cognitiveatlas.org">Cognitive Atlas </a> &middot;
-            <a href="http://www.neurosynth.org">NeuroSynth </a></p>
+            <a href="https://github.com/bcipolli/AFQVault">Github </a> &middot;
+            <a href="https://github.com/NeuroVault/NeuroVault">NeuroVault </a></p>
       </div>
 </footer>
 {% endblock %}
@@ -130,7 +129,7 @@
       var _gaq = _gaq || [];
       var pluginUrl = '//www.google-analytics.com/plugins/ga/inpage_linkid.js';
       _gaq.push(['_require', 'inpage_linkid', pluginUrl]);
-      _gaq.push(['_setAccount', 'UA-339450-10']);
+      _gaq.push(['_setAccount', {{ GOOGLE_ANALYTICS_ID }}]);
       _gaq.push(['_trackPageview']);
 
       (function() {

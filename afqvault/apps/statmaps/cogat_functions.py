@@ -2,7 +2,7 @@ import numpy as np
 from cognitiveatlas.api import get_task, get_concept
 from exceptions import ValueError
 
-from neurovault.apps.statmaps.models import CognitiveAtlasTask, CognitiveAtlasContrast, StatisticMap
+from afqvault.apps.statmaps.models import CognitiveAtlasTask, CognitiveAtlasContrast, StatisticMap
 
 
 # Function to make a node
@@ -61,6 +61,6 @@ def get_task_graph(task_id, images=None):
         if len(children) > 0:
             task_concepts.append(contrast_node)
 
-    task_node["children"] = task_concepts    
+    task_node["children"] = task_concepts
 
     return task_node

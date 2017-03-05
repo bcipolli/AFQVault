@@ -38,22 +38,22 @@ from sendfile import sendfile
 from sklearn.externals import joblib
 from xml.dom import minidom
 
-import neurovault
-from neurovault import settings
-from neurovault.apps.statmaps.ahba import calculate_gene_expression_similarity
-from neurovault.apps.statmaps.forms import CollectionForm, UploadFileForm, SimplifiedStatisticMapForm,NeuropowerStatisticMapForm,\
+import afqvault
+from afqvault import settings
+from afqvault.apps.statmaps.ahba import calculate_gene_expression_similarity
+from afqvault.apps.statmaps.forms import CollectionForm, UploadFileForm, SimplifiedStatisticMapForm,NeuropowerStatisticMapForm,\
     StatisticMapForm, EditStatisticMapForm, OwnerCollectionForm, EditAtlasForm, AtlasForm, \
     EditNIDMResultStatisticMapForm, NIDMResultsForm, NIDMViewForm, AddStatisticMapForm
-from neurovault.apps.statmaps.models import Collection, Image, Atlas, StatisticMap, NIDMResults, NIDMResultStatisticMap, \
+from afqvault.apps.statmaps.models import Collection, Image, Atlas, StatisticMap, NIDMResults, NIDMResultStatisticMap, \
     CognitiveAtlasTask, CognitiveAtlasContrast, BaseStatisticMap
-from neurovault.apps.statmaps.tasks import save_resampled_transformation_single
-from neurovault.apps.statmaps.utils import split_filename, generate_pycortex_volume, \
+from afqvault.apps.statmaps.tasks import save_resampled_transformation_single
+from afqvault.apps.statmaps.utils import split_filename, generate_pycortex_volume, \
     generate_pycortex_static, generate_url_token, HttpRedirectException, get_paper_properties, \
     get_file_ctime, detect_4D, split_4D_to_3D, splitext_nii_gz, mkdir_p, \
     send_email_notification, populate_nidm_results, get_server_url, populate_feat_directory, \
     detect_feat_directory, format_image_collection_names, is_search_compatible, \
     get_similar_images
-from neurovault.apps.statmaps.voxel_query_functions import *
+from afqvault.apps.statmaps.voxel_query_functions import *
 from . import image_metadata
 
 
@@ -470,13 +470,13 @@ def add_image_redirect(request,formclass,template_path,redirect_url,is_private):
 
 @login_required
 def add_image_for_neurosynth(request):
-    redirect_url = "http://neurosynth.org/decode/?neurovault=%(private_token)s-%(image_id)s"
+    redirect_url = "http://neurosynth.org/decode/?afqvault=%(private_token)s-%(image_id)s"
     template_path = "statmaps/add_image_for_neurosynth.html"
     return add_image_redirect(request,SimplifiedStatisticMapForm,template_path,redirect_url,False)
 
 @login_required
 def add_image_for_neuropower(request):
-    redirect_url = "http://neuropowertools.org/neuropower/neuropowerinput/?neurovault=%(private_token)s-%(image_id)s"
+    redirect_url = "http://neuropowertools.org/neuropower/neuropowerinput/?afqvault=%(private_token)s-%(image_id)s"
     template_path = "statmaps/add_image_for_neuropower.html"
     return add_image_redirect(request,NeuropowerStatisticMapForm,template_path,redirect_url,True)
 
@@ -812,7 +812,7 @@ def atlas_query_region(request):
     search = request.GET.get('region','')
     atlas = request.GET.get('atlas','').replace('\'', '')
     collection = name=request.GET.get('collection','')
-    neurovault_root = os.path.dirname(os.path.dirname(os.path.realpath(neurovault.__file__)))
+    afqvault_root = os.path.dirname(os.path.dirname(os.path.realpath(afqvault.__file__)))
     try:
         collection_object = Collection.objects.filter(name=collection)[0]
     except IndexError:
@@ -832,7 +832,7 @@ def atlas_query_region(request):
             searchList = [search]
         else:
             synonymsDict = {}
-            with open(os.path.join(neurovault_root, 'neurovault/apps/statmaps/NIFgraph.pkl'),'rb') as input:
+            with open(os.path.join(afqvault_root, 'afqvault/apps/statmaps/NIFgraph.pkl'),'rb') as input:
                 graph = joblib.load(input)
             for atlasRegion in atlasRegions:
                 synonymsDict[atlasRegion] = getSynonyms(atlasRegion)

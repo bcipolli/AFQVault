@@ -20,10 +20,10 @@ from polymorphic.models import PolymorphicModel
 from taggit.managers import TaggableManager
 from taggit.models import GenericTaggedItemBase, TagBase
 
-from neurovault.apps.statmaps.storage import DoubleExtensionStorage, NIDMStorage,\
+from afqvault.apps.statmaps.storage import DoubleExtensionStorage, NIDMStorage,\
     OverwriteStorage
-from neurovault.apps.statmaps.tasks import run_voxelwise_pearson_similarity, generate_glassbrain_image
-from neurovault.settings import PRIVATE_MEDIA_ROOT
+from afqvault.apps.statmaps.tasks import run_voxelwise_pearson_similarity, generate_glassbrain_image
+from afqvault.settings import PRIVATE_MEDIA_ROOT
 
 
 class Collection(models.Model):
@@ -195,14 +195,14 @@ def contributors_changed(sender, instance, action, **kwargs):
     if action in ["post_remove", "post_add", "post_clear"]:
         current_contributors = set([user.pk for user in get_users_with_perms(instance)])
         new_contributors = set([user.pk for user in [instance.owner, ] + list(instance.contributors.all())])
-         
+
         for contributor in list(new_contributors - current_contributors):
             contributor = User.objects.get(pk=contributor)
             assign_perm('change_collection', contributor, instance)
             for image in instance.basecollectionitem_set.all():
                 assign_perm('change_basecollectionitem', contributor, image)
                 assign_perm('delete_basecollectionitem', contributor, image)
-                
+
         for contributor in (current_contributors - new_contributors):
             contributor = User.objects.get(pk=contributor)
             remove_perm('change_collection', contributor, instance)
@@ -286,7 +286,7 @@ class BaseCollectionItem(PolymorphicModel, models.Model):
         self.collection.modify_date = datetime.now()
         self.collection.save()
         super(BaseCollectionItem, self).save()
-        
+
 
     def delete(self):
         self.collection.modify_date = datetime.now()
@@ -466,7 +466,7 @@ class BaseStatisticMap(Image):
 
     def save(self):
         if self.perc_bad_voxels == None and self.file:
-            import neurovault.apps.statmaps.utils as nvutils
+            import afqvault.apps.statmaps.utils as nvutils
             self.file.open()
             gzfileobj = GzipFile(filename=self.file.name, mode='rb', fileobj=self.file.file)
             nii = nb.Nifti1Image.from_file_map({'image': nb.FileHolder(self.file.name, gzfileobj)})
@@ -474,14 +474,14 @@ class BaseStatisticMap(Image):
             self.perc_bad_voxels = ratio_bad*100.0
 
         if self.brain_coverage == None and self.file:
-            import neurovault.apps.statmaps.utils as nvutils
+            import afqvault.apps.statmaps.utils as nvutils
             self.file.open()
             gzfileobj = GzipFile(filename=self.file.name, mode='rb', fileobj=self.file.file)
             nii = nb.Nifti1Image.from_file_map({'image': nb.FileHolder(self.file.name, gzfileobj)})
             self.not_mni, self.brain_coverage, self.perc_voxels_outside = nvutils.not_in_mni(nii)
 
         if self.map_type == self.OTHER:
-            import neurovault.apps.statmaps.utils as nvutils
+            import afqvault.apps.statmaps.utils as nvutils
             self.file.open()
             gzfileobj = GzipFile(filename=self.file.name, mode='rb', fileobj=self.file.file)
             nii = nb.Nifti1Image.from_file_map({'image': nb.FileHolder(self.file.name, gzfileobj)})
@@ -594,7 +594,7 @@ class NIDMResults(BaseCollectionItem):
 
     @staticmethod
     def get_form_class():
-        from neurovault.apps.statmaps.forms import NIDMResultsForm
+        from afqvault.apps.statmaps.forms import NIDMResultsForm
         return NIDMResultsForm
 
 @receiver(post_delete, sender=NIDMResults)

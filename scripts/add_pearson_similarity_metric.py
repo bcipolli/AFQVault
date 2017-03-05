@@ -5,11 +5,11 @@ Created on 30 Jan 2015
 '''
 import os
 import django
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "neurovault.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "afqvault.settings")
 django.setup()
 
-from neurovault.apps.statmaps.models import Similarity, Comparison, Image
-from neurovault.apps.statmaps.tasks import save_voxelwise_pearson_similarity
+from afqvault.apps.statmaps.models import Similarity, Comparison, Image
+from afqvault.apps.statmaps.tasks import save_voxelwise_pearson_similarity
 from django.db import IntegrityError
 import errno
 
@@ -22,7 +22,7 @@ try:
   pearson_metric.save()
 except IntegrityError as exc:
   print "A Similarity Metric has already been defined for %s" %(pearson_metric)
-  pass 
+  pass
 
 # Now, we need to generate a "comparison" object for all files in the database
 # We will use a celery task (as this will be integrated into upload workflow)

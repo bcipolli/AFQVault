@@ -19,7 +19,7 @@ Easy to use web database for human brain statistical maps, atlases and parcellat
 docker-compose up -d
 ```
 The webpage will be available at 127.0.0.1 (unless you are using docker-machine - then run `docker-machine ip nv` to figure out which IP address you need to use; remember that your enviroment variables need to be properly configured by running `eval "$(docker-machine env nv)"`).
-Initially, some data will be available by default with _username/password_ neurovault/neurovault and neurovault2/neurovault2.
+Initially, some data will be available by default with _username/password_ afqvault/afqvault and afqvault2/afqvault2.
 
 You can also run the server in non detached mode (shows all the logs in realtime).
 ```
@@ -52,14 +52,14 @@ docker-compose run --rm uwsgi python manage.py test
 ### Updating docker image
 If you add a dependency to requirements.txt or modify Dockerfile you will need to rebuild the docker image
 ```
-docker build -t neurovault/neurovault .
+docker build -t afqvault/afqvault .
 ```
 
 ### Using pycortex
-To use pycortex you will need a different image (that includes FreeSurfer). Just change "neurovault/neurovault" with "neurovault/neurovault_fs" in docker-compose.yml. This image is significantly bigger and will take longer to download.
+To use pycortex you will need a different image (that includes FreeSurfer). Just change "afqvault/afqvault" with "afqvault/afqvault_fs" in docker-compose.yml. This image is significantly bigger and will take longer to download.
 
 You can also build it locally
 ```
-docker build -t neurovault/neurovault_fs -f fs_docker/Dockerfile .
+docker build -t afqvault/afqvault_fs -f fs_docker/Dockerfile .
 ```
 

@@ -7,10 +7,10 @@ Created on 1 Sep 2014
 import os
 import django
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "neurovault.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "afqvault.settings")
 django.setup()
 
-from neurovault.apps.statmaps.models import Image
+from afqvault.apps.statmaps.models import Image
 
 import errno
 
@@ -30,7 +30,7 @@ for image in Image.objects.all():
         print image.file.path
         new_path = "/".join(image.file.path.split("/")[:-1] + ["images", str(image.collection_id), image.file.path.split("/")[-1],])
         print new_path
-        
+
         mkdir_p("/".join(image.file.path.split("/")[:-1] + ["images", str(image.collection_id)]))
         os.rename(image.file.path, new_path)
         image.file.name = new_name

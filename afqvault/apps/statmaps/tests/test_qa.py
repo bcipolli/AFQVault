@@ -4,8 +4,8 @@ import nibabel as nb
 import numpy as np
 from django.test import TestCase
 
-from neurovault.apps.statmaps.models import BaseStatisticMap
-from neurovault.apps.statmaps.utils import is_thresholded, infer_map_type
+from afqvault.apps.statmaps.models import BaseStatisticMap
+from afqvault.apps.statmaps.utils import is_thresholded, infer_map_type
 
 
 class QATest(TestCase):

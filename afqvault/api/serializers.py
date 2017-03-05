@@ -7,14 +7,14 @@ from django.utils.http import urlquote
 from rest_framework import serializers
 from rest_framework.relations import PrimaryKeyRelatedField, StringRelatedField
 
-from neurovault.apps.statmaps.forms import (
+from afqvault.apps.statmaps.forms import (
     handle_update_ttl_urls,
     ImageValidationMixin,
     NIDMResultsValidationMixin,
     save_nidm_statmaps
 )
 
-from neurovault.apps.statmaps.models import (
+from afqvault.apps.statmaps.models import (
     Atlas,
     BaseCollectionItem,
     CognitiveAtlasTask,
@@ -25,8 +25,8 @@ from neurovault.apps.statmaps.models import (
     StatisticMap
 )
 
-from neurovault.utils import strip, logical_xor
-from neurovault.apps.statmaps.utils import get_paper_properties
+from afqvault.utils import strip, logical_xor
+from afqvault.apps.statmaps.utils import get_paper_properties
 
 
 class HyperlinkedFileField(serializers.FileField):

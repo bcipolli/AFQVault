@@ -2,16 +2,16 @@
 !/.gitignore
 !/.dockerignore
 
-neurovault/data/*/*/*
+afqvault/data/*/*/*
 /static/
-neurovault/reload.py
-neurovault/local_settings.py
-neurovault/secrets.py
-neurovault/static/
+afqvault/reload.py
+afqvault/local_settings.py
+afqvault/secrets.py
+afqvault/static/
 
 # test data
-neurovault/apps/statmaps/tests/test_data/feat/*
-neurovault/apps/statmaps/tests/bench/*
+afqvault/apps/statmaps/tests/test_data/feat/*
+afqvault/apps/statmaps/tests/bench/*
 
 # celery generated schedule
 celerybeat-schedule

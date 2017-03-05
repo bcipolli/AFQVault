@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
-from neurovault.apps.statmaps.models import Collection, Image
-from neurovault.apps.statmaps.tasks import run_voxelwise_pearson_similarity, generate_glassbrain_image
+from afqvault.apps.statmaps.models import Collection, Image
+from afqvault.apps.statmaps.tasks import run_voxelwise_pearson_similarity, generate_glassbrain_image
 
 
 

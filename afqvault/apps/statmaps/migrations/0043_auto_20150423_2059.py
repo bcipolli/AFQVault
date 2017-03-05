@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 
 from django.db import models, migrations
-import neurovault.apps.statmaps.models
+import afqvault.apps.statmaps.models
 
 
 class Migration(migrations.Migration):
@@ -15,7 +15,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='image',
             name='thumbnail',
-            field=models.FileField(help_text=b'The orthogonal view thumbnail path of the nifti image', upload_to=neurovault.apps.statmaps.models.upload_img_to, null=True, verbose_name=b'Image orthogonal view thumbnail (.png)', blank=True),
+            field=models.FileField(help_text=b'The orthogonal view thumbnail path of the nifti image', upload_to=afqvault.apps.statmaps.models.upload_img_to, null=True, verbose_name=b'Image orthogonal view thumbnail (.png)', blank=True),
             preserve_default=True,
         ),
     ]

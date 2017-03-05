@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from rest_framework.test import APITestCase
 from rest_framework import status
 
-from neurovault.apps.statmaps.models import Collection
+from afqvault.apps.statmaps.models import Collection
 
 
 class TestCollection(APITestCase):

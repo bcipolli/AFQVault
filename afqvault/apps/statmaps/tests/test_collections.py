@@ -11,10 +11,10 @@ from django.core.urlresolvers import reverse
 from django.test import TestCase, Client, override_settings, RequestFactory
 from uuid import uuid4
 
-from neurovault.apps.statmaps.models import Collection, User, Image, Atlas
-from neurovault.apps.statmaps.utils import detect_4D, split_4D_to_3D
-from neurovault.apps.statmaps.views import delete_collection, download_collection
-from neurovault.settings import PRIVATE_MEDIA_ROOT
+from afqvault.apps.statmaps.models import Collection, User, Image, Atlas
+from afqvault.apps.statmaps.utils import detect_4D, split_4D_to_3D
+from afqvault.apps.statmaps.views import delete_collection, download_collection
+from afqvault.settings import PRIVATE_MEDIA_ROOT
 from .utils import clearDB, save_statmap_form
 
 
@@ -71,7 +71,7 @@ class DeleteCollectionsTest(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
         self.test_path = os.path.abspath(os.path.dirname(__file__))
-        self.user = User.objects.create(username='neurovault')
+        self.user = User.objects.create(username='afqvault')
         self.client = Client()
         self.client.login(username=self.user)
         self.Collection1 = Collection(name='Collection1',owner=self.user)
@@ -329,7 +329,7 @@ class DownloadCollectionsTest(TestCase):
     def setUp(self):
         self.factory = RequestFactory()
         self.test_path = os.path.abspath(os.path.dirname(__file__))
-        self.user = User.objects.create(username='neurovault')
+        self.user = User.objects.create(username='afqvault')
         self.client = Client()
         self.client.login(username=self.user)
         self.Collection1 = Collection(name='Collection1',owner=self.user)

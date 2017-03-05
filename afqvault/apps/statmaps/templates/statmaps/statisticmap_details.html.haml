@@ -162,7 +162,7 @@ a.disabled-link:hover {
                     %span.caret
                 %ul.dropdown-menu
                     %li
-                        %a{:href => "http://neurosynth.org/decode/?neurovault={{ api_cid }}"}
+                        %a{:href => "http://neurosynth.org/decode/?afqvault={{ api_cid }}"}
                             %div.tooltip-wrapper{style: "display: inline-block", data-toggle: "tooltip", title: "Cognitive decoding using coordiante based data collected from thousands of papers."}
                                 Cognitive decoding (neurosynth)
                     - if comparison_is_possible
@@ -185,7 +185,7 @@ a.disabled-link:hover {
                                     Gene expression decoding
 
                     %li
-                        %a{:href => "http://neuropowertools.org/neuropower/neuropowerinput/?neurovault={{ api_cid }}"}
+                        %a{:href => "http://neuropowertools.org/neuropower/neuropowerinput/?afqvault={{ api_cid }}"}
                             %div.tooltip-wrapper{style: "display: inline-block", data-toggle: "tooltip", title: "Use neuropower to estimate how many subjects would be required to find an effect of similar size as in this map."}
                                 Power analysis (neuropower)
 

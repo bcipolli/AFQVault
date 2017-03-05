@@ -1,6 +1,6 @@
-from neurovault.apps.statmaps.tasks import save_resampled_transformation_single
-from neurovault.apps.statmaps.tests.utils import (clearDB, save_statmap_form)
-from neurovault.apps.statmaps.models import (Collection)
+from afqvault.apps.statmaps.tasks import save_resampled_transformation_single
+from afqvault.apps.statmaps.tests.utils import (clearDB, save_statmap_form)
+from afqvault.apps.statmaps.models import (Collection)
 from django.contrib.auth.models import User
 from django.test import TestCase, Client
 import pandas as pd
@@ -14,7 +14,7 @@ class TestGeneDecoding(TestCase):
     @classmethod
     def setUpClass(cls):
         cls.test_path = os.path.abspath(os.path.dirname(__file__))
-        cls.user, _ = User.objects.get_or_create(username='neurovault')
+        cls.user, _ = User.objects.get_or_create(username='afqvault')
         cls.client = Client()
         cls.client.login(username=cls.user)
         cls.Collection1 = Collection(name='Collection1', owner=cls.user)

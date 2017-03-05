@@ -7,8 +7,8 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework import test as rest_framework_test
 from rest_framework import status
 
-from neurovault.apps.statmaps.models import Collection
-from neurovault.apps.statmaps.tests.utils import clearDB
+from afqvault.apps.statmaps.models import Collection
+from afqvault.apps.statmaps.tests.utils import clearDB
 
 STATMAPS_TESTS_PATH = '../../apps/statmaps/tests/'
 

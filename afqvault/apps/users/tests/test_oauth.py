@@ -26,13 +26,13 @@ urlpatterns = patterns(
     '',
     url(r'^oauth2/', include('oauth2_provider.urls')),
     url(r'^oauth2-test/$', OAuth2View.as_view()),
-    url(r'^accounts/', include('neurovault.apps.users.urls')),
+    url(r'^accounts/', include('afqvault.apps.users.urls')),
 
 )
 
 
 class TestPersonalAccessTokens(TestCase):
-    urls = 'neurovault.apps.users.tests.test_oauth'
+    urls = 'afqvault.apps.users.tests.test_oauth'
 
     def setUp(self):
         self.user_password = "l0n6 l1v3 7h3 k1n6!"

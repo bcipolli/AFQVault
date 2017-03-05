@@ -5,12 +5,12 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 
 from rest_framework import status
 
-from neurovault.apps.statmaps.models import (
+from afqvault.apps.statmaps.models import (
     Collection, StatisticMap, NIDMResults
 )
-from neurovault.apps.statmaps.tests.utils import clearDB
-from neurovault.apps.statmaps.tests.test_nidm import NIDM_TEST_FILES
-from neurovault.api.tests.base import APITestCase
+from afqvault.apps.statmaps.tests.utils import clearDB
+from afqvault.apps.statmaps.tests.test_nidm import NIDM_TEST_FILES
+from afqvault.api.tests.base import APITestCase
 
 
 class TestCollectionItemUpload(APITestCase):

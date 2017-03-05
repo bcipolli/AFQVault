@@ -1,5 +1,5 @@
 from django.http import HttpResponseRedirect
-from neurovault.apps.statmaps.utils import HttpRedirectException
+from afqvault.apps.statmaps.utils import HttpRedirectException
 
 class CollectionRedirectMiddleware:
     def process_exception(self, request, exception):

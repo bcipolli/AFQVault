@@ -11,8 +11,8 @@ def mkdir_p(path):
         else: raise
 
 collections = []
-next_url_url = "http://neurovault.org/api/collections/?format=json"
-target_folder = "/Users/filo/data/neurovault_backup"
+next_url_url = "http://afqvault.org/api/collections/?format=json"
+target_folder = "/Users/filo/data/afqvault_backup"
 
 while next_url_url:
     print "fetching %s"%next_url_url
@@ -20,10 +20,10 @@ while next_url_url:
     data = json.loads(resp.text)
     collections += [res for res in data['results'] if res['DOI'] != None]
     next_url_url = data['next']
-    
+
 print "Fetched metadata of %d collections"%len(collections)
 
-images_url_template = "http://neurovault.org/api/collections/%d/images/"
+images_url_template = "http://afqvault.org/api/collections/%d/images/"
 
 for collection in collections:
     next_url = images_url_template%collection['id']
@@ -37,7 +37,7 @@ for collection in collections:
     if len(images) == 0:
         collections.remove(collection)
         continue
-        
+
     mkdir_p(target_folder + "/%d"%collection['id'])
     json.dump(collections, open(target_folder + "/%d/images.json"%collection['id'], "w"), indent=4, sort_keys=True)
     for image in images:

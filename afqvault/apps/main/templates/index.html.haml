@@ -3,17 +3,17 @@
 {% load coffeescript %}
 {% block head %}
 <title>{% block title %}NeuroVault: a new home for all brain statistical maps!{% endblock %}</title>
-<script type="text/javascript"> 
+<script type="text/javascript">
 var addthis_config = {
-     data_track_clickback: false 
-} 
+     data_track_clickback: false
+}
 </script>
 {% endblock %}
 {% block content %}
 .row
     .span11
         .massive
-            .p <img src='{% static "images/neurovault-logo.png"%}' alt="triangle with equal sides" srcset='{% static "images/neurovault-logo.svg"%}'>
+            .p <img src='{% static "images/afqvault-logo.png"%}' alt="triangle with equal sides" srcset='{% static "images/afqvault-logo.svg"%}'>
             .lead A public repository of unthresholded statistical maps, <br />parcellations, and atlases of the human brain
 .row
     .third.slice
@@ -60,7 +60,7 @@ var addthis_config = {
                             %a{href: "{% url 'collection_details' collection.id %}"}= collection.name
                         %td.col-md-1
                             {{ collection.basecollectionitem_set.all.count }}
-                        
+
 .row
     .span11.text-center
     	.massive

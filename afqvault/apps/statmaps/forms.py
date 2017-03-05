@@ -25,12 +25,12 @@ from .models import Collection, Image, User, StatisticMap, BaseStatisticMap, \
 from django.forms.forms import Form
 from django.forms.fields import FileField
 import tempfile
-from neurovault.apps.statmaps.utils import (
+from afqvault.apps.statmaps.utils import (
     split_filename, get_paper_properties,
     detect_4D, split_4D_to_3D, memory_uploadfile,
     is_thresholded, not_in_mni,
     splitext_nii_gz)
-from neurovault.apps.statmaps.nidm_results import NIDMUpload
+from afqvault.apps.statmaps.nidm_results import NIDMUpload
 from django import forms
 from django.utils.encoding import smart_str
 from django.utils.safestring import mark_safe
@@ -38,7 +38,7 @@ from django.forms.utils import flatatt
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.core.files.base import ContentFile
 from django.forms.widgets import HiddenInput
-from neurovault import settings
+from afqvault import settings
 from gzip import GzipFile
 from file_resubmit.admin import AdminResubmitFileWidget
 from guardian.shortcuts import get_objects_for_user

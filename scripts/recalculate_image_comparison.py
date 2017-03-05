@@ -8,11 +8,11 @@ Update database with image transformations
 import django
 import os
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "neurovault.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "afqvault.settings")
 django.setup()
 
-from neurovault.apps.statmaps.models import Similarity, Comparison, Image, Collection
-from neurovault.apps.statmaps.tasks import run_voxelwise_pearson_similarity
+from afqvault.apps.statmaps.models import Similarity, Comparison, Image, Collection
+from afqvault.apps.statmaps.tasks import run_voxelwise_pearson_similarity
 
 # Images should have the "transform" field after applying migrations (I think)
 

@@ -3,9 +3,9 @@ from django.contrib.auth.decorators import login_required
 from django.views.generic import ListView, TemplateView
 from django.views.generic.base import RedirectView
 
-from neurovault import settings
-from neurovault.apps.statmaps.models import KeyValueTag
-from neurovault.apps.statmaps.views import ImagesInCollectionJson,\
+from afqvault import settings
+from afqvault.apps.statmaps.models import KeyValueTag
+from afqvault.apps.statmaps.views import ImagesInCollectionJson,\
     PublicCollectionsJson, MyCollectionsJson, AtlasesAndParcellationsJson, \
     ImagesByTaskJson
 from .views import edit_collection, view_image, delete_image, edit_image, \

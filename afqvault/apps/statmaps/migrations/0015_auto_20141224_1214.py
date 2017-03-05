@@ -2,9 +2,9 @@
 from __future__ import unicode_literals
 
 from django.db import models, migrations
-import neurovault.apps.statmaps.models
+import afqvault.apps.statmaps.models
 import taggit.managers
-import neurovault.apps.statmaps.storage
+import afqvault.apps.statmaps.storage
 
 
 class Migration(migrations.Migration):
@@ -22,9 +22,9 @@ class Migration(migrations.Migration):
                 ('description', models.TextField()),
                 ('add_date', models.DateTimeField(auto_now_add=True, verbose_name=b'date published')),
                 ('modify_date', models.DateTimeField(auto_now=True, verbose_name=b'date modified')),
-                ('ttl_file', models.FileField(storage=neurovault.apps.statmaps.storage.NIDMStorage(), upload_to=neurovault.apps.statmaps.models.upload_nidm_to, null=True, verbose_name=b'Turtle serialization of NIDM Results (.ttl)', blank=True)),
-                ('provn_file', models.FileField(upload_to=neurovault.apps.statmaps.models.upload_nidm_to, storage=neurovault.apps.statmaps.storage.NIDMStorage(), verbose_name=b'Provenance store serialization of NIDM Results (.provn)', blank=True)),
-                ('zip_file', models.FileField(upload_to=neurovault.apps.statmaps.models.upload_nidm_to, storage=neurovault.apps.statmaps.storage.NIDMStorage(), verbose_name=b'NIDM Results zip file')),
+                ('ttl_file', models.FileField(storage=afqvault.apps.statmaps.storage.NIDMStorage(), upload_to=afqvault.apps.statmaps.models.upload_nidm_to, null=True, verbose_name=b'Turtle serialization of NIDM Results (.ttl)', blank=True)),
+                ('provn_file', models.FileField(upload_to=afqvault.apps.statmaps.models.upload_nidm_to, storage=afqvault.apps.statmaps.storage.NIDMStorage(), verbose_name=b'Provenance store serialization of NIDM Results (.provn)', blank=True)),
+                ('zip_file', models.FileField(upload_to=afqvault.apps.statmaps.models.upload_nidm_to, storage=afqvault.apps.statmaps.storage.NIDMStorage(), verbose_name=b'NIDM Results zip file')),
                 ('collection', models.ForeignKey(to='statmaps.Collection')),
                 ('tags', taggit.managers.TaggableManager(to='statmaps.KeyValueTag', through='statmaps.ValueTaggedItem', blank=True, help_text='A comma-separated list of tags.', verbose_name='Tags')),
             ],

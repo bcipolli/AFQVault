@@ -1,11 +1,11 @@
 from django.contrib.auth.models import User
 
-from neurovault.apps.statmaps.models import Collection
-from neurovault.apps.statmaps.tests.utils import (
+from afqvault.apps.statmaps.models import Collection
+from afqvault.apps.statmaps.tests.utils import (
     save_atlas_form, save_nidm_form, save_statmap_form, clearDB
 )
-from neurovault.api.tests.base import APITestCase
-from neurovault.api.pagination import StandardResultPagination
+from afqvault.api.tests.base import APITestCase
+from afqvault.api.pagination import StandardResultPagination
 
 
 class TestImage(APITestCase):

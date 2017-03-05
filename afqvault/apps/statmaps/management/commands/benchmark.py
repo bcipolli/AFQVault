@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand, CommandError
-from neurovault.apps.statmaps.tests.utils import clearDB, save_statmap_form
-from neurovault.apps.statmaps.models import User, Collection
-from neurovault.apps.statmaps.utils import get_similar_images
+from afqvault.apps.statmaps.tests.utils import clearDB, save_statmap_form
+from afqvault.apps.statmaps.models import User, Collection
+from afqvault.apps.statmaps.utils import get_similar_images
 
 import os
 import gc
@@ -32,13 +32,13 @@ class Timer:
 
 def down_data():
     import urllib, json
-    if not os.path.isdir('/code/neurovault/apps/statmaps/tests/bench'):
-        os.makedirs('/code/neurovault/apps/statmaps/tests/bench')
-        os.makedirs('/code/neurovault/apps/statmaps/tests/bench/images')
-    if len(os.listdir('/code/neurovault/apps/statmaps/tests/bench/images')) == 0:
+    if not os.path.isdir('/code/afqvault/apps/statmaps/tests/bench'):
+        os.makedirs('/code/afqvault/apps/statmaps/tests/bench')
+        os.makedirs('/code/afqvault/apps/statmaps/tests/bench/images')
+    if len(os.listdir('/code/afqvault/apps/statmaps/tests/bench/images')) == 0:
         (path, _) = urllib.urlretrieve("https://ndownloader.figshare.com/files/5360999")
         archive = tarfile.open(path)
-        archive.extractall('/code/neurovault/apps/statmaps/tests/bench')
+        archive.extractall('/code/afqvault/apps/statmaps/tests/bench')
         archive.close()
         os.remove(path)
 
@@ -52,8 +52,8 @@ class Command(BaseCommand):
 
         clearDB()
         User.objects.all().delete()
-        app_path = '/code/neurovault/apps/statmaps/tests/bench'
-        u1 = User.objects.create(username='neurovault3')
+        app_path = '/code/afqvault/apps/statmaps/tests/bench'
+        u1 = User.objects.create(username='afqvault3')
 
         num_files = len(os.listdir(os.path.join(app_path, 'images/')))
         index_table = np.zeros(num_files)

@@ -1,9 +1,9 @@
 import os
 import django
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "neurovault.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "afqvault.settings")
 django.setup()
 
-from neurovault.apps.statmaps.models import Image, BaseStatisticMap
+from afqvault.apps.statmaps.models import Image, BaseStatisticMap
 
 
 # Now, we need to generate a "comparison" object for all files in the database

@@ -7,19 +7,19 @@ import xml.etree.ElementTree as ET
 from django.contrib.auth.models import User
 from rest_framework import status
 
-from neurovault.apps.statmaps.models import Atlas
+from afqvault.apps.statmaps.models import Atlas
 
-from neurovault.apps.statmaps.tests.utils import (
+from afqvault.apps.statmaps.tests.utils import (
     clearDB, save_atlas_form, save_nidm_form, save_statmap_form
 )
-from neurovault.apps.statmaps.models import Collection
-from neurovault.api.tests.base import APITestCase, BaseTestCases
+from afqvault.apps.statmaps.models import Collection
+from afqvault.api.tests.base import APITestCase, BaseTestCases
 
 
 class TestAtlas(APITestCase):
 
     def setUp(self):
-        self.user = User.objects.create(username='neurovault')
+        self.user = User.objects.create(username='afqvault')
         self.client.login(username=self.user)
         self.Collection1 = Collection(name='Collection1', owner=self.user)
         self.Collection1.save()

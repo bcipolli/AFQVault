@@ -8,9 +8,9 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, Client
 from nidmfsl.fsl_exporter.fsl_exporter import FSLtoNIDMExporter
 
-from neurovault.apps.statmaps.forms import NIDMResultsForm
-from neurovault.apps.statmaps.models import Collection,User
-from neurovault.apps.statmaps.utils import detect_feat_directory
+from afqvault.apps.statmaps.forms import NIDMResultsForm
+from afqvault.apps.statmaps.models import Collection,User
+from afqvault.apps.statmaps.utils import detect_feat_directory
 from .utils import clearDB
 
 
@@ -18,7 +18,7 @@ class FeatDirectoryTest(TestCase):
 
     def setUp(self):
         testpath = os.path.join(os.path.abspath(os.path.dirname(__file__)),'test_data','feat')
-        testdata_repo = 'https://github.com/NeuroVault/neurovault_data/blob/master/FEAT_testdata/'
+        testdata_repo = 'https://github.com/NeuroVault/afqvault_data/blob/master/FEAT_testdata/'
 
         self.testfiles = {
             'ds105.feat.zip': {
@@ -104,7 +104,7 @@ class FeatDirectoryTest(TestCase):
                 'description': '{0} upload test'.format(zname),
                 'collection': self.coll.pk,
             }
-            
+
 
             file_dict = {'zip_file': SimpleUploadedFile(zname, open(info['nidm_file'],'r').read())}
             form = NIDMResultsForm(post_dict, file_dict)

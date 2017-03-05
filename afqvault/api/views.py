@@ -11,11 +11,11 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from taggit.models import Tag
 
-from neurovault.apps.statmaps.models import (Atlas, Collection, Image,
+from afqvault.apps.statmaps.models import (Atlas, Collection, Image,
                                              StatisticMap, NIDMResults)
-from neurovault.apps.statmaps.views import (get_collection, get_image,
+from afqvault.apps.statmaps.views import (get_collection, get_image,
                                             owner_or_contrib)
-from neurovault.apps.statmaps.voxel_query_functions import (getAtlasVoxels,
+from afqvault.apps.statmaps.voxel_query_functions import (getAtlasVoxels,
                                                             getSynonyms,
                                                             toAtlas,
                                                             voxelToRegion)
@@ -182,7 +182,7 @@ class AtlasViewSet(ImageViewSet):
         search = request.GET.get('region', '')
         atlas = request.GET.get('atlas', '').replace('\'', '')
         collection = request.GET.get('collection', '')
-        neurovault_root = os.path.dirname(
+        afqvault_root = os.path.dirname(
             os.path.dirname(os.path.realpath(__file__)))
         try:
             collection_object = Collection.objects.filter(name=collection)[0]
@@ -208,7 +208,7 @@ class AtlasViewSet(ImageViewSet):
                 searchList = [search]
             else:
                 synonymsDict = {}
-                with open(os.path.join(neurovault_root, 'neurovault/apps/statmaps/NIFgraph.pkl'), 'rb') as input:
+                with open(os.path.join(afqvault_root, 'afqvault/apps/statmaps/NIFgraph.pkl'), 'rb') as input:
                     graph = pickle.load(input)
                 for atlasRegion in atlasRegions:
                     synonymsDict[atlasRegion] = getSynonyms(atlasRegion)

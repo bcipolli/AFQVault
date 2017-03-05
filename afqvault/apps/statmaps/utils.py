@@ -26,7 +26,7 @@ from django.db.models import Q
 from django.template.loader import render_to_string
 from lxml import etree
 
-from neurovault.apps.statmaps.models import Collection, NIDMResults, StatisticMap, Comparison, NIDMResultStatisticMap, \
+from afqvault.apps.statmaps.models import Collection, NIDMResults, StatisticMap, Comparison, NIDMResultStatisticMap, \
     BaseStatisticMap
 
 
@@ -224,7 +224,7 @@ def mkdir_p(path):
 
 
 def send_email_notification(notif_type, subject, users, tpl_context=None):
-    email_from = 'NeuroVault <do_not_reply@neurovault.org>'
+    email_from = 'NeuroVault <do_not_reply@afqvault.org>'
     plain_tpl = os.path.join('email','%s.txt' % notif_type)
     html_tpl = os.path.join('email','%s.html' % notif_type)
 
@@ -498,7 +498,7 @@ def not_in_mni(nii, plot=False):
 # QUERY FUNCTIONS -------------------------------------------------------------------------------
 
 def is_search_compatible(pk):
-    from neurovault.apps.statmaps.models import Image
+    from afqvault.apps.statmaps.models import Image
     try:
         img = Image.objects.get(pk=pk)
     except ObjectDoesNotExist:
@@ -514,7 +514,7 @@ def is_search_compatible(pk):
 
 
 def get_images_to_compare_with(pk1, for_generation=False):
-    from neurovault.apps.statmaps.models import StatisticMap, NIDMResultStatisticMap, Image
+    from afqvault.apps.statmaps.models import StatisticMap, NIDMResultStatisticMap, Image
 
     # if the map in question is invalid do not generate any comparisons
     if not is_search_compatible(pk1):

@@ -7,11 +7,11 @@ from collections import OrderedDict
 import io
 import zipfile
 
-from neurovault.apps.statmaps.forms import NIDMResultsForm
-from neurovault.apps.statmaps.models import Collection, User
-from neurovault.apps.statmaps.nidm_results import NIDMUpload
-from neurovault.apps.statmaps.views import download_collection
-from neurovault.apps.statmaps.tests.utils import clearDB, save_statmap_form
+from afqvault.apps.statmaps.forms import NIDMResultsForm
+from afqvault.apps.statmaps.models import Collection, User
+from afqvault.apps.statmaps.nidm_results import NIDMUpload
+from afqvault.apps.statmaps.views import download_collection
+from afqvault.apps.statmaps.tests.utils import clearDB, save_statmap_form
 
 TEST_PATH = os.path.abspath(os.path.dirname(__file__))
 NIDM_TEST_FILES = OrderedDict({

@@ -2,8 +2,8 @@
 from __future__ import unicode_literals
 
 from django.db import migrations, models
-import neurovault.apps.statmaps.models
-import neurovault.apps.statmaps.storage
+import afqvault.apps.statmaps.models
+import afqvault.apps.statmaps.storage
 
 
 class Migration(migrations.Migration):
@@ -16,16 +16,16 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='image',
             name='surface_left_file',
-            field=models.FileField(storage=neurovault.apps.statmaps.storage.DoubleExtensionStorage(), upload_to=neurovault.apps.statmaps.models.upload_img_to, null=True, verbose_name=b'File with the unthresholded left hemisphere fsaverage surface map (.mgh)', blank=True),
+            field=models.FileField(storage=afqvault.apps.statmaps.storage.DoubleExtensionStorage(), upload_to=afqvault.apps.statmaps.models.upload_img_to, null=True, verbose_name=b'File with the unthresholded left hemisphere fsaverage surface map (.mgh)', blank=True),
         ),
         migrations.AddField(
             model_name='image',
             name='surface_right_file',
-            field=models.FileField(storage=neurovault.apps.statmaps.storage.DoubleExtensionStorage(), upload_to=neurovault.apps.statmaps.models.upload_img_to, null=True, verbose_name=b'File with the unthresholded right hemisphere fsaverage surface map (.mgh)', blank=True),
+            field=models.FileField(storage=afqvault.apps.statmaps.storage.DoubleExtensionStorage(), upload_to=afqvault.apps.statmaps.models.upload_img_to, null=True, verbose_name=b'File with the unthresholded right hemisphere fsaverage surface map (.mgh)', blank=True),
         ),
         migrations.AlterField(
             model_name='image',
             name='file',
-            field=models.FileField(upload_to=neurovault.apps.statmaps.models.upload_img_to, storage=neurovault.apps.statmaps.storage.DoubleExtensionStorage(), verbose_name=b'File with the unthresholded volume map (.img, .nii, .nii.gz)'),
+            field=models.FileField(upload_to=afqvault.apps.statmaps.models.upload_img_to, storage=afqvault.apps.statmaps.storage.DoubleExtensionStorage(), verbose_name=b'File with the unthresholded volume map (.img, .nii, .nii.gz)'),
         ),
     ]

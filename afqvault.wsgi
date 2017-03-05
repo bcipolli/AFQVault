@@ -1,7 +1,7 @@
 import os
-import sys	
+import sys
 sys.path.append('/var/www/NeuroVault')
 sys.path.append('/var/www/neurosynth')
-os.environ['DJANGO_SETTINGS_MODULE'] = 'neurovault.settings'
+os.environ['DJANGO_SETTINGS_MODULE'] = 'afqvault.settings'
 from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()

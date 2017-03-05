@@ -5,8 +5,8 @@ from django.contrib import admin
 from django.contrib.sitemaps.views import sitemap, index
 from oauth2_provider import views as oauth_views
 
-from neurovault.api.sitemap import CollectionSitemap, ImageSitemap, CognitiveAtlasTaskSitemap
-from neurovault.api.urls import api_urls
+from afqvault.api.sitemap import CollectionSitemap, ImageSitemap, CognitiveAtlasTaskSitemap
+from afqvault.api.urls import api_urls
 
 admin.autodiscover()
 
@@ -26,10 +26,10 @@ oauth_urlpatterns = [
 urlpatterns = patterns('',
                        url('', include(
                            'social.apps.django_app.urls', namespace='social')),
-                       url(r'^', include('neurovault.apps.main.urls')),
-                       url(r'^', include('neurovault.apps.statmaps.urls')),
+                       url(r'^', include('afqvault.apps.main.urls')),
+                       url(r'^', include('afqvault.apps.statmaps.urls')),
                        url(r'^accounts/',
-                           include('neurovault.apps.users.urls')),
+                           include('afqvault.apps.users.urls')),
                        url(r'^admin/', include(admin.site.urls)),
                        url(r'^api/', include(api_urls)),
                        url(r'^api-auth/', include(

@@ -4,9 +4,9 @@ from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, Client
 
-from neurovault.apps.statmaps.forms import NIDMResultsForm
-from neurovault.apps.statmaps.models import Collection, StatisticMap, Comparison
-from neurovault.apps.statmaps.utils import count_processing_comparisons,count_existing_comparisons
+from afqvault.apps.statmaps.forms import NIDMResultsForm
+from afqvault.apps.statmaps.models import Collection, StatisticMap, Comparison
+from afqvault.apps.statmaps.utils import count_processing_comparisons,count_existing_comparisons
 from .utils import clearDB
 
 
@@ -14,7 +14,7 @@ class Test_Counter(TestCase):
     def setUp(self):
         print "\n\n### TESTING COUNTER ###"
         self.test_path = os.path.abspath(os.path.dirname(__file__))
-        self.user = User.objects.create(username='neurovault')
+        self.user = User.objects.create(username='afqvault')
         self.client = Client()
         self.client.login(username=self.user)
         self.Collection1 = Collection(name='Collection1', owner=self.user,
@@ -37,7 +37,7 @@ class Test_Counter(TestCase):
         # The field is populated with the file when image comparisons are done, meaning that if there is only one
         # image in the database (case below) we cannot calculate comparisons, and the "transform" field remains none
         # This is currently the only way that we can test the counter, which will be "1" in this case
-        print "\nTesting Counter - added statistic maps ###" 
+        print "\nTesting Counter - added statistic maps ###"
         Image1 = StatisticMap(name='Image1', collection=self.Collection1, file='motor_lips.nii.gz', map_type="Z")
         Image1.file = SimpleUploadedFile('motor_lips.nii.gz', file(os.path.join(self.test_path,'test_data/statmaps/motor_lips.nii.gz')).read())
         Image1.save()
@@ -49,7 +49,7 @@ class Test_Counter(TestCase):
         # the counter will be set to 0.  Celery runs in synchronous mode when testing (meaning that jobs are run locally, one
         # after the other, instead of being sent to worker nodes) so there is no way to test submitting a batch of async
         # jobs and watching the "images still processing" counter go from N to 0. There is also no way of arbitrarily
-        # setting an image transform field to "None" because on save, all image comparisons are automatically re-calcualted        
+        # setting an image transform field to "None" because on save, all image comparisons are automatically re-calcualted
         Image2 = StatisticMap(name='Image2', collection=self.Collection2, file='beta_0001.nii.gz', map_type="Other")
         Image2.file = SimpleUploadedFile('beta_0001.nii.gz', file(os.path.join(self.test_path,'test_data/statmaps/beta_0001.nii.gz')).read())
         Image2.save()
@@ -66,7 +66,7 @@ class Test_Counter(TestCase):
         Image2 = StatisticMap(name='Image2', collection=self.Collection1, file='beta_0001.nii.gz', map_type="Other")
         Image2.file = SimpleUploadedFile('beta_0001.nii.gz', file(os.path.join(self.test_path,'test_data/statmaps/beta_0001.nii.gz')).read())
         Image2.save()
-        
+
         zip_file = open(os.path.join(self.test_path,'test_data/nidm/spm_example.nidm.zip'), 'rb')
         post_dict = {
             'name': 'spm_nidm',
@@ -83,7 +83,7 @@ class Test_Counter(TestCase):
         # We should have 2 images total, so 1 comparison
         total_comparisons = count_existing_comparisons(Image2.pk)
         self.assertEqual(total_comparisons,1)
-        
+
         #Let's add a single subject map - this should not trigger a comparison
         Image2ss = StatisticMap(name='Image2 - single subject', collection=self.Collection3, file='beta_0001.nii.gz', map_type="Other", analysis_level='S')
         Image2ss.file = SimpleUploadedFile('beta_0001.nii.gz', file(os.path.join(self.test_path,'test_data/statmaps/beta_0001.nii.gz')).read())

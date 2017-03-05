@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from django.core.mail import send_mail
 from django.db.models.query_utils import Q
 
-from neurovault.apps.statmaps.models import Collection
+from afqvault.apps.statmaps.models import Collection
 
 template = """<p>Dear {username},<br \>
 <br \>
@@ -42,10 +42,10 @@ for user in User.objects.all():
             email = email.replace("{collection_verb}", "are")
             email = email.replace("{collection_pronoun}", "do")
 
-        collections_text = "\n".join(["<li><a href='http://neurovault.org%s'>%s</a></li>" % (col.get_absolute_url(), col.name)
+        collections_text = "\n".join(["<li><a href='http://afqvault.org%s'>%s</a></li>" % (col.get_absolute_url(), col.name)
                                       for col in collections])
         email = email.replace("{collections}", collections_text)
-        send_mail("Time to update your NeuroVault maps", email, "team@neurovault.org",
+        send_mail("Time to update your NeuroVault maps", email, "team@afqvault.org",
                   [user.email], html_message=email, fail_silently=True)
         counter += 1
 print "Sent %d emails" % counter

@@ -4,11 +4,11 @@ from django.contrib.auth.models import User
 
 from rest_framework import status
 
-from neurovault.apps.statmaps.models import NIDMResults, Collection
-from neurovault.apps.statmaps.tests.utils import save_nidm_form, clearDB
-from neurovault.api.tests.base import BaseTestCases
+from afqvault.apps.statmaps.models import NIDMResults, Collection
+from afqvault.apps.statmaps.tests.utils import save_nidm_form, clearDB
+from afqvault.api.tests.base import BaseTestCases
 
-from neurovault.api.tests.base import APITestCase
+from afqvault.api.tests.base import APITestCase
 
 
 class TestNIDMResults(APITestCase):

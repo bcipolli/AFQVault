@@ -1,7 +1,7 @@
-from neurovault.apps.statmaps.forms import StatisticMapForm, AtlasForm, NIDMResultsForm
-from neurovault.apps.statmaps.models import Collection, Image
+from afqvault.apps.statmaps.forms import StatisticMapForm, AtlasForm, NIDMResultsForm
+from afqvault.apps.statmaps.models import Collection, Image
 from django.core.files.uploadedfile import SimpleUploadedFile
-from neurovault.settings import PRIVATE_MEDIA_ROOT
+from afqvault.settings import PRIVATE_MEDIA_ROOT
 import shutil
 import os
 
@@ -15,7 +15,7 @@ def clearDB():
             try:
                 if os.path.isfile(file_path):
                     os.unlink(file_path)
-                elif os.path.isdir(file_path): 
+                elif os.path.isdir(file_path):
                     shutil.rmtree(file_path)
             except Exception, e:
                 print e
@@ -29,7 +29,7 @@ def save_statmap_form(image_path,collection,ignore_file_warning=False,image_name
             image_name = image_path[0]
         else:
             image_name = image_path
-    
+
     post_dict = {
         'name': image_name,
         'cognitive_paradigm_cogatlas': 'trm_4f24126c22011',
@@ -68,7 +68,7 @@ def save_atlas_form(nii_path,xml_path,collection,ignore_file_warning=False,name=
 
 
 def save_nidm_form(zip_file,collection,name=None):
-    
+
     if name == None:
         name = "fsl_nidm"
     zip_file_obj = open(zip_file, 'rb')

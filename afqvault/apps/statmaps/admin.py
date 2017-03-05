@@ -1,7 +1,7 @@
 from django.contrib import admin
-from neurovault.apps.statmaps.models import Collection, Image, StatisticMap, Atlas, \
+from afqvault.apps.statmaps.models import Collection, Image, StatisticMap, Atlas, \
     NIDMResults, NIDMResultStatisticMap, Comparison, Similarity
-from neurovault.apps.statmaps.forms import StatisticMapForm, AtlasForm, \
+from afqvault.apps.statmaps.forms import StatisticMapForm, AtlasForm, \
     NIDMResultStatisticMapForm, NIDMResultsForm
 from polymorphic.admin import PolymorphicParentModelAdmin, PolymorphicChildModelAdmin
 

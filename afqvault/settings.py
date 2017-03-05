@@ -1,4 +1,4 @@
-# Django settings for neurovault project.
+# Django settings for afqvault project.
 import os
 import sys
 import tempfile
@@ -13,7 +13,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 DEBUG = True
 
-DOMAIN_NAME = "http://neurovault.org"
+DOMAIN_NAME = "http://afqvault.org"
 
 TEMPLATE_DEBUG = DEBUG
 
@@ -97,17 +97,17 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'neurovault.apps.statmaps.middleware.CollectionRedirectMiddleware',
+    'afqvault.apps.statmaps.middleware.CollectionRedirectMiddleware',
     # Uncomment the next line for simple clickjacking protection:
     # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
 
-ROOT_URLCONF = 'neurovault.urls'
+ROOT_URLCONF = 'afqvault.urls'
 
 TEST_RUNNER = 'django.test.runner.DiscoverRunner'
 
 # Python dotted path to the WSGI application used by Django's runserver.
-WSGI_APPLICATION = 'neurovault.wsgi.application'
+WSGI_APPLICATION = 'afqvault.wsgi.application'
 
 
 TEMPLATES = [
@@ -137,9 +137,9 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'neurovault.apps.main',
-    'neurovault.apps.statmaps',
-    'neurovault.apps.users',
+    'afqvault.apps.main',
+    'afqvault.apps.statmaps',
+    'afqvault.apps.users',
     'django.contrib.sitemaps',
     # Uncomment the next line to enable the admin:
     'django.contrib.admin',
@@ -227,7 +227,7 @@ REST_FRAMEWORK = {
     # LimitOffsetPagination will allow to set a ?limit= and ?offset=
     # variable in the URL.
     'DEFAULT_PAGINATION_CLASS':
-        'neurovault.api.pagination.StandardResultPagination',
+        'afqvault.api.pagination.StandardResultPagination',
 
     # Use Django's standard `django.contrib.auth` permissions,
     # or allow read-only access for unauthenticated users.
@@ -239,7 +239,7 @@ REST_FRAMEWORK = {
         'oauth2_provider.ext.rest_framework.OAuth2Authentication',
     ),
     'DEFAULT_RENDERER_CLASSES': (
-        'neurovault.api.utils.ExplicitUnicodeJSONRenderer',
+        'afqvault.api.utils.ExplicitUnicodeJSONRenderer',
         'rest_framework.renderers.BrowsableAPIRenderer',
     ),
     'UNICODE_JSON': True,
@@ -257,7 +257,7 @@ CRISPY_TEMPLATE_PACK = 'bootstrap3'
 
 DBBACKUP_STORAGE = 'dbbackup.storage.dropbox_storage'
 DBBACKUP_TOKENS_FILEPATH = '/home/filo/dbtokens'
-DBBACKUP_POSTGRES_BACKUP_COMMAND = 'export PGPASSWORD=neurovault\n pg_dump --username={adminuser} --host={host} --port={port} {databasename} >'
+DBBACKUP_POSTGRES_BACKUP_COMMAND = 'export PGPASSWORD=afqvault\n pg_dump --username={adminuser} --host={host} --port={port} {databasename} >'
 
 # For Apache, use 'sendfile.backends.xsendfile'
 # For Nginx, use 'sendfile.backends.nginx'
@@ -281,8 +281,8 @@ CACHES = {
 # Mandrill config
 EMAIL_BACKEND = 'django_mailgun.MailgunBackend'
 MAILGUN_ACCESS_KEY = 'key-3ax6xnjp29jd6fds4gc373sgvjxteol0' # replace with a real key in production
-MAILGUN_SERVER_NAME = 'samples.mailgun.org'# replace with 'neurovault.org' in production
-DEFAULT_FROM_EMAIL = "noreply@neurovault.org"
+MAILGUN_SERVER_NAME = 'samples.mailgun.org'# replace with 'afqvault.org' in production
+DEFAULT_FROM_EMAIL = "noreply@afqvault.org"
 
 if os.path.exists('/usr/local/share/pycortex/db/fsaverage'):
     STATICFILES_DIRS = (
@@ -300,7 +300,7 @@ CELERY_DEFAULT_QUEUE = 'default'
 CELERY_QUEUES = (
     Queue('default', Exchange('default'), routing_key='default'),
 )
-CELERY_IMPORTS = ('neurovault.apps.statmaps.tasks', )
+CELERY_IMPORTS = ('afqvault.apps.statmaps.tasks', )
 
 CELERYBEAT_SCHEDULE = {
     'anima_crawl_every day': {
@@ -341,7 +341,7 @@ os.environ["PATH"] += os.pathsep + '/path/to/lib/provToolbox/bin'
 
 #CELERYBEAT_SCHEDULE = {
 #    'run_make_correlation_df': {
-#        'task': 'neurovault.apps.statmaps.tasks...',
+#        'task': 'afqvault.apps.statmaps.tasks...',
 #        'schedule': timedelta(minutes=30),
 #    },
 #}
@@ -349,7 +349,7 @@ os.environ["PATH"] += os.pathsep + '/path/to/lib/provToolbox/bin'
 #CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
 
 if "test" in sys.argv or "benchmark" in sys.argv:
-    test_media_root = os.path.join(tempfile.mkdtemp(prefix="neurovault_test_"))
+    test_media_root = os.path.join(tempfile.mkdtemp(prefix="afqvault_test_"))
     PRIVATE_MEDIA_ROOT = test_media_root
     CELERY_ALWAYS_EAGER = True
     CELERY_EAGER_PROPAGATES_EXCEPTIONS = True

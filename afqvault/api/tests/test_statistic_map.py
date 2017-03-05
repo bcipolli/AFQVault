@@ -2,10 +2,10 @@ import uuid
 
 from rest_framework import status
 
-from neurovault.apps.statmaps.models import StatisticMap
-from neurovault.apps.statmaps.tests.utils import save_statmap_form
+from afqvault.apps.statmaps.models import StatisticMap
+from afqvault.apps.statmaps.tests.utils import save_statmap_form
 
-from neurovault.api.tests.base import BaseTestCases
+from afqvault.api.tests.base import BaseTestCases
 
 
 class TestStatisticMapChange(BaseTestCases.TestCollectionItemChange):

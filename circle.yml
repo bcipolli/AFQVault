@@ -12,9 +12,9 @@ dependencies:
     - pip install docker-compose
     - if [[ -e ~/docker/image.tar ]]; then docker load -i ~/docker/image.tar; fi
     - ./scripts/git-set-file-times
-    - docker build -t neurovault/neurovault .
+    - docker build -t afqvault/afqvault .
     - docker pull nginx && docker pull postgres && docker pull redis && docker pull cogniteev/echo
-    - mkdir -p ~/docker; docker save "neurovault/neurovault" > ~/docker/image.tar
+    - mkdir -p ~/docker; docker save "afqvault/afqvault" > ~/docker/image.tar
 
 test:
   override:

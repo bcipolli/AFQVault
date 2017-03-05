@@ -3,7 +3,7 @@ Created on 1 Sep 2014
 
 @author: gorgolewski
 '''
-from neurovault.apps.statmaps.models import Image
+from afqvault.apps.statmaps.models import Image
 import os
 
 import os, errno
@@ -28,7 +28,7 @@ for image in Image.objects.all():
         print image.file.path
         new_path = image.file.path[:-offset] + ".nii.gz"
         print new_path
-        
+
         os.rename(image.file.path, new_path)
         image.file.name = new_name
         image.save()

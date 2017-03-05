@@ -36,7 +36,7 @@ print '-' * 80
 print 'Collection Model'
 print '-' * 80
 
-with open('metadata_neurovault.csv', 'rb') as csvfile:
+with open('metadata_afqvault.csv', 'rb') as csvfile:
     reader = csv.reader(csvfile, delimiter=',')
     header = reader.next()
     for row in reader:
@@ -82,7 +82,7 @@ with open('metadata_neurovault.csv', 'rb') as csvfile:
         field['options'] = ', '.join(['%s=%s' % (k, v) for k, v in field_options.items()])
         print '    %s' % template % field
 
-print 
+print
 print '-' * 80
 print 'Collection Form'
 print '-' * 80
@@ -98,7 +98,7 @@ print template % ', '.join(["'%s'" % f for f in order])
 # print fields_order
 
 
-# print 
+# print
 # print '-' * 80
 # print 'Priorities'
 # print '-' * 80

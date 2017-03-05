@@ -7,7 +7,7 @@ from django.core.files.move import file_move_safe
 from django.core.files.storage import FileSystemStorage
 from fnmatch import fnmatch
 
-from neurovault import settings
+from afqvault import settings
 
 
 class NeuroVaultStorage(FileSystemStorage):

@@ -15,13 +15,13 @@
         			"columnDefs": [
 									{
 										"render": function ( data, type, row ) {
-										return "<a href='http://www.neurovault.org/images/" + row[1] +"'>" + data + "</a>";
+										return "<a href='http://www.afqvault.org/images/" + row[1] +"'>" + data + "</a>";
 										},
 										"targets":[ 2 ]
 									},
 									{
 										"render": function ( data, type, row ) {
-										return "<a href='http://www.neurovault.org/images/compare/" + {{ image.pk }} + "/" + row[1] +"' class='btn btn-info' role='button' >" + {{ image.pk }} + " vs " + row[1] + "</a>";
+										return "<a href='http://www.afqvault.org/images/compare/" + {{ image.pk }} + "/" + row[1] +"' class='btn btn-info' role='button' >" + {{ image.pk }} + " vs " + row[1] + "</a>";
 										},
 										"targets":[ 5 ]
 									},

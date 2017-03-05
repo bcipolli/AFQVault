@@ -27,10 +27,10 @@ body {margin:0;padding:0;background:none transparent;}
      params[filename] = {"parametric": true,  "lut":"OrRd", "negative_lut":"PuBu", "alpha":"0.75"};
 
      $(document).ready(function() {
-        $('#NeuroVaultPapayaHolder').addClass('well');
-        $('#NeuroVaultPapayaHolder').prepend($('<div style="margin: 8px;"><h4>NeuroVault Image: <a target="_top" href="http://{{ request.get_host }}{% url 'image_details' image.pk %}">{{image.name|truncatechars:35}}</a></h4></div>'));
-        $('#NeuroVaultPapayaHolder').css("width","470px").css("height","auto").css("padding","5px");
-        $('#NeuroVaultPapayaHolder').append($('<div style="height: 90px; overflow: auto; margin: 7px;"><p><b>Description:</b> {{image.description}}</p></div>'));
+        $('#AFQVaultPapayaHolder').addClass('well');
+        $('#AFQVaultPapayaHolder').prepend($('<div style="margin: 8px;"><h4>AFQVault Image: <a target="_top" href="http://{{ request.get_host }}{% url 'image_details' image.pk %}">{{image.name|truncatechars:35}}</a></h4></div>'));
+        $('#AFQVaultPapayaHolder').css("width","470px").css("height","auto").css("padding","5px");
+        $('#AFQVaultPapayaHolder').append($('<div style="height: 90px; overflow: auto; margin: 7px;"><p><b>Description:</b> {{image.description}}</p></div>'));
     });
 
 </script>
@@ -42,7 +42,7 @@ body {margin:0;padding:0;background:none transparent;}
 
 {% block body %}
 <body style="background-color:transparent">
-#NeuroVaultPapayaHolder{style: "width:470px; height: auto;"}
+#AFQVaultPapayaHolder{style: "width:470px; height: auto;"}
   .papaya{"data-params" => "params"}
 </body>
 {% endblock %}

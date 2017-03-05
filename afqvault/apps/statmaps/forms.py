@@ -328,7 +328,7 @@ class CollectionForm(ModelForm):
 
 class OwnerCollectionForm(CollectionForm):
     contributors = ContributorCommaField(
-        queryset=None, required=False, help_text="Select other NeuroVault users to add as contributes to the collection.  Contributors can add, edit and delete images in the collection.")
+        queryset=None, required=False, help_text="Select other AFQVault users to add as contributes to the collection.  Contributors can add, edit and delete images in the collection.")
 
     class Meta():
         exclude = ('owner', 'private_token')

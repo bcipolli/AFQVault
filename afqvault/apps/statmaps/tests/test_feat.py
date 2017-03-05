@@ -18,7 +18,7 @@ class FeatDirectoryTest(TestCase):
 
     def setUp(self):
         testpath = os.path.join(os.path.abspath(os.path.dirname(__file__)),'test_data','feat')
-        testdata_repo = 'https://github.com/NeuroVault/afqvault_data/blob/master/FEAT_testdata/'
+        testdata_repo = 'https://github.com/AFQVault/afqvault_data/blob/master/FEAT_testdata/'
 
         self.testfiles = {
             'ds105.feat.zip': {

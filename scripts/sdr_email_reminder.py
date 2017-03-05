@@ -6,10 +6,10 @@ from afqvault.apps.statmaps.models import Collection
 
 template = """<p>Dear {username},<br \>
 <br \>
-Twice a year data from NeuroVault are deposited in Stanford Digital
+Twice a year data from AFQVault are deposited in Stanford Digital
 Repository (SDR). The mission of SDR is to preserve important scientific dataset for decades. They increase chances of
 long-term data accessibility by mirroring datasets at multiple data centers distributed across the globe. In two weeks
-we will be depositing a snapshot of NeuroVault data in SDR. Only public collections with a DOI of a corresponding paper
+we will be depositing a snapshot of AFQVault data in SDR. Only public collections with a DOI of a corresponding paper
 will be included in the deposition. It seems that you currently have {collection_noun} that {collection_verb} either
 private or {collection_pronoun} not have a DOI of a corresponding paper:</p>
 <ul>
@@ -17,11 +17,11 @@ private or {collection_pronoun} not have a DOI of a corresponding paper:</p>
 </ul>
 <p>If it was work in progress and since you uploaded the maps a corresponding paper was published please log in and edit
 the collection metadata providing the DOI. It is also a great opportunity to upload maps, atlases, and parcellations
-from your other papers. Depositing data in NeuroVault increases the exposure of your research and makes it easier for
+from your other papers. Depositing data in AFQVault increases the exposure of your research and makes it easier for
 other researchers to build upon thus increasing your citation rates.</p>
 
 <p>Best regards,<br />
-The NeuroVault Team</p>"""
+The AFQVault Team</p>"""
 
 counter = 0
 for user in User.objects.all():
@@ -31,7 +31,7 @@ for user in User.objects.all():
         if user.first_name:
             email = template.replace("{username}", user.first_name.capitalize())
         else:
-            email = template.replace("{username}", "NeuroVault User")
+            email = template.replace("{username}", "AFQVault User")
 
         if len(collections) == 1:
             email = email.replace("{collection_noun}", "a collection")
@@ -45,7 +45,7 @@ for user in User.objects.all():
         collections_text = "\n".join(["<li><a href='http://afqvault.org%s'>%s</a></li>" % (col.get_absolute_url(), col.name)
                                       for col in collections])
         email = email.replace("{collections}", collections_text)
-        send_mail("Time to update your NeuroVault maps", email, "team@afqvault.org",
+        send_mail("Time to update your AFQVault maps", email, "team@afqvault.org",
                   [user.email], html_message=email, fail_silently=True)
         counter += 1
 print "Sent %d emails" % counter

@@ -3,7 +3,7 @@
 ### Generating new fixtures
 
 If you want to do create your data-fixture from scratch (clean Neurovault), you should comment the data loading lines in `run_uwsgi.sh`.
-Fork and clone in your local https://github.com/NeuroVault/afqvault_data/
+Fork and clone in your local https://github.com/AFQVault/afqvault_data/
 
 1. Fill Neurovault with desirabled data.
 2. Run `docker exec -ti afqvault_uwsgi_1 /bin/bash` to enter the docker instance

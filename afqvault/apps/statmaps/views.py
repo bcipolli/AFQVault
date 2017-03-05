@@ -144,7 +144,7 @@ def edit_collection(request, cid=None):
                     'collection': collection.name,
                     'url': get_server_url(request) + collection.get_absolute_url(),
                 }
-                subj = '%s has added you to a NeuroVault collection' % context['owner']
+                subj = '%s has added you to a AFQVault collection' % context['owner']
                 send_email_notification('new_contributor', subj, new_contribs, context)
 
             return HttpResponseRedirect(collection.get_absolute_url())
@@ -269,7 +269,7 @@ def view_image(request, pk, collection_cid=None):
             context['warning'] += "Please transform the map to MNI space. "
         elif image.is_thresholded:
             context['warning'] = "Warning: This map seems to be thresholded, sparse or acquired with limited field of view (%.4g%% of voxels are zeros). "%image.perc_bad_voxels
-            context['warning'] += "Some of the NeuroVault functions such as decoding might not work properly. "
+            context['warning'] += "Some of the AFQVault functions such as decoding might not work properly. "
             context['warning'] += "Please use unthresholded maps whenever possible."
 
         template = 'statmaps/statisticmap_details.html.haml'

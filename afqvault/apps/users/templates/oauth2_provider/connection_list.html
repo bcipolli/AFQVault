@@ -12,7 +12,7 @@
 
     {% if object_list %}
       <table class="table">
-          <caption>You have authorized these applications to access your NeuroVault account on your behalf.</caption>
+          <caption>You have authorized these applications to access your AFQVault account on your behalf.</caption>
           <thead>
             <tr>
               <th class="col-md-5">Name</th>
@@ -36,7 +36,7 @@
     {% else %}
     <div class="text-center settings-no-content">
       <h3>No connected applications</h3>
-      <p>You have no applications authorized to access your account on your behalf via <a href="{% url 'api-docs' %}">NeuroVault API</a>.</p>
+      <p>You have no applications authorized to access your account on your behalf via <a href="{% url 'api-docs' %}">AFQVault API</a>.</p>
     </div>
     {% endif %}
     </div>

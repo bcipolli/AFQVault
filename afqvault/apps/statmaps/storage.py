@@ -10,13 +10,13 @@ from fnmatch import fnmatch
 from afqvault import settings
 
 
-class NeuroVaultStorage(FileSystemStorage):
+class AFQVaultStorage(FileSystemStorage):
     def __init__(self, location=None, base_url=None):
         if location is None:
             location = settings.PRIVATE_MEDIA_ROOT
         if base_url is None:
             base_url = settings.PRIVATE_MEDIA_URL
-        super(NeuroVaultStorage, self).__init__(location, base_url)
+        super(AFQVaultStorage, self).__init__(location, base_url)
 
     def url(self, name):
         collection_id = None
@@ -37,7 +37,7 @@ class NeuroVaultStorage(FileSystemStorage):
         return os.path.join(self.base_url, str(cid), cont_path, file_name)
 
 
-class DoubleExtensionStorage(NeuroVaultStorage):
+class DoubleExtensionStorage(AFQVaultStorage):
     _extensions = ["nii.gz", "nidm.zip"]
 
     def get_available_name(self, name):
@@ -65,7 +65,7 @@ class DoubleExtensionStorage(NeuroVaultStorage):
         return name
 
 
-class OverwriteStorage(NeuroVaultStorage):
+class OverwriteStorage(AFQVaultStorage):
     def get_available_name(self, name):
         return name
 

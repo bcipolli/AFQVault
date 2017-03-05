@@ -224,7 +224,7 @@ def mkdir_p(path):
 
 
 def send_email_notification(notif_type, subject, users, tpl_context=None):
-    email_from = 'NeuroVault <do_not_reply@afqvault.org>'
+    email_from = 'AFQVault <do_not_reply@afqvault.org>'
     plain_tpl = os.path.join('email','%s.txt' % notif_type)
     html_tpl = os.path.join('email','%s.html' % notif_type)
 
@@ -371,7 +371,7 @@ def populate_feat_directory(request,collection,existing_dir=None):
                                     "application/zip", os.path.getsize(nidm_file), "utf-8")
 
     except:
-        raise exc("Unable to convert NIDM results for NeuroVault: \n{0}".format(get_traceback()))
+        raise exc("Unable to convert NIDM results for AFQVault: \n{0}".format(get_traceback()))
     else:
         return populate_nidm_results(request,collection)
     finally:

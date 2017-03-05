@@ -1,4 +1,4 @@
-# Setting Up Celery for NeuroVault
+# Setting Up Celery for AFQVault
 
 Celery requires a task server. They recommend rabbitmq (and I tested this for the virtual machine) however django (a database) can also be used (but it's not recommended). The other option is redis, but they don't recommend because it is "suseptible to data loss in event of power failures"  This is really just like a task database or queue. I was going to do rabbit, but Gabriel said do redis, so I will do redis. Celery is python based so we install from pip.
 
@@ -53,11 +53,11 @@ Test to see if it's working (this is like Marco Polo!)
 ### Setting up Celery
 We need to create a dedicated "celery module" and a celery_tasks script that will hold our different tasks.  The suggestion is to put it in the django top level directory, so the modules get initialized at the same time:
 
-     touch /opt/nv_env/NeuroVault/afqvault/celery.py
+     touch /opt/nv_env/AFQVault/afqvault/celery.py
 
 The celery.py has a line that will "autodiscover" tasks defined in app directories in a module script named "tasks.py" (the app.autodiscover part below)
 
-     vim /opt/nv_env/NeuroVault/afqvault/apps/statmaps/tasks.py
+     vim /opt/nv_env/AFQVault/afqvault/apps/statmaps/tasks.py
 
      from __future__ import absolute_import
 
@@ -82,7 +82,7 @@ The celery.py has a line that will "autodiscover" tasks defined in app directori
 
 The celery.py file also says to read the settings from the afqvault.settings (the app.config_from_object part above) so we need to add CELERY SETTINGS there (I added after INSTALLED_APPS):
 
-     vim /opt/nv_env/NeuroVault/afqvault/settings.py
+     vim /opt/nv_env/AFQVault/afqvault/settings.py
      # CELERY SETTINGS
      BROKER_URL = 'redis://localhost:6379/0'
      # comment out this line if you don't want to save results to backend
@@ -94,7 +94,7 @@ The celery.py file also says to read the settings from the afqvault.settings (th
 #### Writing a test task
 We can write tasks in any of our app folders in the tasks.py script. So if I add a function to make glass brains or a correlation matrix, I'd do it here (and I will need to look into how to specify when the job to run, etc).
 
-     vim /opt/nv_env/NeuroVault/afqvault/apps/tasks.py
+     vim /opt/nv_env/AFQVault/afqvault/apps/tasks.py
 
      from __future__ import absolute_import
 
@@ -108,7 +108,7 @@ We can write tasks in any of our app folders in the tasks.py script. So if I add
 #### Testing the task
 In one terminal window, I start the server:
 
-     (nv_env)vagrant@localhost:/opt/nv_env/NeuroVault$ /opt/nv_env/bin/celery --app=afqvault.celery:app worker --loglevel=INFO
+     (nv_env)vagrant@localhost:/opt/nv_env/AFQVault$ /opt/nv_env/bin/celery --app=afqvault.celery:app worker --loglevel=INFO
 
      -------------- celery@localhost v3.1.17 (Cipater)
      ---- **** -----
@@ -139,7 +139,7 @@ In one terminal window, I start the server:
 In another terminal window, I submit a job to it!
 
      source /opt/nv_env/bin/activate
-     cd /opt/nv_env/NeuroVault
+     cd /opt/nv_env/AFQVault
      python manage.py shell
      >>> from afqvault.apps.statmaps.tasks import test
      >>> result = test.delay('Vanessa')
@@ -175,14 +175,14 @@ Note: This is easy to direct to, although I didn't specify these paths when I wa
 
 Add `celery-with-redis` and `django-celery` to required packages
 
-     vim /opt/nv_env/NeuroVault/afqvault/requirements.txt
+     vim /opt/nv_env/AFQVault/afqvault/requirements.txt
      celery-with-redis
      django-celery
 
      pip install requirements.txt
 
      # Add to the top of settings.py
-     vim /opt/nv_env/NeuroVault/afqvault/settings.py
+     vim /opt/nv_env/AVQVault/afqvault/settings.py
      import djcelery
      djcelery.setup_loader()
      ...
@@ -196,18 +196,18 @@ Add `celery-with-redis` and `django-celery` to required packages
 
 #### Sync the database
 Did I do this right?
-     python /opt/nv_env/NeuroVault/manage.py syncdb
+     python /opt/nv_env/AFQVault/manage.py syncdb
 
 
 #### Starting the server!
 
-     python /opt/nv_env/NeuroVault/manage.py celeryd -l INFO
+     python /opt/nv_env/AFQVault/manage.py celeryd -l INFO
 
 (and the --pidfile and --logfile can be set, I was getting permissions errors for the ones in /var/run/celery* and I'm terrible with permissions so I just let it be the present working directory!)
 
 Now I want to try running my task again:
 
-     cd /opt/nv_env/NeuroVault
+     cd /opt/nv_env/AFQVault
      python manage.py shell
      from afqvault.apps.statmaps.tasks import test
      result = test.delay('vanessa')

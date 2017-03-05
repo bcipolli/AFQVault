@@ -54,7 +54,7 @@ class TestCollection(APITestCase):
         self.assertEqual(response.data['DOI'], post_dict['DOI'])
 
         doi_properties = {
-            'name': 'NeuroVault.org: a web-based repository for collecting '
+            'name': 'AFQVault.org: a web-based repository for collecting '
                     'and sharing unthresholded statistical maps '
                     'of the human brain',
             'authors': 'Krzysztof J. Gorgolewski, Gael Varoquaux, '
@@ -93,7 +93,7 @@ class TestCollection(APITestCase):
 
         post_dict = {
             'DOI': '10.3389/fninf.2015.00008',
-            'name': 'NeuroVault'
+            'name': 'AFQVault'
         }
 
         response = self.client.post('/api/collections/', post_dict)

@@ -35,9 +35,9 @@ class Collection(models.Model):
     description = models.TextField(blank=True, null=True)
     full_dataset_url = models.URLField(max_length=200, blank=True, null=True, verbose_name="Full dataset URL", help_text="Link to an external dataset the maps in this collection have been generated from (for example: \"https://openfmri.org/dataset/ds000001\" or \"http://dx.doi.org/10.15387/fcp_indi.corr.mpg1\")")
     owner = models.ForeignKey(User)
-    contributors = models.ManyToManyField(User,related_name="collection_contributors",related_query_name="contributor", blank=True,help_text="Select other NeuroVault users to add as contributes to the collection.  Contributors can add, edit and delete images in the collection.",verbose_name="Contributors")
+    contributors = models.ManyToManyField(User,related_name="collection_contributors",related_query_name="contributor", blank=True,help_text="Select other AFQVault users to add as contributes to the collection.  Contributors can add, edit and delete images in the collection.",verbose_name="Contributors")
     private = models.BooleanField(choices=((False, 'Public (The collection will be accessible by anyone and all the data in it will be distributed under CC0 license)'),
-                                           (True, 'Private (The collection will be not listed in the NeuroVault index. It will be possible to shared it with others at a private URL.)')), default=False,verbose_name="Accessibility")
+                                           (True, 'Private (The collection will be not listed in the AFQVault index. It will be possible to shared it with others at a private URL.)')), default=False,verbose_name="Accessibility")
     private_token = models.CharField(max_length=8,blank=True,null=True,unique=True,db_index=True, default=None)
     add_date = models.DateTimeField('date published', auto_now_add=True)
     modify_date = models.DateTimeField('date modified', auto_now=True)
@@ -501,7 +501,7 @@ class BaseStatisticMap(Image):
             if self.reduced_representation: # not applicable for private collections
                 self.reduced_representation.delete()
 
-                # If more than one metric is added to NeuroVault, this must also filter based on metric
+                # If more than one metric is added to AFQVault, this must also filter based on metric
                 comparisons = Comparison.objects.filter(Q(image1=self) | Q(image2=self))
                 if comparisons:
                     comparisons.delete()

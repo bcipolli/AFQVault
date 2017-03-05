@@ -20,7 +20,7 @@ def make_node(nid,name,color,url=None):
 
 
 def get_task_graph(task_id, images=None):
-    """get_task_graph will return a tree for a single cognitive atlas tasks defined in NeuroVault
+    """get_task_graph will return a tree for a single cognitive atlas tasks defined in AFQVault
     :param task_id: the Cognitive Atlas task id
     :param get_images_with_contrasts: boolean to return images that have contrasts (default False)
     """
@@ -35,7 +35,7 @@ def get_task_graph(task_id, images=None):
         try:
             contrast_concepts = get_concept(contrast_id=contrast.cog_atlas_id)
         except ValueError:
-            # TODO: disparity between NeuroVault and Cognitive Atlas!
+            # TODO: disparity between AFQVault and Cognitive Atlas!
             continue
 
         children = []  # concept children of a contrast

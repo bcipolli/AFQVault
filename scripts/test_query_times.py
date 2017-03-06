@@ -92,7 +92,7 @@ if os.path.exists("%s/time_log.pkl" % (scripts_directory)):
     # Print change in tests that existed last time
     print "Last test was saved on %s, with %s images" % (last_entry["date"], last_entry["number_images"])
     for test in tests_in_common:
-        if last_entry[test] != None:
+        if last_entry[test] is not None:
             print "%s: change is %s" % (test, time_log[test] - last_entry[test])
 
     # Add new tests to the table (not yet tested)

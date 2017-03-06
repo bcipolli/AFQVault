@@ -40,7 +40,8 @@ class AddStatmapsTests(TestCase):
 
         form.save()
 
-        self.assertEqual(AFQMap.objects.filter(collection=self.coll.pk)[0].name, "test map")
+        self.assertEqual(AFQMap.objects.filter(
+            collection=self.coll.pk)[0].name, "test map")
 
     def testaddImgHdr(self):
 
@@ -52,8 +53,10 @@ class AddStatmapsTests(TestCase):
             'collection': self.coll.pk,
         }
         testpath = os.path.abspath(os.path.dirname(__file__))
-        fname_img = os.path.join(testpath, 'test_data/afqmaps/box_0b_vs_1b.img')
-        fname_hdr = os.path.join(testpath, 'test_data/afqmaps/box_0b_vs_1b.hdr')
+        fname_img = os.path.join(
+            testpath, 'test_data/afqmaps/box_0b_vs_1b.img')
+        fname_hdr = os.path.join(
+            testpath, 'test_data/afqmaps/box_0b_vs_1b.hdr')
         file_dict = {'file': SimpleUploadedFile(fname_img, open(fname_img).read()),
                      'hdr_file': SimpleUploadedFile(fname_hdr, open(fname_hdr).read())}
         form = AFQMapForm(post_dict, file_dict)
@@ -69,8 +72,10 @@ class AddStatmapsTests(TestCase):
             'ignore_file_warning': True
         }
         testpath = os.path.abspath(os.path.dirname(__file__))
-        fname_img = os.path.join(testpath, 'test_data/afqmaps/box_0b_vs_1b.img')
-        fname_hdr = os.path.join(testpath, 'test_data/afqmaps/box_0b_vs_1b.hdr')
+        fname_img = os.path.join(
+            testpath, 'test_data/afqmaps/box_0b_vs_1b.img')
+        fname_hdr = os.path.join(
+            testpath, 'test_data/afqmaps/box_0b_vs_1b.hdr')
         file_dict = {'file': SimpleUploadedFile(fname_img, open(fname_img).read()),
                      'hdr_file': SimpleUploadedFile(fname_hdr, open(fname_hdr).read())}
         form = AFQMapForm(post_dict, file_dict)
@@ -78,7 +83,8 @@ class AddStatmapsTests(TestCase):
 
         form.save()
 
-        self.assertEqual(AFQMap.objects.filter(collection=self.coll.pk)[0].name, "test map")
+        self.assertEqual(AFQMap.objects.filter(
+            collection=self.coll.pk)[0].name, "test map")
 
     def test_add_image_non_owner(self):
         non_owner = User.objects.create_user('non_owner', password="pass")
@@ -86,8 +92,10 @@ class AddStatmapsTests(TestCase):
         client = Client()
         client.login(username=non_owner, password="pass")
         testpath = os.path.abspath(os.path.dirname(__file__))
-        fname_img = os.path.join(testpath, 'test_data/afqmaps/box_0b_vs_1b.img')
-        fname_hdr = os.path.join(testpath, 'test_data/afqmaps/box_0b_vs_1b.hdr')
+        fname_img = os.path.join(
+            testpath, 'test_data/afqmaps/box_0b_vs_1b.img')
+        fname_hdr = os.path.join(
+            testpath, 'test_data/afqmaps/box_0b_vs_1b.hdr')
         post_dict = {
             'name': "test map",
             'cognitive_paradigm_cogatlas': 'trm_4f24126c22011',
@@ -99,13 +107,16 @@ class AddStatmapsTests(TestCase):
             'hdr_file': SimpleUploadedFile(fname_hdr, open(fname_hdr).read())
         }
         cid = self.coll.pk
-        response = client.post(reverse('add_image', kwargs={'collection_cid': cid}), post_dict)
+        response = client.post(
+            reverse('add_image', kwargs={'collection_cid': cid}), post_dict)
         self.assertEqual(response.status_code, 403)
 
     def test_add_image_owner(self):
         testpath = os.path.abspath(os.path.dirname(__file__))
-        fname_img = os.path.join(testpath, 'test_data/afqmaps/box_0b_vs_1b.img')
-        fname_hdr = os.path.join(testpath, 'test_data/afqmaps/box_0b_vs_1b.hdr')
+        fname_img = os.path.join(
+            testpath, 'test_data/afqmaps/box_0b_vs_1b.img')
+        fname_hdr = os.path.join(
+            testpath, 'test_data/afqmaps/box_0b_vs_1b.hdr')
         post_dict = {
             'name': "test map",
             'cognitive_paradigm_cogatlas': 'trm_4f24126c22011',
@@ -117,7 +128,9 @@ class AddStatmapsTests(TestCase):
             'hdr_file': SimpleUploadedFile(fname_hdr, open(fname_hdr).read())
         }
         cid = self.coll.pk
-        response = self.client.post(reverse('add_image', kwargs={'collection_cid': cid}), post_dict)
+        response = self.client.post(
+            reverse('add_image', kwargs={'collection_cid': cid}), post_dict)
         self.assertEqual(response.status_code, 302)
         image_pk = AFQMap.objects.order_by('-pk')[0].pk
-        self.assertRedirects(response, reverse('image_details', kwargs={'pk': image_pk}))
+        self.assertRedirects(response, reverse(
+            'image_details', kwargs={'pk': image_pk}))

@@ -2,23 +2,13 @@ from __future__ import absolute_import
 
 import nilearn
 from django.core.files.base import ContentFile
-from django.http import Http404
 from django.shortcuts import get_object_or_404
-from pybraincompare.compare.maths import calculate_correlation
-from pybraincompare.compare.maths import calculate_pairwise_correlation
-from pybraincompare.compare.mrutils import make_binary_deletion_mask
-from pybraincompare.compare.mrutils import make_binary_deletion_vector
-from pybraincompare.compare.mrutils import resample_images_ref
-from pybraincompare.mr.datasets import get_data_directory
-from pybraincompare.mr.transformation import make_resampled_transformation_vector
 
 nilearn.EXPAND_PATH_WILDCARDS = False
 from nilearn.plotting import plot_glass_brain
 from celery import shared_task, Celery
 from six import BytesIO
-import nibabel as nb
 import pylab as plt
-import numpy
 import urllib
 import json
 import tarfile
@@ -64,12 +54,16 @@ def crawl_anima():
         content = response.content.replace("PubMed ID", "PubMedID")
         xml_obj = e.fromstring(content)
 
-        version = xml_obj.find(".").find(".//Element[@name='Version']").text.strip()
-        study_description = xml_obj.find(".//Element[@name='Description']").text.strip()
-        study_description += " This dataset was automatically imported from the ANIMA <http://anima.fz-juelich.de/> database. Version: %s" % version
+        version = xml_obj.find(".").find(
+            ".//Element[@name='Version']").text.strip()
+        study_description = xml_obj.find(
+            ".//Element[@name='Description']").text.strip()
+        study_description += (" This dataset was automatically imported from the ANIMA"
+                              " <http://anima.fz-juelich.de/> database. Version: %s" % version)
         study_name = xml_obj.find(".").attrib['name']
 
-        tags = xml_obj.find(".//Element[@name='Keywords']").text.strip().split(";")
+        tags = xml_obj.find(
+            ".//Element[@name='Keywords']").text.strip().split(";")
         tags.append("ANIMA")
         doi = xml_obj.find(".//Element[@name='DOI']")
         pubmedid = xml_obj.find(".//Element[@name='PubMedID']")
@@ -79,9 +73,9 @@ def crawl_anima():
             'description': study_description,
             'full_dataset_url': "http://anima.fz-juelich.de/studies/" + os.path.split(url)[1].replace(".study", "")
         }
-        if doi != None:
+        if doi is not None:
             post_dict['DOI'] = doi.text.strip()
-        elif pubmedid != None:
+        elif pubmedid is not None:
             pubmedid = pubmedid.text.strip()
             url = "http://www.ncbi.nlm.nih.gov/pmc/utils/idconv/v1.0/?ids=%s&format=json" % pubmedid
             response = urllib.urlopen(url)
@@ -95,7 +89,8 @@ def crawl_anima():
 
         if col and not col.description.endswith(version):
             col.DOI = None
-            old_version = re.search(r"Version: (?P<version>\w)", col.description).group("version")
+            old_version = re.search(
+                r"Version: (?P<version>\w)", col.description).group("version")
             col.name = study_name + " (version %s - deprecated)" % old_version
             col.save()
 
@@ -105,8 +100,10 @@ def crawl_anima():
             form.is_valid()
             collection = form.save()
 
-            arch_response = requests.get(url.replace("library", "library/archives").replace(".study", ".tar.gz"))
-            arch_results = tarfile.open(mode="r:gz", fileobj=StringIO(arch_response.content))
+            arch_response = requests.get(url.replace(
+                "library", "library/archives").replace(".study", ".tar.gz"))
+            arch_results = tarfile.open(
+                mode="r:gz", fileobj=StringIO(arch_response.content))
 
             for study_element in xml_obj.findall(".//StudyElement[@type='VolumeFile']"):
                 image_name = study_element.attrib['name'].strip()
@@ -127,8 +124,9 @@ def crawl_anima():
                                  "Z-statistic": models.BaseAFQMap.Z,
                                  "Beta": models.BaseAFQMap.U}
 
-                quantity = study_element.find("./Metadata/Element[@name='Quantity']")
-                if quantity != None:
+                quantity = study_element.find(
+                    "./Metadata/Element[@name='Quantity']")
+                if quantity is not None:
                     quantity = quantity.text.strip()
                     if quantity in quantity_dict.keys():
                         map_type = quantity_dict[quantity]
@@ -143,17 +141,19 @@ def crawl_anima():
                     'tags': ", ".join(tags)
                 }
 
-                image_description = study_element.find("./Metadata/Element[@name='Caption']").text
+                image_description = study_element.find(
+                    "./Metadata/Element[@name='Caption']").text
                 if image_description:
                     post_dict["description"] = image_description.strip()
 
-                file_dict = {'file': SimpleUploadedFile(image_filename, image_fileobject.read())}
+                file_dict = {'file': SimpleUploadedFile(
+                    image_filename, image_fileobject.read())}
                 form = AFQMapForm(post_dict, file_dict)
                 form.is_valid()
                 form.save()
 
 
-# THUMBNAIL IMAGE GENERATION ###########################################################################
+# THUMBNAIL IMAGE GENERATION #############################################
 
 @shared_task
 def generate_glassbrain_image(image_pk):
@@ -181,7 +181,7 @@ def generate_glassbrain_image(image_pk):
         img.thumbnail.save("glass_brain_%s.jpg" % img.pk, content_file)
         img.save()
 
-# HELPER FUNCTIONS ####################################################################################
+# HELPER FUNCTIONS #######################################################
 
 
 """Return list of Images sorted by the primary key"""

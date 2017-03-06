@@ -11,7 +11,6 @@ from django.db import models
 from django.db.models import Q
 from django.db.models.fields.files import FieldFile
 from django.db.models.signals import m2m_changed
-from django.db.models.signals import post_delete
 from django.db.models.signals import post_save
 from django.dispatch.dispatcher import receiver
 from django_hstore import hstore
@@ -25,12 +24,14 @@ from afqvault.settings import PRIVATE_MEDIA_ROOT
 
 
 class Collection(models.Model):
-    name = models.CharField(max_length=200, unique=True, null=False, verbose_name="Name of collection")
+    name = models.CharField(max_length=200, unique=True,
+                            null=False, verbose_name="Name of collection")
     DOI = models.CharField(max_length=200, unique=True, blank=True, null=True, default=None,
                            verbose_name="DOI of the corresponding paper (required if you want your maps to be archived in Stanford Digital Repository)")
     authors = models.CharField(max_length=5000, blank=True, null=True)
     paper_url = models.CharField(max_length=200, blank=True, null=True)
-    journal_name = models.CharField(max_length=200, blank=True, null=True, default=None)
+    journal_name = models.CharField(
+        max_length=200, blank=True, null=True, default=None)
     description = models.TextField(blank=True, null=True)
     full_dataset_url = models.URLField(max_length=200, blank=True, null=True, verbose_name="Full dataset URL",
                                        help_text="Link to an external dataset the maps in this collection have been generated from (for example: \"https://openfmri.org/dataset/ds000001\" or \"http://dx.doi.org/10.15387/fcp_indi.corr.mpg1\")")
@@ -39,10 +40,12 @@ class Collection(models.Model):
                                           help_text="Select other AFQVault users to add as contributes to the collection.  Contributors can add, edit and delete images in the collection.", verbose_name="Contributors")
     private = models.BooleanField(choices=((False, 'Public (The collection will be accessible by anyone and all the data in it will be distributed under CC0 license)'),
                                            (True, 'Private (The collection will be not listed in the AFQVault index. It will be possible to shared it with others at a private URL.)')), default=False, verbose_name="Accessibility")
-    private_token = models.CharField(max_length=8, blank=True, null=True, unique=True, db_index=True, default=None)
+    private_token = models.CharField(
+        max_length=8, blank=True, null=True, unique=True, db_index=True, default=None)
     add_date = models.DateTimeField('date published', auto_now_add=True)
     modify_date = models.DateTimeField('date modified', auto_now=True)
-    doi_add_date = models.DateTimeField('date the DOI was added', editable=False, blank=True, null=True, db_index=True)
+    doi_add_date = models.DateTimeField(
+        'date the DOI was added', editable=False, blank=True, null=True, db_index=True)
     type_of_design = models.CharField(choices=[('blocked', 'blocked'), ('eventrelated', 'event_related'), ('hybridblockevent', 'hybrid block/event'), (
         'other', 'other')], max_length=200, blank=True, help_text="Blocked, event-related, hybrid, or other", null=True, verbose_name="Type of design")
     number_of_imaging_runs = models.IntegerField(
@@ -103,7 +106,8 @@ class Collection(models.Model):
                                         null=True, verbose_name="Repetition time", blank=True)
     echo_time = models.FloatField(help_text="Echo time (TE) in milliseconds",
                                   null=True, verbose_name="Echo time", blank=True)
-    flip_angle = models.FloatField(help_text="Flip angle in degrees", null=True, verbose_name="Flip angle", blank=True)
+    flip_angle = models.FloatField(
+        help_text="Flip angle in degrees", null=True, verbose_name="Flip angle", blank=True)
     software_package = models.CharField(help_text="If a single software package was used for all analyses, specify that here",
                                         verbose_name="Software package", max_length=200, null=True, blank=True)
     software_version = models.CharField(help_text="Version of software package used",
@@ -268,8 +272,10 @@ def collection_created(sender, instance, created, **kwargs):
 
 def contributors_changed(sender, instance, action, **kwargs):
     if action in ["post_remove", "post_add", "post_clear"]:
-        current_contributors = set([user.pk for user in get_users_with_perms(instance)])
-        new_contributors = set([user.pk for user in [instance.owner, ] + list(instance.contributors.all())])
+        current_contributors = set(
+            [user.pk for user in get_users_with_perms(instance)])
+        new_contributors = set(
+            [user.pk for user in [instance.owner, ] + list(instance.contributors.all())])
 
         for contributor in list(new_contributors - current_contributors):
             contributor = User.objects.get(pk=contributor)
@@ -286,7 +292,8 @@ def contributors_changed(sender, instance, action, **kwargs):
                 remove_perm('delete_basecollectionitem', contributor, image)
 
 
-m2m_changed.connect(contributors_changed, sender=Collection.contributors.through)
+m2m_changed.connect(contributors_changed,
+                    sender=Collection.contributors.through)
 
 
 def upload_img_to(instance, filename):
@@ -305,7 +312,8 @@ class ValueTaggedItem(GenericTaggedItemBase):
 
 
 class BaseCollectionItem(PolymorphicModel, models.Model):
-    name = models.CharField(max_length=200, null=False, blank=False, db_index=True)
+    name = models.CharField(max_length=200, null=False,
+                            blank=False, db_index=True)
     description = models.TextField(blank=True)
     collection = models.ForeignKey(Collection)
     add_date = models.DateTimeField('date published', auto_now_add=True)
@@ -334,7 +342,8 @@ class BaseCollectionItem(PolymorphicModel, models.Model):
         return ('name', 'description', 'figure')
 
 
-# sadly signals are not emitted for base classes so we need to connect this to every class separately
+# sadly signals are not emitted for base classes so we need to connect
+# this to every class separately
 def basecollectionitem_created(sender, instance, created, **kwargs):
     if created:
         for user in [instance.collection.owner, ] + list(instance.collection.contributors.all()):
@@ -376,7 +385,8 @@ class Image(BaseCollectionItem):
         try:
             url = self.thumbnail.url
         except ValueError:
-            url = os.path.abspath(os.path.join("/static", "images", "glass_brain_empty.jpg"))
+            url = os.path.abspath(os.path.join(
+                "/static", "images", "glass_brain_empty.jpg"))
         return url
 
     @classmethod
@@ -384,12 +394,14 @@ class Image(BaseCollectionItem):
         my_collection = Collection.objects.get(pk=my_collection_pk)
 
         # Copy the nifti file into the proper location
-        image = cls(description=my_desc, name=my_name, collection=my_collection)
+        image = cls(description=my_desc, name=my_name,
+                    collection=my_collection)
         f = open(my_file)
         niftiFile = File(f)
         image.file.save(my_file_name, niftiFile)
 
-        # If a .img file was loaded then load the correspoding .hdr file as well
+        # If a .img file was loaded then load the correspoding .hdr file as
+        # well
         _, ext = os.path.splitext(my_file_name)
         print ext
         if ext in ['.img']:
@@ -426,8 +438,10 @@ class Image(BaseCollectionItem):
                 field_instance = getattr(self, field_name)
                 if field_instance and isinstance(field_instance, FieldFile):
                     old_path = field_instance.path
-                    new_name = upload_img_to(self, field_instance.name.split("/")[-1])
-                    new_name = field_instance.storage.get_available_name(new_name)
+                    new_name = upload_img_to(
+                        self, field_instance.name.split("/")[-1])
+                    new_name = field_instance.storage.get_available_name(
+                        new_name)
                     new_path = field_instance.storage.path(new_name)
                     if not os.path.exists(os.path.dirname(new_path)):
                         os.mkdir(os.path.dirname(new_path))
@@ -467,7 +481,8 @@ class BaseAFQMap(Image):
     brain_coverage = models.FloatField(null=True, blank=True)
     perc_voxels_outside = models.FloatField(null=True, blank=True)
     analysis_level = models.CharField(
-        help_text=("What level of summary data was used as the input to this analysis?"),
+        help_text=(
+            "What level of summary data was used as the input to this analysis?"),
         verbose_name="Analysis level",
         max_length=200, null=True, blank=True, choices=ANALYSIS_LEVEL_CHOICES)
     number_of_subjects = models.IntegerField(help_text="Number of subjects used to generate this map", null=True,
@@ -484,13 +499,16 @@ class BaseAFQMap(Image):
         do_update = True if file_changed else False
         new_image = True if self.pk is None else False
 
-        # If we have an update, delete old pkl and comparisons first before saving
+        # If we have an update, delete old pkl and comparisons first before
+        # saving
         if do_update and self.collection:
             if self.reduced_representation:  # not applicable for private collections
                 self.reduced_representation.delete()
 
-                # If more than one metric is added to AFQVault, this must also filter based on metric
-                comparisons = Comparison.objects.filter(Q(image1=self) | Q(image2=self))
+                # If more than one metric is added to AFQVault, this must also
+                # filter based on metric
+                comparisons = Comparison.objects.filter(
+                    Q(image1=self) | Q(image2=self))
                 if comparisons:
                     comparisons.delete()
         super(BaseAFQMap, self).save()

@@ -32,7 +32,8 @@ def getAtlasVoxels(regions, atlas_image, atlas_xml):
 
         return voxelsmm
     else:
-        raise ValueError('"{region}" not in "{atlas_xml}"'.format(region=region, atlas_xml=atlas_xml))
+        raise ValueError('"{region}" not in "{atlas_xml}"'.format(
+            region=region, atlas_xml=atlas_xml))
 
 
 def voxelToRegion(X, Y, Z, atlas_image, atlas_xml):
@@ -73,23 +74,27 @@ def getSynonyms(keyword):
 
 
 def findNodes(graph, startNode, atlasRegions, synonymsDict, direction='children'):
-    matches = [key for key in synonymsDict.keys() if graph.node[startNode]['name'] in synonymsDict[key]]
+    matches = [key for key in synonymsDict.keys() if graph.node[startNode]
+               ['name'] in synonymsDict[key]]
     if matches != []:
         return matches
     else:
         matchingRelatives = []
         if direction == 'parents':
             for child in graph.predecessors_iter(startNode):
-                matchingRelatives += findNodes(graph, child, atlasRegions, synonymsDict, direction)
+                matchingRelatives += findNodes(graph, child,
+                                               atlasRegions, synonymsDict, direction)
         else:
             for child in graph.successors_iter(startNode):
-                matchingRelatives += findNodes(graph, child, atlasRegions, synonymsDict, direction)
+                matchingRelatives += findNodes(graph, child,
+                                               atlasRegions, synonymsDict, direction)
         return matchingRelatives
 
 
 def toAtlas(region, graph, atlasRegions, synonymsDict):
     final_list = []
-    # checking if region or synonyms exist in atlas. if so, simply return region
+    # checking if region or synonyms exist in atlas. if so, simply return
+    # region
     for atlasRegion in atlasRegions:
         if region in synonymsDict[atlasRegion]:
             final_list.append(atlasRegion)
@@ -98,16 +103,19 @@ def toAtlas(region, graph, atlasRegions, synonymsDict):
 
     # checking recursively for child matches. if it finds any, return them
     try:
-        region_id = [n for n, d in graph.nodes_iter(data=True) if d['name'] == region][0]
+        region_id = [n for n, d in graph.nodes_iter(
+            data=True) if d['name'] == region][0]
     except IndexError:
         raise ValueError('"{region}" not in graph'.format(region=region))
-    matchingChildren = findNodes(graph, region_id, atlasRegions, synonymsDict, 'children')
+    matchingChildren = findNodes(
+        graph, region_id, atlasRegions, synonymsDict, 'children')
     if len(matchingChildren) > 0:
         return matchingChildren
 
     # checking recursively for parent matches. if it finds any, return them
     else:
-        matchingParents = findNodes(graph, region_id, atlasRegions, synonymsDict, 'parents')
+        matchingParents = findNodes(
+            graph, region_id, atlasRegions, synonymsDict, 'parents')
         if len(matchingParents) > 0:
             return matchingParents
 

@@ -1,9 +1,6 @@
 import os
 import shutil
-from cStringIO import StringIO
 
-import nibabel as nb
-import numpy as np
 from django.core.exceptions import ValidationError
 from django.forms import ModelForm
 from django.forms.models import (
@@ -13,30 +10,23 @@ from django.forms.models import (
 # from form_utils.forms import BetterModelForm
 
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Button
 from crispy_forms.layout import Layout
 from crispy_forms.layout import Submit
 from crispy_forms.bootstrap import TabHolder, Tab
 
-from .models import Collection, Image, User, AFQMap, BaseAFQMap, \
-    Atlas
+from .models import Collection, Image, User, AFQMap, BaseAFQMap, Atlas
 
 from django.forms.forms import Form
 from django.forms.fields import FileField
 import tempfile
 from afqvault.apps.afqmaps.utils import (
     split_filename, get_paper_properties,
-    memory_uploadfile,
-    is_thresholded,
-    splitext_nii_gz)
+    memory_uploadfile)
 from django import forms
 from django.utils.encoding import smart_str
 from django.utils.safestring import mark_safe
 from django.forms.utils import flatatt
-from django.core.files.uploadedfile import InMemoryUploadedFile
-from django.core.files.base import ContentFile
 from django.forms.widgets import HiddenInput
-from afqvault import settings
 from file_resubmit.admin import AdminResubmitFileWidget
 from guardian.shortcuts import get_objects_for_user
 
@@ -291,7 +281,8 @@ class CollectionForm(ModelForm):
             self.cleaned_data['DOI'] = self.cleaned_data['DOI'].strip()
             try:
                 self.cleaned_data["name"], self.cleaned_data["authors"], self.cleaned_data[
-                    "paper_url"], _, self.cleaned_data["journal_name"] = get_paper_properties(self.cleaned_data['DOI'].strip())
+                    "paper_url"], _, self.cleaned_data["journal_name"] = get_paper_properties(
+                        self.cleaned_data['DOI'].strip())
             except:
                 self._errors["DOI"] = self.error_class(
                     ["Could not resolve DOI"])
@@ -325,7 +316,9 @@ class CollectionForm(ModelForm):
 
 class OwnerCollectionForm(CollectionForm):
     contributors = ContributorCommaField(
-        queryset=None, required=False, help_text="Select other AFQVault users to add as contributes to the collection.  Contributors can add, edit and delete images in the collection.")
+        queryset=None, required=False,
+        help_text=("Select other AFQVault users to add as contributes to the collection.  "
+                   "Contributors can add, edit and delete images in the collection."))
 
     class Meta():
         exclude = ('owner', 'private_token')
@@ -352,7 +345,8 @@ class ImageValidationMixin(object):
             _, fname, ext = split_filename(file.name)
             if not ext.lower() in Image.allowed_extensions:
                 self._errors["file"] = self.error_class(
-                    ["Doesn't have proper extension (%s)" % ','.join(Image.allowed_extensions)]
+                    ["Doesn't have proper extension (%s)" % ','.join(
+                        Image.allowed_extensions)]
                 )
                 del cleaned_data["file"]
                 return cleaned_data
@@ -414,7 +408,8 @@ class AFQMapForm(ImageForm):
     def clean(self, **kwargs):
         cleaned_data = super(AFQMapForm, self).clean()
 
-        cleaned_data["is_valid"] = True  # This will be only saved if the form will validate
+        # This will be only saved if the form will validate
+        cleaned_data["is_valid"] = True
         cleaned_data["tags"] = clean_tags(cleaned_data)
         print cleaned_data
 
@@ -531,7 +526,8 @@ class NeuropowerAFQMapForm(EditAFQMapForm):
         self.fields['number_of_subjects'].required = True
 
     class Meta(EditAFQMapForm.Meta):
-        fields = ('name', 'collection', 'description', 'map_type', 'modality', 'map_type', 'analysis_level', 'number_of_subjects',
+        fields = ('name', 'collection', 'description', 'map_type', 'modality',
+                  'map_type', 'analysis_level', 'number_of_subjects',
                   'file', 'ignore_file_warning', 'tags', 'is_thresholded',
                   'perc_bad_voxels')
 

@@ -1,9 +1,7 @@
 from django.conf.urls import patterns, url
 from django.contrib.auth.decorators import login_required
 from django.views.generic import ListView, TemplateView
-from django.views.generic.base import RedirectView
 
-from afqvault import settings
 from afqvault.apps.afqmaps.models import KeyValueTag
 from afqvault.apps.afqmaps.views import ImagesInCollectionJson,\
     PublicCollectionsJson, MyCollectionsJson, AtlasesAndParcellationsJson
@@ -19,13 +17,15 @@ from .views import edit_collection, view_image, delete_image, edit_image, \
 
 urlpatterns = patterns('',
                        url(r'^my_collections/$',
-                           login_required(TemplateView.as_view(template_name='afqmaps/my_collections.html.haml')),
+                           login_required(TemplateView.as_view(
+                               template_name='afqmaps/my_collections.html.haml')),
                            name='my_collections'),
                        url(r'^my_collections/json$',
                            login_required(MyCollectionsJson.as_view()),
                            name='my_collections_json'),
                        url(r'^collections/$',
-                           TemplateView.as_view(template_name='afqmaps/collections_index.html.haml'),
+                           TemplateView.as_view(
+                               template_name='afqmaps/collections_index.html.haml'),
                            name='collections_list'),
                        url(r'^collections/json$',
                            PublicCollectionsJson.as_view(),

@@ -37,7 +37,7 @@ import afqvault
 from afqvault import settings
 from afqvault.apps.afqmaps.ahba import calculate_gene_expression_similarity
 from afqvault.apps.afqmaps.forms import CollectionForm, UploadFileForm, SimplifiedAFQMapForm, NeuropowerAFQMapForm,\
-    EditAFQMapForm, OwnerCollectionForm, EditAtlasForm
+    EditAFQMapForm, OwnerCollectionForm, EditAtlasForm, AddAFQMapForm
 from afqvault.apps.afqmaps.models import Collection, Image, Atlas, AFQMap, \
     BaseAFQMap
 from afqvault.apps.afqmaps.utils import split_filename, \
@@ -107,8 +107,10 @@ def edit_collection(request, cid=None):
     page_header = "Add new collection"
     if cid:
         collection = get_collection(cid, request)
-        edit_permission = request.user.has_perm('afqmaps.change_collection', collection)
-        is_owner = request.user.has_perm('afqmaps.delete_collection', collection)
+        edit_permission = request.user.has_perm(
+            'afqmaps.change_collection', collection)
+        is_owner = request.user.has_perm(
+            'afqmaps.delete_collection', collection)
         page_header = 'Edit collection'
         if not edit_permission:
             return HttpResponseForbidden()
@@ -117,9 +119,11 @@ def edit_collection(request, cid=None):
         collection = Collection(owner=request.user)
     if request.method == "POST":
         if is_owner:
-            form = OwnerCollectionForm(request.POST, request.FILES, instance=collection)
+            form = OwnerCollectionForm(
+                request.POST, request.FILES, instance=collection)
         else:
-            form = CollectionForm(request.POST, request.FILES, instance=collection)
+            form = CollectionForm(
+                request.POST, request.FILES, instance=collection)
         if form.is_valid():
             previous_contribs = set()
             if form.instance.pk is not None:
@@ -132,14 +136,16 @@ def edit_collection(request, cid=None):
             if is_owner:
                 form.save_m2m()  # save contributors
                 current_contribs = set(collection.contributors.all())
-                new_contribs = list(current_contribs.difference(previous_contribs))
+                new_contribs = list(
+                    current_contribs.difference(previous_contribs))
                 context = {
                     'owner': collection.owner.username,
                     'collection': collection.name,
                     'url': get_server_url(request) + collection.get_absolute_url(),
                 }
                 subj = '%s has added you to a AFQVault collection' % context['owner']
-                send_email_notification('new_contributor', subj, new_contribs, context)
+                send_email_notification(
+                    'new_contributor', subj, new_contribs, context)
 
             return HttpResponseRedirect(collection.get_absolute_url())
     else:
@@ -153,7 +159,8 @@ def edit_collection(request, cid=None):
 
 
 def choice_datasources(model):
-    statmap_field_obj = functools.partial(image_metadata.get_field_by_name, model)
+    statmap_field_obj = functools.partial(
+        image_metadata.get_field_by_name, model)
     pick_second_item = functools.partial(map, lambda x: x[1])
     fixed_fields = list(model.get_fixed_fields())
     field_choices = ((f, statmap_field_obj(f).choices) for f in fixed_fields)
@@ -185,7 +192,8 @@ def edit_metadata(request, collection_cid):
             **image_metadata.handle_post_metadata(
                 request, collection, 'Images metadata have been saved.'))
 
-    collection_images = collection.basecollectionitem_set.instance_of(Image).order_by('pk')
+    collection_images = collection.basecollectionitem_set.instance_of(
+        Image).order_by('pk')
     data_headers = image_metadata.get_data_headers(collection_images)
     metadata = image_metadata.get_images_metadata(collection_images)
     datasources = get_field_datasources()
@@ -261,8 +269,10 @@ def view_collection(request, cid):
     :param cid: afqmaps.models.Collection.pk the primary key of the collection
     """
     collection = get_collection(cid, request)
-    edit_permission = request.user.has_perm('afqmaps.change_collection', collection)
-    delete_permission = request.user.has_perm('afqmaps.delete_collection', collection)
+    edit_permission = request.user.has_perm(
+        'afqmaps.change_collection', collection)
+    delete_permission = request.user.has_perm(
+        'afqmaps.delete_collection', collection)
     is_empty = not collection.basecollectionitem_set.exists()
     context = {'collection': collection,
                'is_empty': is_empty,
@@ -278,7 +288,8 @@ def view_collection(request, cid):
         context["messages"] = [msg]
 
     if not is_empty:
-        context["first_image"] = collection.basecollectionitem_set.order_by("pk")[0]
+        context["first_image"] = collection.basecollectionitem_set.order_by("pk")[
+            0]
 
     if owner_or_contrib(request, collection):
         form = UploadFileForm()
@@ -310,7 +321,8 @@ def edit_image(request, pk):
     if not owner_or_contrib(request, image.collection):
         return HttpResponseForbidden()
     if request.method == "POST":
-        form = form(request.POST, request.FILES, instance=image, user=request.user)
+        form = form(request.POST, request.FILES,
+                    instance=image, user=request.user)
         if form.is_valid():
             form.save()
             return HttpResponseRedirect(image.get_absolute_url())
@@ -336,7 +348,8 @@ def add_image_redirect(request, formclass, template_path, redirect_url, is_priva
         temp_collection.save()
     image = AFQMap(collection=temp_collection)
     if request.method == "POST":
-        form = formclass(request.POST, request.FILES, instance=image, user=request.user)
+        form = formclass(request.POST, request.FILES,
+                         instance=image, user=request.user)
         if form.is_valid():
             image = form.save()
             redirect = redirect_url % {
@@ -405,14 +418,16 @@ def upload_folder(request, collection_cid):
                         compressed = tarfile.TarFile(fileobj=gzip.GzipFile(
                             fileobj=django_file.file, mode='r'), mode='r')
                     else:
-                        raise Exception("Unsupported archive type %s." % archive_name)
+                        raise Exception(
+                            "Unsupported archive type %s." % archive_name)
                     compressed.extractall(path=tmp_directory)
 
                 elif "file_input[]" in request.FILES:
 
                     for f, path in zip(request.FILES.getlist(
                                        "file_input[]"), request.POST.getlist("paths[]")):
-                        new_path, _ = os.path.split(os.path.join(tmp_directory, path))
+                        new_path, _ = os.path.split(
+                            os.path.join(tmp_directory, path))
                         mkdir_p(new_path)
                         filename = os.path.join(new_path, f.name)
                         tmp_file = open(filename, 'w')
@@ -432,7 +447,8 @@ def upload_folder(request, collection_cid):
                         if ext == '.xml':
                             dom = minidom.parse(os.path.join(root, fname))
                             for atlas in dom.getElementsByTagName("imagefile"):
-                                path, base = os.path.split(atlas.lastChild.nodeValue)
+                                path, base = os.path.split(
+                                    atlas.lastChild.nodeValue)
                                 nifti_name = os.path.join(path, base)
                                 if nifti_name.startswith("/"):
                                     nifti_name = nifti_name[1:]
@@ -471,7 +487,8 @@ def upload_folder(request, collection_cid):
             finally:
                 shutil.rmtree(tmp_directory)
             if not files:
-                messages.warning(request, "No files (%s) found in the upload." % ','.join(Image.allowed_extensions))
+                messages.warning(request, "No files (%s) found in the upload." % ','.join(
+                    Image.allowed_extensions))
             return HttpResponseRedirect(collection.get_absolute_url())
     else:
         form = UploadFileForm()
@@ -503,7 +520,8 @@ def view_images_by_tag(request, tag):
 
 def serve_image(request, collection_cid, img_name):
     collection = get_collection(collection_cid, request, mode='file')
-    path = os.path.join(settings.PRIVATE_MEDIA_ROOT, 'images', str(collection.id), img_name)
+    path = os.path.join(settings.PRIVATE_MEDIA_ROOT,
+                        'images', str(collection.id), img_name)
     return sendfile(request, path, encoding="utf-8")
 
 
@@ -512,7 +530,8 @@ def stats_view(request):
     for collection in Collection.objects.filter(
             private=False).exclude(Q(DOI__isnull=True) | Q(DOI__exact='')):
         if not collection.journal_name:
-            _, _, _, _, collection.journal_name = get_paper_properties(collection.DOI)
+            _, _, _, _, collection.journal_name = get_paper_properties(
+                collection.DOI)
             collection.save()
         if collection.journal_name not in collections_by_journals.keys():
             collections_by_journals[collection.journal_name] = 1
@@ -551,17 +570,20 @@ def papaya_js_embed(request, pk, iframe=None):
 @csrf_exempt
 def atlas_query_region(request):
     # this query is significantly faster (from 2-4 seconds to <1 second) if the synonyms don't need to be queried
-    # i was previously in contact with NIF and it seems like it wouldn't be too hard to download all the synonym data
+    # i was previously in contact with NIF and it seems like it wouldn't be
+    # too hard to download all the synonym data
     search = request.GET.get('region', '')
     atlas = request.GET.get('atlas', '').replace('\'', '')
     collection = name = request.GET.get('collection', '')
-    afqvault_root = os.path.dirname(os.path.dirname(os.path.realpath(afqvault.__file__)))
+    afqvault_root = os.path.dirname(
+        os.path.dirname(os.path.realpath(afqvault.__file__)))
     try:
         collection_object = Collection.objects.filter(name=collection)[0]
     except IndexError:
         return JSONResponse('error: could not find collection: %s' % collection, status=400)
     try:
-        atlas_object = Atlas.objects.filter(name=atlas, collection=collection_object)[0]
+        atlas_object = Atlas.objects.filter(
+            name=atlas, collection=collection_object)[0]
         atlas_image = atlas_object.file
         atlas_xml = atlas_object.label_description_file
     except IndexError:
@@ -570,7 +592,8 @@ def atlas_query_region(request):
         atlas_xml.open()
         root = ET.fromstring(atlas_xml.read())
         atlas_xml.close()
-        atlasRegions = [x.text.lower() for x in root.find('data').findall('label')]
+        atlasRegions = [x.text.lower()
+                        for x in root.find('data').findall('label')]
         if search in atlasRegions:
             searchList = [search]
         else:
@@ -586,7 +609,8 @@ def atlas_query_region(request):
             if searchList == 'none':
                 return JSONResponse('error: could not map specified region to region in specified atlas', status=400)
         try:
-            data = {'voxels': getAtlasVoxels(searchList, atlas_image, atlas_xml)}
+            data = {'voxels': getAtlasVoxels(
+                searchList, atlas_image, atlas_xml)}
         except ValueError:
             return JSONResponse('error: region not in atlas', status=400)
 
@@ -605,7 +629,8 @@ def atlas_query_voxel(request):
     except IndexError:
         return JSONResponse('error: could not find collection: %s' % collection, status=400)
     try:
-        atlas_object = Atlas.objects.filter(name=atlas, collection=collection_object)[0]
+        atlas_object = Atlas.objects.filter(
+            name=atlas, collection=collection_object)[0]
         atlas_image = atlas_object.file
         atlas_xml = atlas_object.label_description_file
     except IndexError:
@@ -644,7 +669,8 @@ def compare_images(request, pk1, pk2):
     image_vector1 = np.load(image1.reduced_representation.file)
     image_vector2 = np.load(image2.reduced_representation.file)
 
-    # Load atlas pickle, containing vectors of atlas labels, colors, and values for same voxel dimension (4mm)
+    # Load atlas pickle, containing vectors of atlas labels, colors, and
+    # values for same voxel dimension (4mm)
     this_path = os.path.abspath(os.path.dirname(__file__))
     atlas_pkl_path = os.path.join(this_path, 'static/atlas/atlas_mni_4mm.pkl')
     atlas = joblib.load(atlas_pkl_path)
@@ -668,11 +694,13 @@ def compare_images(request, pk1, pk2):
 
     # Add atlas svg to the image, and prepare html for rendering
     html = [h.replace("[coronal]", atlas_svg) for h in html_snippet]
-    html = [h.strip("\n").replace("[axial]", "").replace("[sagittal]", "") for h in html]
+    html = [h.strip("\n").replace("[axial]", "").replace(
+        "[sagittal]", "") for h in html]
     context = {'html': html}
 
     # Determine if either image is thresholded
-    threshold_status = np.array([image_names[i] for i in range(0, 2) if images[i].is_thresholded])
+    threshold_status = np.array([image_names[i]
+                                 for i in range(0, 2) if images[i].is_thresholded])
     if len(threshold_status) > 0:
         warnings = list()
         for i in range(0, len(image_names)):
@@ -815,7 +843,8 @@ class ImagesInCollectionJson(BaseDatatableView):
         # simple example:
         search = self.request.GET.get(u'search[value]', None)
         if search:
-            qs = qs.filter(Q(name__icontains=search) | Q(description__icontains=search))
+            qs = qs.filter(Q(name__icontains=search) |
+                           Q(description__icontains=search))
         return qs
 
     def get_initial_queryset(self):
@@ -838,7 +867,8 @@ class ImagesInCollectionJson(BaseDatatableView):
 
 
 class AtlasesAndParcellationsJson(BaseDatatableView):
-    columns = ['file.url', 'name', 'collection.name', 'collection.authors', 'polymorphic_ctype.name']
+    columns = ['file.url', 'name', 'collection.name',
+               'collection.authors', 'polymorphic_ctype.name']
     order_columns = ['', 'name', 'polymorphic_ctype.name']
 
     def get_initial_queryset(self):
@@ -848,7 +878,8 @@ class AtlasesAndParcellationsJson(BaseDatatableView):
         # we need some base queryset to count total number of records.
         qs = Image.objects.instance_of(Atlas) | Image.objects.instance_of(
             AFQMap).filter(statisticmap__map_type=BaseAFQMap.Pa)
-        qs = qs.filter(collection__private=False).exclude(collection__DOI__isnull=True)
+        qs = qs.filter(collection__private=False).exclude(
+            collection__DOI__isnull=True)
         return qs
 
     def render_column(self, row, column):
@@ -875,7 +906,8 @@ class AtlasesAndParcellationsJson(BaseDatatableView):
         # simple example:
         search = self.request.GET.get(u'search[value]', None)
         if search:
-            qs = qs.filter(Q(name__icontains=search) | Q(description__icontains=search))
+            qs = qs.filter(Q(name__icontains=search) |
+                           Q(description__icontains=search))
         return qs
 
 
@@ -908,7 +940,8 @@ class PublicCollectionsJson(BaseDatatableView):
         # simple example:
         search = self.request.GET.get(u'search[value]', None)
         if search:
-            qs = qs.filter(Q(name__icontains=search) | Q(description__icontains=search))
+            qs = qs.filter(Q(name__icontains=search) |
+                           Q(description__icontains=search))
         return qs
 
 
@@ -941,5 +974,6 @@ def download_collection(request, cid):
         zf.write(fpath, zip_path)
 
     response = StreamingHttpResponse(zf, content_type='application/zip')
-    response['Content-Disposition'] = 'attachment; filename=%s' % urllib.quote_plus(zip_filename.encode('utf-8'))
+    response['Content-Disposition'] = 'attachment; filename=%s' % urllib.quote_plus(
+        zip_filename.encode('utf-8'))
     return response

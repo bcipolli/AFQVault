@@ -59,7 +59,8 @@ class DoubleExtensionStorage(AFQVaultStorage):
         count = itertools.count(1)
         while self.exists(name):
             # file_ext includes the dot.
-            name = os.path.join(dir_name, "%s_%s%s" % (file_root, next(count), file_ext))
+            name = os.path.join(dir_name, "%s_%s%s" %
+                                (file_root, next(count), file_ext))
 
         return name
 

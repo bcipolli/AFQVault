@@ -16,7 +16,8 @@ from .utils import clearDB
 class FeatDirectoryTest(TestCase):
 
     def setUp(self):
-        testpath = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'test_data', 'feat')
+        testpath = os.path.join(os.path.abspath(
+            os.path.dirname(__file__)), 'test_data', 'feat')
         testdata_repo = 'https://github.com/AFQVault/afqvault_data/blob/master/FEAT_testdata/'
 
         self.testfiles = {
@@ -61,7 +62,8 @@ class FeatDirectoryTest(TestCase):
                     raise
 
             self.testfiles[fname]['sourcedir'] = self.testfiles[fname]['file'][:-4]
-            self.testfiles[fname]['dir'] = os.path.join(self.tmpdir, fname[:-4])
+            self.testfiles[fname]['dir'] = os.path.join(
+                self.tmpdir, fname[:-4])
 
             if not os.path.exists(self.testfiles[fname]['sourcedir']):
                 fh = open(os.path.join(testpath, fname), 'rb')
@@ -72,7 +74,8 @@ class FeatDirectoryTest(TestCase):
                     z.extract(name, outpath)
                 fh.close()
 
-            shutil.copytree(self.testfiles[fname]['sourcedir'], self.testfiles[fname]['dir'])
+            shutil.copytree(
+                self.testfiles[fname]['sourcedir'], self.testfiles[fname]['dir'])
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)

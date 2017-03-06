@@ -21,10 +21,14 @@ class UploadFolderTestCase(TestCase):
         self.tmpdir = tempfile.mkdtemp()
         test_path = os.path.abspath(os.path.dirname(__file__))
         with ZipFile(os.path.join(self.tmpdir, 'example.zip'), 'w') as myzip:
-            myzip.write(os.path.join(test_path, 'test_data/afqmaps/all.nii.gz'))
-            myzip.write(os.path.join(test_path, 'test_data/afqmaps/beta_0001.nii.gz'))
-            myzip.write(os.path.join(test_path, 'test_data/afqmaps/motor_lips.nii.gz'))
-            myzip.write(os.path.join(test_path, 'test_data/afqmaps/WA3.nii.gz'))
+            myzip.write(os.path.join(
+                test_path, 'test_data/afqmaps/all.nii.gz'))
+            myzip.write(os.path.join(
+                test_path, 'test_data/afqmaps/beta_0001.nii.gz'))
+            myzip.write(os.path.join(
+                test_path, 'test_data/afqmaps/motor_lips.nii.gz'))
+            myzip.write(os.path.join(
+                test_path, 'test_data/afqmaps/WA3.nii.gz'))
 
         with tarfile.open(os.path.join(self.tmpdir, 'example.tar.gz'), "w:gz") as tar:
             tar.add(os.path.join(test_path, 'test_data/afqmaps/all.nii.gz'))
@@ -35,7 +39,8 @@ class UploadFolderTestCase(TestCase):
         self.user = User.objects.create_user('NeuroGuy', password="1234")
         self.user.save()
         self.client = Client()
-        login_successful = self.client.login(username=self.user.username, password="1234")
+        login_successful = self.client.login(
+            username=self.user.username, password="1234")
         self.assertTrue(login_successful)
         self.coll = Collection(owner=self.user, name="Test Collection")
         self.coll.save()
@@ -53,7 +58,8 @@ class UploadFolderTestCase(TestCase):
                                         'collection_cid': self.coll.id, 'file': fp})
         # Assert that self.post is actually returned by the post_detail view
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(self.coll.basecollectionitem_set.instance_of(Image).count(), 4)
+        self.assertEqual(
+            self.coll.basecollectionitem_set.instance_of(Image).count(), 4)
 
     def test_upload_tar_gz(self):
         with open(os.path.join(self.tmpdir, 'example.tar.gz')) as fp:
@@ -61,4 +67,5 @@ class UploadFolderTestCase(TestCase):
                                         'collection_cid': self.coll.id, 'file': fp})
         # Assert that self.post is actually returned by the post_detail view
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(self.coll.basecollectionitem_set.instance_of(Image).count(), 4)
+        self.assertEqual(
+            self.coll.basecollectionitem_set.instance_of(Image).count(), 4)

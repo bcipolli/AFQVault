@@ -23,7 +23,7 @@ def clearDB():
 
 def save_statmap_form(image_path, collection, ignore_file_warning=False, image_name=None):
 
-    if image_name == None:
+    if image_name is None:
         if isinstance(image_path, list):
             image_name = image_path[0]
         else:
@@ -41,7 +41,8 @@ def save_statmap_form(image_path, collection, ignore_file_warning=False, image_n
         file_dict = {'file': SimpleUploadedFile(image_path[0], open(image_path[0]).read()),
                      'hdr_file': SimpleUploadedFile(image_path[1], open(image_path[1]).read())}
     else:
-        file_dict = {'file': SimpleUploadedFile(image_path, open(image_path).read())}
+        file_dict = {'file': SimpleUploadedFile(
+            image_path, open(image_path).read())}
     form = AFQMapForm(post_dict, file_dict)
     # this is necessary to split 4D volumes
     form.is_valid()
@@ -50,7 +51,7 @@ def save_statmap_form(image_path, collection, ignore_file_warning=False, image_n
 
 def save_atlas_form(nii_path, xml_path, collection, ignore_file_warning=False, name=None):
 
-    if name == None:
+    if name is None:
         name = nii_path
 
     post_dict = {

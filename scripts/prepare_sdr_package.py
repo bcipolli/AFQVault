@@ -23,7 +23,7 @@ while next_url_url:
     print "fetching %s" % next_url_url
     resp = requests.get(url=next_url_url)
     data = json.loads(resp.text)
-    collections += [res for res in data['results'] if res['DOI'] != None]
+    collections += [res for res in data['results'] if res['DOI'] is not None]
     next_url_url = data['next']
 
 print "Fetched metadata of %d collections" % len(collections)

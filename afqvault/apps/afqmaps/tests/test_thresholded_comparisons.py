@@ -38,15 +38,20 @@ class QueryTestCase(TestCase):
 
         # Image 1 is an atlas
         print "Adding atlas image..."
-        nii_path = os.path.join(self.app_path, "test_data/api/VentralFrontal_thr75_summaryimage_2mm.nii.gz")
-        xml_path = os.path.join(self.app_path, "test_data/api/VentralFrontal_thr75_summaryimage_2mm.xml")
-        image1 = save_atlas_form(nii_path=nii_path, xml_path=xml_path, collection=self.comparisonCollection1)
+        nii_path = os.path.join(
+            self.app_path, "test_data/api/VentralFrontal_thr75_summaryimage_2mm.nii.gz")
+        xml_path = os.path.join(
+            self.app_path, "test_data/api/VentralFrontal_thr75_summaryimage_2mm.xml")
+        image1 = save_atlas_form(
+            nii_path=nii_path, xml_path=xml_path, collection=self.comparisonCollection1)
         self.pk1 = image1.id
 
         # Image 2 is a statistical map
         print "Adding statistical map..."
-        image_path = os.path.join(self.app_path, 'test_data/afqmaps/beta_0001.nii.gz')
-        image2 = save_statmap_form(image_path=image_path, collection=self.comparisonCollection2)
+        image_path = os.path.join(
+            self.app_path, 'test_data/afqmaps/beta_0001.nii.gz')
+        image2 = save_statmap_form(
+            image_path=image_path, collection=self.comparisonCollection2)
         self.pk2 = image2.id
 
         # Image 3 is a thresholded statistical map
@@ -80,13 +85,16 @@ class QueryTestCase(TestCase):
         print "testing comparisons for atlases"
         assert_equal(count_existing_comparisons(self.pk1), 0)
 
-        # There should be no comparisons for statistical map because no other statistical maps
+        # There should be no comparisons for statistical map because no other
+        # statistical maps
         print "testing comparisons for statistical maps"
         assert_equal(count_existing_comparisons(self.pk2), 0)
 
         # Add another statistical map
-        image_path = os.path.join(self.app_path, 'test_data/afqmaps/motor_lips.nii.gz')
-        image4 = save_statmap_form(image_path=image_path, collection=self.comparisonCollection4)
+        image_path = os.path.join(
+            self.app_path, 'test_data/afqmaps/motor_lips.nii.gz')
+        image4 = save_statmap_form(
+            image_path=image_path, collection=self.comparisonCollection4)
         self.pk4 = image4.id
 
         # There should STILL be no comparisons for a thresholded image
@@ -97,7 +105,8 @@ class QueryTestCase(TestCase):
         print "testing comparisons for atlases"
         assert_equal(count_existing_comparisons(self.pk1), 0)
 
-        # There should now be one comparison for each statistical map, two total
+        # There should now be one comparison for each statistical map, two
+        # total
         print "testing comparisons for statistical maps"
         print Comparison.objects.all()
         assert_equal(count_existing_comparisons(self.pk2), 1)

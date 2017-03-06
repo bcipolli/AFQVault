@@ -35,9 +35,11 @@ class Test_Counter(TestCase):
         # The counter is the count of the number of images with the field "transform" set to None
         # The field is populated with the file when image comparisons are done, meaning that if there is only one
         # image in the database (case below) we cannot calculate comparisons, and the "transform" field remains none
-        # This is currently the only way that we can test the counter, which will be "1" in this case
+        # This is currently the only way that we can test the counter, which
+        # will be "1" in this case
         print "\nTesting Counter - added statistic maps ###"
-        Image1 = AFQMap(name='Image1', collection=self.Collection1, file='motor_lips.nii.gz', map_type="Z")
+        Image1 = AFQMap(name='Image1', collection=self.Collection1,
+                        file='motor_lips.nii.gz', map_type="Z")
         Image1.file = SimpleUploadedFile('motor_lips.nii.gz', file(
             os.path.join(self.test_path, 'test_data/afqmaps/motor_lips.nii.gz')).read())
         Image1.save()
@@ -51,7 +53,8 @@ class Test_Counter(TestCase):
         # jobs and watching the "images still processing" counter go from N to 0. There is also no way of arbitrarily
         # setting an image transform field to "None" because on save, all image
         # comparisons are automatically re-calcualted
-        Image2 = AFQMap(name='Image2', collection=self.Collection2, file='beta_0001.nii.gz', map_type="Other")
+        Image2 = AFQMap(name='Image2', collection=self.Collection2,
+                        file='beta_0001.nii.gz', map_type="Other")
         Image2.file = SimpleUploadedFile('beta_0001.nii.gz', file(
             os.path.join(self.test_path, 'test_data/afqmaps/beta_0001.nii.gz')).read())
         Image2.save()
@@ -65,17 +68,20 @@ class Test_Counter(TestCase):
 
     # Adding a group of NIDM result images
     def test_adding_nidm(self):
-        Image2 = AFQMap(name='Image2', collection=self.Collection1, file='beta_0001.nii.gz', map_type="Other")
+        Image2 = AFQMap(name='Image2', collection=self.Collection1,
+                        file='beta_0001.nii.gz', map_type="Other")
         Image2.file = SimpleUploadedFile('beta_0001.nii.gz', file(
             os.path.join(self.test_path, 'test_data/afqmaps/beta_0001.nii.gz')).read())
         Image2.save()
 
-        zip_file = open(os.path.join(self.test_path, 'test_data/nidm/spm_example.nidm.zip'), 'rb')
+        zip_file = open(os.path.join(
+            self.test_path, 'test_data/nidm/spm_example.nidm.zip'), 'rb')
         post_dict = {
             'name': 'spm_nidm',
             'description': '{0} upload test'.format('spm_example'),
             'collection': self.Collection2.pk}
-        fname = os.path.basename(os.path.join(self.test_path, 'test_data/nidm/spm_example.nidm.zip'))
+        fname = os.path.basename(os.path.join(
+            self.test_path, 'test_data/nidm/spm_example.nidm.zip'))
         file_dict = {'zip_file': SimpleUploadedFile(fname, zip_file.read())}
         zip_file.close()
         form = NIDMResultsForm(post_dict, file_dict)

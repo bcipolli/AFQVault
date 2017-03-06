@@ -7,13 +7,11 @@ import tempfile
 import urllib2
 from datetime import datetime, date
 
-import nibabel as nb
 import pandas as pd
 import numpy as np
 import pytz
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
-from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.core.mail import EmailMultiAlternatives
@@ -61,7 +59,6 @@ def split_filename(fname):
     '.nii.gz'
 
     """
-
     special_extensions = [".nii.gz", ".tar.gz"]
 
     if fname and fname.endswith(os.path.sep):
@@ -94,13 +91,15 @@ def generate_url_token(length=8):
 
 def get_paper_properties(doi):
     xmlurl = 'http://doi.crossref.org/servlet/query'
-    xmlpath = xmlurl + '?pid=k.j.gorgolewski@sms.ed.ac.uk&format=unixref&id=' + urllib2.quote(doi)
+    xmlpath = xmlurl + '?pid=k.j.gorgolewski@sms.ed.ac.uk&format=unixref&id=' + \
+        urllib2.quote(doi)
     print xmlpath
     xml_str = urllib2.urlopen(xmlpath).read()
     doc = etree.fromstring(xml_str)
     if len(doc.getchildren()) == 0 or len(doc.findall('.//crossref/error')) > 0:
         raise Exception("DOI %s was not found" % doi)
-    journal_name = doc.findall(".//journal/journal_metadata/full_title")[0].text
+    journal_name = doc.findall(
+        ".//journal/journal_metadata/full_title")[0].text
     title = doc.findall('.//title')[0].text
     authors = [author.findall('given_name')[0].text + " " + author.findall('surname')[0].text
                for author in doc.findall('.//contributors/person_name')]
@@ -169,7 +168,8 @@ def detect_4D(nii):
 
 def memory_uploadfile(new_file, fname, old_file):
     cfile = ContentFile(open(new_file).read())
-    content_type = getattr(old_file, 'content_type', False) or 'application/x-gzip',
+    content_type = getattr(old_file, 'content_type',
+                           False) or 'application/x-gzip',
     charset = getattr(old_file, 'charset', False) or None
 
     return InMemoryUploadedFile(cfile, "file", fname,
@@ -180,7 +180,7 @@ def memory_uploadfile(new_file, fname, old_file):
 def save_pickle_atomically(pkl_data, filename, directory=None):
 
     # Give option to save to specific (not /tmp) directory
-    if directory == None:
+    if directory is None:
         tmp_file = tempfile.mktemp()
     else:
         tmp_file = tempfile.mktemp(dir=directory)
@@ -208,7 +208,8 @@ def get_server_url(request):
     return '{0}{1}'.format(urlpref, request.META['HTTP_HOST'])
 
 
-# Returns string in format image: collection [map_type] to be within total_length
+# Returns string in format image: collection [map_type] to be within
+# total_length
 def format_image_collection_names(image_name, collection_name, total_length, map_type=None):
     # 3/5 total length should be collection, 2/5 image
     collection_length = int(np.floor(.60 * total_length))
@@ -217,7 +218,7 @@ def format_image_collection_names(image_name, collection_name, total_length, map
         image_name = "%s..." % image_name[0:image_length]
     if len(collection_name) > collection_length:
         collection_name = "%s..." % collection_name[0:collection_length]
-    if map_type == None:
+    if map_type is None:
         return "%s : %s" % (image_name, collection_name)
     else:
         return "%s : %s [%s]" % (image_name, collection_name, map_type)
@@ -260,10 +261,7 @@ def infer_map_type(nii_obj):
     return map_type
 
 
-import nibabel as nb
-from nilearn.image import resample_img
-
-# QUERY FUNCTIONS -------------------------------------------------------------------------------
+# QUERY FUNCTIONS --------------------------------------------------------
 
 
 def is_search_compatible(pk):
@@ -292,11 +290,13 @@ def get_images_to_compare_with(pk1, for_generation=False):
     img = Image.objects.get(pk=pk1)
     image_pks = []
     for cls in [AFQMap]:
-        qs = cls.objects.filter(collection__private=False, is_thresholded=False)
+        qs = cls.objects.filter(
+            collection__private=False, is_thresholded=False)
         if not (for_generation and img.collection.DOI is not None):
             qs = qs.exclude(collection__DOI__isnull=True)
         qs = qs.exclude(collection=img.collection)
-        qs = qs.exclude(pk=pk1).exclude(analysis_level='S').exclude(map_type='R').exclude(map_type='Pa')
+        qs = qs.exclude(pk=pk1).exclude(analysis_level='S').exclude(
+            map_type='R').exclude(map_type='Pa')
         image_pks += list(qs.values_list('pk', flat=True))
     return image_pks
 
@@ -324,8 +324,10 @@ def count_processing_comparisons(pk1):
 
 # Returns existing comparisons for specific pk, or entire database
 def get_existing_comparisons(pk1):
-    possible_images_to_compare_with_pks = get_images_to_compare_with(pk1) + [pk1]
-    comparisons = Comparison.objects.filter(Q(image1__pk=pk1) | Q(image2__pk=pk1))
+    possible_images_to_compare_with_pks = get_images_to_compare_with(
+        pk1) + [pk1]
+    comparisons = Comparison.objects.filter(
+        Q(image1__pk=pk1) | Q(image2__pk=pk1))
     comparisons = comparisons.filter(image1__id__in=possible_images_to_compare_with_pks,
                                      image2__id__in=possible_images_to_compare_with_pks)
     comparisons = comparisons.exclude(image1__pk=pk1, image2__pk=pk1)
@@ -348,7 +350,8 @@ def get_similar_images(pk, max_results=100):
 
     for comp in comparisons:
         # pick the image we are comparing with
-        image = [image for image in [comp.image1, comp.image2] if image.id != pk][0]
+        image = [image for image in [
+            comp.image1, comp.image2] if image.id != pk][0]
         if hasattr(image, "map_type") and image.thumbnail:
             df = pd.DataFrame({'image_id': [image.pk],
                                'score': [comp.similarity_score],

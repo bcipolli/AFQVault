@@ -75,7 +75,8 @@ class DeleteCollectionsTest(TestCase):
         self.client.login(username=self.user)
         self.Collection1 = Collection(name='Collection1', owner=self.user)
         self.Collection1.save()
-        self.unorderedAtlas = Atlas(name='unorderedAtlas', description='', collection=self.Collection1)
+        self.unorderedAtlas = Atlas(
+            name='unorderedAtlas', description='', collection=self.Collection1)
         self.unorderedAtlas.file = SimpleUploadedFile('VentralFrontal_thr75_summaryimage_2mm.nii.gz', file(
             os.path.join(self.test_path, 'test_data/api/VentralFrontal_thr75_summaryimage_2mm.nii.gz')).read())
         self.unorderedAtlas.label_description_file = SimpleUploadedFile('test_VentralFrontal_thr75_summaryimage_2mm.xml', file(
@@ -115,7 +116,8 @@ class Afni4DTest(TestCase):
         self.tmpdir = tempfile.mkdtemp()
         app_path = os.path.abspath(os.path.dirname(__file__))
         self.afni_file = os.path.join(app_path, 'test_data/TTatlas.nii.gz')
-        self.nii_file = os.path.abspath(os.path.join(app_path, '../static/anatomical/MNI152.nii.gz'))
+        self.nii_file = os.path.abspath(os.path.join(
+            app_path, '../static/anatomical/MNI152.nii.gz'))
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
@@ -316,7 +318,8 @@ class DownloadCollectionsTest(TestCase):
         self.client.login(username=self.user)
         self.Collection1 = Collection(name='Collection1', owner=self.user)
         self.Collection1.save()
-        self.unorderedAtlas = Atlas(name='unorderedAtlas', description='', collection=self.Collection1)
+        self.unorderedAtlas = Atlas(
+            name='unorderedAtlas', description='', collection=self.Collection1)
         self.unorderedAtlas.file = SimpleUploadedFile('VentralFrontal_thr75_summaryimage_2mm.nii.gz', file(
             os.path.join(self.test_path, 'test_data/api/VentralFrontal_thr75_summaryimage_2mm.nii.gz')).read())
         self.unorderedAtlas.label_description_file = SimpleUploadedFile('test_VentralFrontal_thr75_summaryimage_2mm.xml', file(
@@ -341,4 +344,5 @@ class DownloadCollectionsTest(TestCase):
 
         self.assertEqual(len(zf.filelist), 1)  # 1 Atlas
         self.assertIsNone(zf.testzip())
-        self.assertIn("Collection1/VentralFrontal_thr75_summaryimage_2mm.nii.gz", zf.namelist())
+        self.assertIn(
+            "Collection1/VentralFrontal_thr75_summaryimage_2mm.nii.gz", zf.namelist())

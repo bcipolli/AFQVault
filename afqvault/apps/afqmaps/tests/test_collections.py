@@ -12,7 +12,6 @@ from django.test import TestCase, Client, override_settings, RequestFactory
 from uuid import uuid4
 
 from afqvault.apps.afqmaps.models import Collection, User, Image, Atlas
-from afqvault.apps.afqmaps.utils import detect_4D, split_4D_to_3D
 from afqvault.apps.afqmaps.views import delete_collection, download_collection
 from afqvault.settings import PRIVATE_MEDIA_ROOT
 from .utils import clearDB, save_statmap_form
@@ -130,27 +129,6 @@ class Afni4DTest(TestCase):
       -- At sub-brick #1 'uu5[0]' datum type is byte:            0 to 151
          keywords = uu5+tlrc[0] ; TTatlas+tlrc[1] ; uu5+tlrc[0]
     """
-
-    def testAfni4DSlicing(self):
-        test_afni = detect_4D(nibabel.load(self.afni_file))
-        test_non_afni = detect_4D(nibabel.load(self.nii_file))
-
-        bricks = split_4D_to_3D(nibabel.load(self.afni_file),tmp_dir=self.tmpdir)
-
-        # check detection of 4D is correct
-        self.assertTrue(test_afni)
-        self.assertFalse(test_non_afni)
-
-        # check for 2 sub bricks
-        self.assertEquals(len(bricks),2)
-
-        # check that brick labels match afni 3dinfo binary output
-        self.assertEquals(bricks[0][0],'uu3[0]')
-        self.assertEquals(bricks[1][0],'uu5[0]')
-
-        # check that sliced niftis exist at output location
-        self.assertTrue(os.path.exists(bricks[0][1]))
-        self.assertTrue(os.path.exists(bricks[1][1]))
 
 
 class CollectionMetaDataTest(TestCase):

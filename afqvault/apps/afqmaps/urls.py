@@ -6,16 +6,15 @@ from django.views.generic.base import RedirectView
 from afqvault import settings
 from afqvault.apps.afqmaps.models import KeyValueTag
 from afqvault.apps.afqmaps.views import ImagesInCollectionJson,\
-    PublicCollectionsJson, MyCollectionsJson, AtlasesAndParcellationsJson, \
-    ImagesByTaskJson
+    PublicCollectionsJson, MyCollectionsJson, AtlasesAndParcellationsJson
 from .views import edit_collection, view_image, delete_image, edit_image, \
                 view_collection, delete_collection, download_collection, upload_folder, add_image_for_neurosynth, \
                 serve_image, add_image, \
                 papaya_js_embed, view_images_by_tag, add_image_for_neuropower, \
-                stats_view, serve_nidm, serve_nidm_image, \
-                view_nidm_results, find_similar, find_similar_json, compare_images, edit_metadata, \
-                export_images_filenames, delete_nidm_results, view_task, search, gene_expression_json, \
-                gene_expression, serve_surface_archive
+                stats_view, \
+                find_similar, find_similar_json, compare_images, edit_metadata, \
+                export_images_filenames, search, gene_expression_json, \
+                gene_expression
 
 
 urlpatterns = patterns('',
@@ -101,12 +100,6 @@ urlpatterns = patterns('',
     url(r'^images/(?P<pk>\d+)/js/embed$',
         papaya_js_embed,
         name='papaya_js_embed'),
-    url(r'^collections/(?P<collection_cid>\d+|[A-Z]{8})/(?P<nidm_name>[A-Za-z0-9\.\+\-\_\s\[\]\(\)]+\.nidm\_?[0-9]*)/?$',
-        view_nidm_results,
-        name='view_nidm_results'),
-    url(r'^collections/(?P<collection_cid>\d+|[A-Z]{8})/(?P<nidm_name>[A-Za-z0-9\.\+\-\_\s\[\]\(\)]+\.nidm\_?[0-9]*)/delete$',
-        delete_nidm_results,
-        name='delete_nidm_results'),
 
     url(r'^images/(?P<pk>\d+)/papaya/embedview$',
         papaya_js_embed,
@@ -115,14 +108,6 @@ urlpatterns = patterns('',
     url(r'^media/images/(?P<collection_cid>\d+|[A-Z]{8})/(?P<img_name>[0-9a-zA-Z\^\&\'\@\{\}\[\]\,\$\=\!\-\#\(\)\.\%\+\~\_ ]+)$',
         serve_image,
         name='serve_image'),
-
-    url(r'^images/(?P<pk>\d+)/download_surfaces$',
-        serve_surface_archive,
-        name='serve_surface_archive'),
-
-    url(r'^collections/(?P<collection_cid>\d+|[A-Z]{8})/images/(?P<pk>\d+)/download_surfaces$',
-        serve_surface_archive,
-        name='serve_surface_archive'),
 
     # Compare images and search
     url(r'^images/compare/(?P<pk1>\d+)/(?P<pk2>\d+)$',
@@ -144,17 +129,4 @@ urlpatterns = patterns('',
     url(r'^search$',
         search,
         name='search'),
-
-
-    # Cognitive Atlas
-    url(r'^tasks/(?P<cog_atlas_id>[A-Za-z0-9].*)/json$',
-        ImagesByTaskJson.as_view(),
-        name='task_images_json'),
-    url(r'^tasks/(?P<cog_atlas_id>[A-Za-z0-9].*)$',
-        view_task,
-        name='view_task'),
-    url(r'^tasks$',
-        view_task,
-        name='view_task')
-
 )

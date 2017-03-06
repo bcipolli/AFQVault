@@ -13,7 +13,6 @@ RUN pip install scikit-learn pandas h5py matplotlib
 
 RUN pip install celery[redis]==3.1.24
 RUN pip install certifi==2015.04.28
-RUN pip install cognitiveatlas
 RUN pip install 'Django==1.8.8'
 RUN pip install djangorestframework==3.4.7
 RUN pip install django-celery

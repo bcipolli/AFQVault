@@ -1,8 +1,7 @@
 from django.contrib import admin
 from afqvault.apps.afqmaps.models import Collection, Image, AFQMap, Atlas, \
-    NIDMResults, NIDMResultAFQMap, Comparison, Similarity
-from afqvault.apps.afqmaps.forms import AFQMapForm, AtlasForm, \
-    NIDMResultAFQMapForm, NIDMResultsForm
+    Comparison, Similarity
+from afqvault.apps.afqmaps.forms import AFQMapForm, AtlasForm
 from polymorphic.admin import PolymorphicParentModelAdmin, PolymorphicChildModelAdmin
 
 
@@ -24,33 +23,14 @@ class AtlasAdmin(PolymorphicChildModelAdmin, BaseImageAdmin):
     base_form = AtlasForm
 
 
-class NIDMAFQMapAdmin(PolymorphicChildModelAdmin, BaseImageAdmin):
-    base_model = NIDMResultAFQMap
-    base_form = NIDMResultAFQMapForm
-    readonly_fields = BaseImageAdmin.readonly_fields + ['nidm_results']
-
-
 class ImageAdmin(PolymorphicParentModelAdmin):
     base_model = Image
     child_models = (
         (AFQMap, AFQMapAdmin),
         (Atlas, AtlasAdmin),
-        (NIDMResultAFQMap, NIDMAFQMapAdmin)
     )
-
-
-class NIDMResultsAdmin(BaseImageAdmin):
-    form = NIDMResultsForm
-
-    def save_model(self, request, obj, form, change):
-        instance = form.save(commit=False)
-        instance.save()
-        form.save_nidm()
-        form.update_ttl_urls()
-        form.save_m2m()
 
 admin.site.register(Image, ImageAdmin)
 admin.site.register(Collection)
-admin.site.register(NIDMResults,NIDMResultsAdmin)
 admin.site.register(Comparison)
 admin.site.register(Similarity)

@@ -38,7 +38,7 @@ class AFQVaultStorage(FileSystemStorage):
 
 
 class DoubleExtensionStorage(AFQVaultStorage):
-    _extensions = ["nii.gz", "nidm.zip"]
+    _extensions = ["nii.gz"]
 
     def get_available_name(self, name):
         """
@@ -104,17 +104,3 @@ class OverwriteStorage(AFQVaultStorage):
         filey.close()
         file_move_safe(tmp_file, full_path, allow_overwrite=True)
         return name
-
-
-class NIDMStorage(DoubleExtensionStorage):
-    def __init__(self, location=None, base_url=None):
-        super(NIDMStorage, self).__init__(location, base_url)
-
-    def url(self, name):
-        rpath = super(NIDMStorage, self).url(name)
-        rpath = rpath.replace(self.base_url, '/collections/').split('/')
-        for ext in ['.ttl', '.zip']:
-            if fnmatch(rpath[-1], '*{0}'.format(ext)):
-                rpath.pop()
-                return '/'.join(rpath) + ext
-        return '/'.join(rpath)

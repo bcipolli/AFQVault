@@ -10,7 +10,6 @@ from nidmfsl.fsl_exporter.fsl_exporter import FSLtoNIDMExporter
 
 from afqvault.apps.afqmaps.forms import NIDMResultsForm
 from afqvault.apps.afqmaps.models import Collection,User
-from afqvault.apps.afqmaps.utils import detect_feat_directory
 from .utils import clearDB
 
 
@@ -78,47 +77,3 @@ class FeatDirectoryTest(TestCase):
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
         clearDB()
-
-    def testFEAT_NIDM(self):
-
-        # test feat parsing
-        for fname, info in self.testfiles.items():
-            info['found_feat'] = False
-            for root, dirs, files in os.walk(info['dir']):
-                if detect_feat_directory(root):
-                    print 'Found FEAT directory at {}.'.format(root)
-                    info['found_feat'] = True
-                    fslnidm = FSLtoNIDMExporter(feat_dir=root, version="1.2.0")
-                    fslnidm.parse()
-                    info['nidm_file'] = fslnidm.export()
-
-                    # confirm results path and existence
-                    self.assertTrue(os.path.exists(info['nidm_file']))
-
-        # test upload nidm
-        for fname, info in self.testfiles.items():
-
-            zname = os.path.basename(info['nidm_file'])
-            post_dict = {
-                'name': zname,
-                'description': '{0} upload test'.format(zname),
-                'collection': self.coll.pk,
-            }
-
-
-            file_dict = {'zip_file': SimpleUploadedFile(zname, open(info['nidm_file'],'r').read())}
-            form = NIDMResultsForm(post_dict, file_dict)
-
-            # validate NIDM Results
-            self.assertEqual(form.errors, {})
-            nidm = form.save()
-
-            afqmaps = nidm.nidmresultstatisticmap_set.all()
-            self.assertEquals(len(afqmaps),info['num_afqmaps'])
-
-            map_types = [v.map_type for v in afqmaps]
-            self.assertEquals(sorted(map_types), sorted(info['map_types']))
-
-            names = [v.name for v in afqmaps]
-            self.assertEquals(sorted(names), sorted(info['names']))
-

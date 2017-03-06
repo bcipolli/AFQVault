@@ -5,8 +5,7 @@ from django.core.urlresolvers import reverse
 from django.test import TestCase, Client
 
 from afqvault.apps.afqmaps.forms import AFQMapForm
-from afqvault.apps.afqmaps.models import Collection,User, AFQMap
-from afqvault.apps.afqmaps.utils import detect_4D, split_4D_to_3D
+from afqvault.apps.afqmaps.models import Collection, User, AFQMap
 from .utils import clearDB
 
 
@@ -42,32 +41,6 @@ class AddStatmapsTests(TestCase):
             form.save()
 
             self.assertEqual(AFQMap.objects.filter(collection=self.coll.pk)[0].name, "test map")
-
-    def testaddAFNI(self):
-
-            post_dict = {
-                'name': "test map",
-                'cognitive_paradigm_cogatlas': 'trm_4f24126c22011',
-                'modality':'fMRI-BOLD',
-                'map_type': 'T',
-                'collection':self.coll.pk,
-            }
-            testpath = os.path.abspath(os.path.dirname(__file__))
-            fname = os.path.join(testpath,'test_data/afqmaps/saccade.I_C.MNI.nii.gz')
-
-            nii = nb.load(fname)
-
-            self.assertTrue(detect_4D(nii))
-            self.assertTrue(len(split_4D_to_3D(nii)) > 0)
-
-            file_dict = {'file': SimpleUploadedFile(fname, open(fname).read())}
-            form = AFQMapForm(post_dict, file_dict)
-
-            self.assertTrue(form.is_valid())
-
-            form.save()
-
-            self.assertEqual(AFQMap.objects.filter(collection=self.coll.pk).count(), 2)
 
     def testaddImgHdr(self):
 

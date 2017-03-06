@@ -4,7 +4,6 @@ import shutil
 from datetime import datetime
 from gzip import GzipFile
 
-import nibabel as nb
 from django.contrib.auth.models import User
 from django.core.files import File
 from django.core.urlresolvers import reverse
@@ -20,9 +19,7 @@ from polymorphic.models import PolymorphicModel
 from taggit.managers import TaggableManager
 from taggit.models import GenericTaggedItemBase, TagBase
 
-from afqvault.apps.afqmaps.storage import DoubleExtensionStorage, NIDMStorage,\
-    OverwriteStorage
-from afqvault.apps.afqmaps.tasks import run_voxelwise_pearson_similarity, generate_glassbrain_image
+from afqvault.apps.afqmaps.storage import DoubleExtensionStorage, OverwriteStorage
 from afqvault.settings import PRIVATE_MEDIA_ROOT
 
 
@@ -158,12 +155,6 @@ class Collection(models.Model):
 
         super(Collection, self).save(*args, **kwargs)
 
-        if (privacy_changed and not self.private) or (DOI_changed and self.DOI is not None):
-            for image in self.basecollectionitem_set.instance_of(Image).all():
-                if image.pk:
-                    generate_glassbrain_image.apply_async([image.pk])
-                    run_voxelwise_pearson_similarity.apply_async([image.pk])
-
     class Meta:
         app_label = 'afqmaps'
 
@@ -171,8 +162,6 @@ class Collection(models.Model):
         cid = self.pk
         for image in self.basecollectionitem_set.instance_of(Image):
             image.delete()
-        for nidmresult in self.basecollectionitem_set.instance_of(NIDMResults):
-            nidmresult.delete()
         ret = super(Collection, self).delete(using=using)
         collDir = os.path.join(PRIVATE_MEDIA_ROOT, 'images',str(cid))
         try:
@@ -212,48 +201,8 @@ def contributors_changed(sender, instance, action, **kwargs):
 
 m2m_changed.connect(contributors_changed, sender=Collection.contributors.through)
 
-class CognitiveAtlasTask(models.Model):
-    name = models.CharField(max_length=200, null=False, blank=False, db_index=True)
-    cog_atlas_id = models.CharField(primary_key=True, max_length=200, null=False, blank=False)
-
-    def __str__(self):
-        return self.name
-
-    def __unicode__(self):
-        return self.name
-
-    def get_absolute_url(self):
-        cog_atlas_id = self.cog_atlas_id
-        return reverse('view_task', args=[str(cog_atlas_id)])
-
-    class Meta:
-        ordering = ['name']
-
-class CognitiveAtlasContrast(models.Model):
-    name = models.CharField(max_length=200, null=False, blank=False)
-    cog_atlas_id = models.CharField(primary_key=True, max_length=200, null=False, blank=False)
-    task = models.ForeignKey(CognitiveAtlasTask)
-
-    def __str__(self):
-        return self.name
-
-    def __unicode__(self):
-        return self.name
-
-    class Meta:
-        ordering = ['name']
-
-
-def upload_nidm_to(instance, filename):
-
-    base_subdir = os.path.split(instance.zip_file.name)[-1].replace('.zip','')
-    return os.path.join('images',str(instance.collection.id), base_subdir, filename)
-
 
 def upload_img_to(instance, filename):
-    nidm_types = ['nidmresultstatisticmap']
-    if hasattr(instance,'polymorphic_ctype') and instance.polymorphic_ctype.model in nidm_types:
-        return upload_nidm_to(instance.nidm_results,filename)
     return os.path.join('images',str(instance.collection.id), filename)
 
 upload_to = upload_img_to  # for migration backwards compat.
@@ -308,8 +257,6 @@ def basecollectionitem_created(sender, instance, created, **kwargs):
 
 class Image(BaseCollectionItem):
     file = models.FileField(upload_to=upload_img_to, null=False, blank=False, storage=DoubleExtensionStorage(), verbose_name='File with the unthresholded volume map (.img, .nii, .nii.gz)')
-    surface_left_file = models.FileField(upload_to=upload_img_to, null=True, blank=True, storage=DoubleExtensionStorage(), verbose_name='File with the unthresholded LEFT hemisphere fsaverage surface map (.mgh, .curv, .gii)')
-    surface_right_file = models.FileField(upload_to=upload_img_to, null=True, blank=True, storage=DoubleExtensionStorage(), verbose_name='File with the unthresholded RIGHT hemisphere fsaverage surface map (.mgh, .curv, .gii)')
     data_origin = models.CharField(
                     help_text=("Was this map originaly derived from volume or surface?"),
                     verbose_name="Data origin",
@@ -362,15 +309,6 @@ class Image(BaseCollectionItem):
             image.hdr_file.save(my_file_name[:-3] + "hdr", hdrFile)
 
         image.map_type = my_map_type
-
-        # create JSON file for neurosynth viewer
-        if os.path.exists(image.file.path):
-            nifti_gz_file = ".".join(image.file.path.split(".")[:-1]) + '.nii.gz'
-            nii = nb.load(image.file.path)
-            nb.save(nii, nifti_gz_file)
-            f = open(nifti_gz_file)
-            image.nifti_gz_file.save(nifti_gz_file.split(os.path.sep)[-1], File(f), save=False)
-
         image.save()
 
         return image
@@ -448,27 +386,6 @@ class BaseAFQMap(Image):
                                              verbose_name="No. of subjects", blank=True)
 
     def save(self):
-        if self.perc_bad_voxels == None and self.file:
-            import afqvault.apps.afqmaps.utils as nvutils
-            self.file.open()
-            gzfileobj = GzipFile(filename=self.file.name, mode='rb', fileobj=self.file.file)
-            nii = nb.Nifti1Image.from_file_map({'image': nb.FileHolder(self.file.name, gzfileobj)})
-            self.is_thresholded, ratio_bad = nvutils.is_thresholded(nii)
-            self.perc_bad_voxels = ratio_bad*100.0
-
-        if self.brain_coverage == None and self.file:
-            import afqvault.apps.afqmaps.utils as nvutils
-            self.file.open()
-            gzfileobj = GzipFile(filename=self.file.name, mode='rb', fileobj=self.file.file)
-            nii = nb.Nifti1Image.from_file_map({'image': nb.FileHolder(self.file.name, gzfileobj)})
-            self.not_mni, self.brain_coverage, self.perc_voxels_outside = nvutils.not_in_mni(nii)
-
-        if self.map_type == self.OTHER:
-            import afqvault.apps.afqmaps.utils as nvutils
-            self.file.open()
-            gzfileobj = GzipFile(filename=self.file.name, mode='rb', fileobj=self.file.file)
-            nii = nb.Nifti1Image.from_file_map({'image': nb.FileHolder(self.file.name, gzfileobj)})
-            self.map_type = nvutils.infer_map_type(nii)
 
         # Calculation of image reduced_representation and comparisons
         file_changed = False
@@ -489,10 +406,6 @@ class BaseAFQMap(Image):
                 if comparisons:
                     comparisons.delete()
         super(BaseAFQMap, self).save()
-
-        # Calculate comparisons
-        if do_update or new_image:
-            run_voxelwise_pearson_similarity.apply_async([self.pk])
 
         self.file.close()
 
@@ -522,48 +435,9 @@ class AFQMap(BaseAFQMap):
     @classmethod
     def get_fixed_fields(cls):
         return super(AFQMap, cls).get_fixed_fields() + (
-            'modality', 'contrast_definition', 'cognitive_paradigm_cogatlas', 'cognitive_paradigm_description_url')
+            'modality')
 
 post_save.connect(basecollectionitem_created, sender=AFQMap, weak=True)
-
-class NIDMResults(BaseCollectionItem):
-    ttl_file = models.FileField(upload_to=upload_nidm_to,
-                    storage=NIDMStorage(),
-                    null=True, blank=True,
-                    verbose_name='Turtle serialization of NIDM Results (.ttl)')
-
-    zip_file = models.FileField(upload_to=upload_nidm_to,
-                    storage=NIDMStorage(),
-                    null=False, blank=False, verbose_name='NIDM Results zip file')
-
-    class Meta:
-        verbose_name_plural = "NIDMResults"
-
-    def get_absolute_url(self):
-        return_args = [str(self.collection_id),self.name]
-        url_name = 'view_nidm_results'
-        if self.collection.private:
-            return_args[0] = str(self.collection.private_token)
-        return reverse(url_name, args=return_args)
-
-    @staticmethod
-    def get_form_class():
-        from afqvault.apps.afqmaps.forms import NIDMResultsForm
-        return NIDMResultsForm
-
-@receiver(post_delete, sender=NIDMResults)
-def mymodel_delete(sender, instance, **kwargs):
-    nidm_path = os.path.dirname(instance.zip_file.path)
-    if os.path.isdir(nidm_path):
-        shutil.rmtree(nidm_path)
-
-post_save.connect(basecollectionitem_created, sender=NIDMResults, weak=True)
-
-
-class NIDMResultAFQMap(BaseAFQMap):
-    nidm_results = models.ForeignKey(NIDMResults)
-
-post_save.connect(basecollectionitem_created, sender=NIDMResultAFQMap, weak=True)
 
 class Atlas(Image):
     label_description_file = models.FileField(

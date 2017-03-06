@@ -2,8 +2,6 @@ import csv
 import functools
 import gzip
 import json
-import nibabel as nib
-import nidmresults
 import numpy as np
 import os
 import re
@@ -30,9 +28,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django_datatables_view.base_datatable_view import BaseDatatableView
 from fnmatch import fnmatch
 from guardian.shortcuts import get_objects_for_user
-from nidmviewer.viewer import generate
 from pybraincompare.compare.scatterplot import scatterplot_compare_vector
-from nidmresults.graph import Graph
 from rest_framework.renderers import JSONRenderer
 from sendfile import sendfile
 from sklearn.externals import joblib
@@ -43,15 +39,14 @@ from afqvault import settings
 from afqvault.apps.afqmaps.ahba import calculate_gene_expression_similarity
 from afqvault.apps.afqmaps.forms import CollectionForm, UploadFileForm, SimplifiedAFQMapForm,NeuropowerAFQMapForm,\
     AFQMapForm, EditAFQMapForm, OwnerCollectionForm, EditAtlasForm, AtlasForm, \
-    EditNIDMResultAFQMapForm, NIDMResultsForm, NIDMViewForm, AddAFQMapForm
-from afqvault.apps.afqmaps.models import Collection, Image, Atlas, AFQMap, NIDMResults, NIDMResultAFQMap, \
-    CognitiveAtlasTask, CognitiveAtlasContrast, BaseAFQMap
-from afqvault.apps.afqmaps.tasks import save_resampled_transformation_single
+    Form, AddAFQMapForm
+from afqvault.apps.afqmaps.models import Collection, Image, Atlas, AFQMap, \
+    BaseAFQMap
 from afqvault.apps.afqmaps.utils import split_filename, \
     generate_url_token, HttpRedirectException, get_paper_properties, \
-    get_file_ctime, detect_4D, split_4D_to_3D, splitext_nii_gz, mkdir_p, \
-    send_email_notification, populate_nidm_results, get_server_url, populate_feat_directory, \
-    detect_feat_directory, format_image_collection_names, is_search_compatible, \
+    get_file_ctime, splitext_nii_gz, mkdir_p, \
+    send_email_notification, get_server_url, \
+    format_image_collection_names, is_search_compatible, \
     get_similar_images
 from afqvault.apps.afqmaps.voxel_query_functions import *
 from . import image_metadata
@@ -170,19 +165,7 @@ def choice_datasources(model):
 
 def get_field_datasources():
     ds = choice_datasources(AFQMap)
-    ds['cognitive_paradigm_cogatlas'] = [x.name for x in (CognitiveAtlasTask
-                                                          .objects
-                                                          .all())]
     return ds
-
-def get_contrast_lookup():
-    '''get_contrast_lookup returns a dictionary with keys being cognitive atlas task primary keys, and keys a list of contrasts, each a dictionary with keys "name" and "value"
-    '''
-    contrasts = dict()
-    for task in CognitiveAtlasTask.objects.all():
-        task_contrasts = CognitiveAtlasContrast.objects.filter(task=task)
-        contrasts[task.pk] = [{"name":contrast.name,"value":contrast.pk} for contrast in task_contrasts]
-    return contrasts
 
 @csrf_exempt
 @login_required
@@ -250,10 +233,6 @@ def view_image(request, pk, collection_cid=None):
         'api_cid': api_cid,
         'comparison_is_possible': comparison_is_possible
     }
-
-    if isinstance(image, NIDMResultAFQMap):
-        context['img_basename'] = os.path.basename(image.file.url)
-        context['ttl_basename'] = os.path.basename(image.nidm_results.ttl_file.url)
 
     if isinstance(image, Atlas):
         template = 'afqmaps/atlas_details.html.haml'
@@ -325,8 +304,6 @@ def edit_image(request, pk):
         form = EditAFQMapForm
     elif isinstance(image, Atlas):
         form = EditAtlasForm
-    elif isinstance(image, NIDMResultAFQMap):
-        form = EditNIDMResultAFQMapForm
     else:
         raise Exception("unsupported image type")
     if not owner_or_contrib(request,image.collection):
@@ -339,106 +316,8 @@ def edit_image(request, pk):
     else:
         form = form(instance=image, user=request.user)
 
-    contrasts = get_contrast_lookup()
-    context = {"form": form, "contrasts": json.dumps(contrasts)}
+    context = {"form": form}
     return render(request, "afqmaps/edit_image.html", context)
-
-
-def view_nidm_results(request, collection_cid, nidm_name):
-    collection = get_collection(collection_cid,request)
-    nidmr = get_object_or_404(NIDMResults, collection=collection,name=nidm_name)
-    if request.method == "POST":
-        if not request.user.has_perm("afqmaps.change_basecollectionitem", nidmr):
-            return HttpResponseForbidden()
-        form = NIDMResultsForm(request.POST, request.FILES, instance=nidmr)
-        if form.is_valid():
-            instance = form.save(commit=False)
-            instance.save()
-            form.save_nidm()
-            form.save_m2m()
-            return HttpResponseRedirect(collection.get_absolute_url())
-    else:
-        if owner_or_contrib(request,collection):
-            form = NIDMResultsForm(instance=nidmr)
-        else:
-            form = NIDMViewForm(instance=nidmr)
-
-    # Generate viewer for nidm result
-    nidm_files = [nidmr.ttl_file.path.encode("utf-8")]
-    standard_brain = "/static/images/MNI152.nii.gz"
-
-    # We will remove these scripts and a button
-    remove_resources = ["BOOTSTRAPCSS","ROBOTOFONT","NIDMSELECTBUTTON",
-                       "PAPAYAJS","PAPAYACSS"]
-
-    # We will remove these columns
-    columns_to_remove = ["statmap_location","statmap",
-                         "statmap_type","coordinate_id",
-                         "excsetmap_location"]
-
-    # Text for the "Select image" button
-    button_text = "Statistical Map"
-
-    html_snippet = generate(nidm_files,
-                            base_image=standard_brain,
-                            remove_scripts=remove_resources,
-                            columns_to_remove=columns_to_remove,
-                            template_choice="embed",
-                            button_text=button_text)
-
-    context = {"form": form,"nidm_viewer":html_snippet}
-    return render(request, "afqmaps/edit_nidm_results.html", context)
-
-@login_required
-def delete_nidm_results(request, collection_cid, nidm_name):
-    collection = get_collection(collection_cid,request)
-    nidmr = get_object_or_404(NIDMResults, collection=collection, name=nidm_name)
-
-    if request.user.has_perm("afqmaps.delete_basecollectionitem", nidmr):
-        nidmr.delete()
-        return redirect('collection_details', cid=collection_cid)
-    else:
-        return HttpResponseForbidden()
-
-
-def view_task(request, cog_atlas_id=None):
-    '''view_task returns a view to see a group of images associated with a particular cognitive atlas task.
-    :param cog_atlas_id: afqmaps.models.CognitiveAtlasTask the id for the task defined in the Cognitive Atlas
-    '''
-    from cogat_functions import get_task_graph
-
-    # Get the cognitive atlas id
-    if not cog_atlas_id:
-        return search(request, error_message="Please search for a Cognitive Atlas task to see the task view.")
-
-    try:
-        task = CognitiveAtlasTask.objects.get(cog_atlas_id=cog_atlas_id)
-    except ObjectDoesNotExist:
-        return search(request, error_message="Invalid search for Cognitive Atlas.")
-
-    if task:
-        images = AFQMap.objects.filter(cognitive_paradigm_cogatlas=cog_atlas_id,
-                                             collection__private=False).order_by("pk")
-
-        if len(images) > 0:
-            first_image = images[0]
-            graph = get_task_graph(cog_atlas_id, images=images)
-
-            # Which images aren't tagged with contrasts?
-            not_tagged = images.filter(cognitive_contrast_cogatlas__isnull=True)
-
-            context = {'task': task,
-                       'first_image': first_image,
-                       'cognitive_atlas_tree': graph,
-                       'tree_divid': "tree",  # div id in template to append tree svg to
-                       'images_without_contrasts': not_tagged}
-
-            return render(request, 'cogatlas/cognitive_atlas_task.html', context)
-
-    # If task does not have images
-    context = {"no_task_images": True, # robots won't index page if defined
-               "task": task }
-    return render(request, 'cogatlas/cognitive_atlas_task.html', context)
 
 def add_image_redirect(request,formclass,template_path,redirect_url,is_private):
     temp_collection_name = "%s's temporary collection" % request.user.username
@@ -464,8 +343,7 @@ def add_image_redirect(request,formclass,template_path,redirect_url,is_private):
             return HttpResponseRedirect(redirect)
     else:
         form = formclass(user=request.user, instance=image)
-    contrasts = get_contrast_lookup()
-    context = {"form": form,"contrasts":json.dumps(contrasts)}
+    context = {"form": form}
     return render(request,template_path , context)
 
 @login_required
@@ -494,8 +372,7 @@ def add_image(request, collection_cid):
     else:
         form = AddAFQMapForm(instance=image)
 
-    contrasts = get_contrast_lookup()
-    context = {"form": form,"contrasts": json.dumps(contrasts)}
+    context = {"form": form}
     return render(request, "afqmaps/add_image.html", context)
 
 
@@ -515,12 +392,6 @@ def upload_folder(request, collection_cid):
                 # Save archive (.zip or .tar.gz) to disk
                 if "file" in request.FILES:
                     archive_name = request.FILES['file'].name
-                    if fnmatch(archive_name,'*.nidm.zip'):
-                        form = populate_nidm_results(request,collection)
-                        if not form:
-                            messages.warning(request, "Invalid NIDM-Results file.")
-                        return HttpResponseRedirect(collection.get_absolute_url())
-
                     _, archive_ext = os.path.splitext(archive_name)
                     if archive_ext == '.zip':
                         compressed = zipfile.ZipFile(request.FILES['file'])
@@ -536,11 +407,6 @@ def upload_folder(request, collection_cid):
 
                     for f, path in zip(request.FILES.getlist(
                                        "file_input[]"), request.POST.getlist("paths[]")):
-                        if fnmatch(f.name,'*.nidm.zip'):
-                            request.FILES['file'] = f
-                            populate_nidm_results(request,collection)
-                            continue
-
                         new_path, _ = os.path.split(os.path.join(tmp_directory, path))
                         mkdir_p(new_path)
                         filename = os.path.join(new_path,f.name)
@@ -552,15 +418,6 @@ def upload_folder(request, collection_cid):
 
                 atlases = {}
                 for root, subdirs, filenames in os.walk(tmp_directory):
-                    if detect_feat_directory(root):
-                        populate_feat_directory(request,collection,root)
-                        del(subdirs)
-                        filenames = []
-
-                    # .gfeat parent dir under cope*.feat should not be added as afqmaps
-                    # this may be affected by future nidm-results_fsl parsing changes
-                    if root.endswith('.gfeat'):
-                        filenames = []
 
                     filenames = [f for f in filenames if not f[0] == '.']
                     for fname in sorted(filenames):
@@ -819,12 +676,6 @@ def compare_images(request,pk1,pk2):
             "IMAGE_2_LINK":"/images/%s" % (image2.pk)
     }
 
-    # create reduced representation in case it's not there
-    if not image1.reduced_representation or not os.path.exists(image1.reduced_representation.path):
-        image1 = save_resampled_transformation_single(image1.id) # cannot run this async
-    if not image2.reduced_representation or not os.path.exists(image2.reduced_representation.path):
-        image2 = save_resampled_transformation_single(image2.id) # cannot run this async
-
     # Load image vectors from npy files
     image_vector1 = np.load(image1.reduced_representation.file)
     image_vector2 = np.load(image2.reduced_representation.file)
@@ -937,9 +788,6 @@ def gene_expression_json(request, pk, collection_cid=None):
     if image.is_thresholded:
         raise Http404
 
-    if not image.reduced_representation or not os.path.exists(image.reduced_representation.path):
-        image = save_resampled_transformation_single(image.id)
-
     map_data = np.load(image.reduced_representation.file)
     expression_results = calculate_gene_expression_similarity(map_data)
     dict = expression_results.to_dict("split")
@@ -948,9 +796,7 @@ def gene_expression_json(request, pk, collection_cid=None):
 
 # Return search interface
 def search(request,error_message=None):
-    cogatlas_task = CognitiveAtlasTask.objects.all()
-    context = {'message': error_message,
-               'cogatlas_task': cogatlas_task}
+    context = {'message': error_message}
     return render(request, 'afqmaps/search.html', context)
 
 
@@ -986,24 +832,10 @@ class ImagesInCollectionJson(BaseDatatableView):
         if column == 'file.url':
             if isinstance(row, Image):
                 return '<a class="btn btn-default viewimage" onclick="viewimage(this)" filename="%s" type="%s"><i class="fa fa-lg fa-eye"></i></a>'%(filepath_to_uri(row.file.url), type)
-            elif isinstance(row, NIDMResults):
-                try:
-                    excursion_sets = Graph(
-                        row.zip_file.path).get_excursion_set_maps().values()
-                    map_url = row.get_absolute_url() + "/" + str(excursion_sets[0].file.path)
-                except KeyError:
-                    maps = Graph(
-                        row.zip_file.path).get_statistic_maps()
-                    map_url = row.get_absolute_url() + "/" + str(
-                        maps[0].file.path)
-                return '<a class="btn btn-default viewimage" onclick="viewimage(this)" filename="%s" type="%s"><i class="fa fa-lg fa-eye"></i></a>' % (map_url, type)
         elif column == 'polymorphic_ctype.name':
             return type
         elif column == 'is_valid':
-            if row.polymorphic_ctype.name == "nidm results":
-                return True
-            else:
-                return row.is_valid
+            return row.is_valid
         else:
             return super(ImagesInCollectionJson, self).render_column(row, column)
 
@@ -1017,24 +849,16 @@ class ImagesInCollectionJson(BaseDatatableView):
         return qs
 
 
-class ImagesByTaskJson(BaseDatatableView):
-    columns = ['file.url', 'name', 'cognitive_contrast_cogatlas', 'collection.name']
-    order_columns = ['', 'name', 'cognitive_contrast_cogatlas', 'collection.name']
-
     def get_initial_queryset(self):
         # Do not filter by task here, we may want other parameters
-        cog_atlas_id = self.kwargs['cog_atlas_id']
-        return AFQMap.objects.filter(collection__private=False).filter(cognitive_paradigm_cogatlas=cog_atlas_id)
+        return AFQMap.objects.filter(collection__private=False)
+
 
     def render_column(self, row, column):
         # We want to render user as a custom column
         if column == 'file.url':
             if isinstance(row, Image):
                 return '<a class="btn btn-default viewimage" onclick="viewimage(this)" filename="%s" type="%s"><i class="fa fa-lg fa-eye"></i></a>'%(filepath_to_uri(row.file.url), type)
-            elif isinstance(row, NIDMResults):
-                return ""
-        else:
-            return super(ImagesByTaskJson, self).render_column(row, column)
 
     def filter_queryset(self, qs):
         # use parameters passed in GET request to filter queryset
@@ -1128,9 +952,8 @@ def download_collection(request, cid):
     # Files (local path) to put in the .zip
     collection = get_collection(cid, request)
 
-    filenames = [img.zip_file.path for img in collection.basecollectionitem_set.instance_of(NIDMResults)] + \
-                [img.file.path for img in
-                 (collection.basecollectionitem_set.instance_of(Image).not_instance_of(NIDMResultAFQMap))]
+    filenames = [img.file.path for img in
+                 (collection.basecollectionitem_set.instance_of(Image))]
 
     # Folder name in ZIP archive which contains the above files
     # E.g [collection.name.zip]/collection.name/img.id.nii.gz
@@ -1149,30 +972,4 @@ def download_collection(request, cid):
 
     response = StreamingHttpResponse(zf, content_type='application/zip')
     response['Content-Disposition'] = 'attachment; filename=%s' % urllib.quote_plus(zip_filename.encode('utf-8'))
-    return response
-
-def serve_surface_archive(request, pk, collection_cid=None):
-    img = get_image(pk,collection_cid,request)
-    user_owns_image = owner_or_contrib(request,img.collection)
-    api_cid = pk
-
-    filenames = [img.surface_left_file.path, img.surface_right_file.path]
-
-    # Folder name in ZIP archive which contains the above files
-    # E.g [collection.name.zip]/collection.name/img.id.nii.gz
-    zip_subdir = img.name
-    zip_filename = '%s.zip' % img.name
-
-    zf = zipstream.ZipFile(mode='w', compression=zipstream.ZIP_DEFLATED)
-
-    for fpath in filenames:
-        # Calculate path for file in zip
-        fdir, fname = os.path.split(fpath)
-        zip_path = os.path.join(zip_subdir, fname)
-
-        # Add file, at correct path
-        zf.write(fpath, zip_path)
-
-    response = StreamingHttpResponse(zf, content_type='application/zip')
-    response['Content-Disposition'] = 'attachment; filename=%s' % zip_filename
     return response

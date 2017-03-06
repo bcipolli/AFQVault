@@ -12,7 +12,7 @@ from ast import literal_eval
 from datetime import datetime,date
 from subprocess import CalledProcessError
 
-import nibabel as nib
+import nibabel as nb
 import pandas as pd
 import numpy as np
 import pytz
@@ -25,7 +25,7 @@ from django.db.models import Q
 from django.template.loader import render_to_string
 from lxml import etree
 
-from afqvault.apps.afqmaps.models import Collection, NIDMResults, AFQMap, Comparison, NIDMResultAFQMap, \
+from afqvault.apps.afqmaps.models import Collection, AFQMap, Comparison, \
     BaseAFQMap
 
 
@@ -169,54 +169,6 @@ def detect_4D(nii):
     return (len(shape) == 4 and shape[3] > 1 and shape[3] < 20) or (len(shape) == 5 and shape[3] == 1)
 
 
-def get_afni_subbrick_labels(nii):
-    # AFNI header is nifti1 header extension 4
-    # http://nifti.nimh.nih.gov/nifti-1/AFNIextension1
-
-    extensions = getattr(nii.get_header(), 'extensions', [])
-    header = [ext for ext in extensions if ext.get_code() == 4]
-    if not header:
-        return []
-
-    # slice labels delimited with '~'
-    # <AFNI_atr atr_name="BRICK_LABS" >
-    #   "SetA-SetB_mean~SetA-SetB_Zscr~SetA_mean~SetA_Zscr~SetB_mean~SetB_Zscr"
-    # </AFNI_atr>
-    retval = []
-    try:
-        tree = etree.fromstring(header[0].get_content())
-        lnode = [v for v in tree.findall('.//AFNI_atr') if v.attrib['atr_name'] == 'BRICK_LABS']
-
-        # header xml is wrapped in string literals
-
-        if lnode:
-            retval += literal_eval(lnode[0].text.strip()).split('~')
-    except:
-        pass
-    return retval
-
-
-def split_4D_to_3D(nii,with_labels=True,tmp_dir=None):
-    outpaths = []
-    ext = ".nii.gz"
-    base_dir, name = os.path.split(nii.get_filename())
-    out_dir = tmp_dir or base_dir
-    fname = name.replace(ext,'')
-
-    slices = np.split(nii.get_data(), nii.get_shape()[-1], len(nii.get_shape())-1)
-    labels = get_afni_subbrick_labels(nii)
-    for n, slice in enumerate(slices):
-        nifti = nib.Nifti1Image(np.squeeze(slice),nii.get_header().get_best_affine())
-        layer_nm = labels[n] if n < len(labels) else '(volume %s)' % (n+1)
-        outpath = os.path.join(out_dir, '%s__%s%s' % (fname, layer_nm, ext))
-        nib.save(nifti,outpath)
-        if with_labels:
-            outpaths.append((layer_nm, outpath))
-        else:
-            outpaths.append(outpath)
-    return outpaths
-
-
 def memory_uploadfile(new_file, fname, old_file):
     cfile = ContentFile(open(new_file).read())
     content_type = getattr(old_file,'content_type',False) or 'application/x-gzip',
@@ -244,76 +196,6 @@ def save_pickle_atomically(pkl_data,filename,directory=None):
     os.fsync(filey.fileno())
     filey.close()
     os.rename(tmp_file, filename)
-
-
-def populate_nidm_results(request,collection):
-    inst = NIDMResults(collection=collection)
-    # resolves a odd circular import issue
-    nidmr_form = NIDMResults.get_form_class()
-    request.POST['name'] = 'NIDM'
-    request.POST['description'] = 'NIDM Results'
-    request.POST['collection'] = collection.pk
-    request.FILES['zip_file'] = request.FILES['file']
-    form = nidmr_form(request.POST,request.FILES,instance=inst)
-    if form.is_valid():
-        form.save()
-        return form.instance
-    else:
-        return None
-
-
-def populate_feat_directory(request,collection,existing_dir=None):
-    from nidmfsl.fsl_exporter.fsl_exporter import FSLtoNIDMExporter
-    tmp_dir = tempfile.mkdtemp() if existing_dir is None else existing_dir
-    exc = ValidationError
-
-    try:
-        if existing_dir is None:
-            zip = zipfile.ZipFile(request.FILES['file'])
-            zip.extractall(path=tmp_dir)
-
-        rootpaths = [v for v in os.listdir(tmp_dir)
-                     if not v.startswith('.') and not v.startswith('__MACOSX')]
-        if not rootpaths:
-            raise exc("No contents found in the FEAT directory.")
-        subdir = os.path.join(tmp_dir,rootpaths[0])
-        feat_dir = subdir if len(rootpaths) is 1 and os.path.isdir(subdir) else tmp_dir
-    except:
-        raise exc("Unable to unzip the FEAT directory: \n{0}.".format(get_traceback()))
-    try:
-        fslnidm = FSLtoNIDMExporter(feat_dir=feat_dir, version="1.2.0")
-        fslnidm.parse()
-        nidm_file = fslnidm.export()
-    except:
-        raise exc("Unable to parse the FEAT directory: \n{0}.".format(get_traceback()))
-
-    if not os.path.exists(nidm_file):
-        raise exc("Unable find nidm export of FEAT directory.")
-
-    try:
-        fh = open(nidm_file,'r')
-        request.FILES['file'] = InMemoryUploadedFile(
-                                    ContentFile(fh.read()), "file", fh.name.split('/')[-1],
-                                    "application/zip", os.path.getsize(nidm_file), "utf-8")
-
-    except:
-        raise exc("Unable to convert NIDM results for AFQVault: \n{0}".format(get_traceback()))
-    else:
-        return populate_nidm_results(request,collection)
-    finally:
-        shutil.rmtree(tmp_dir)
-
-
-def detect_feat_directory(path):
-    if not os.path.isdir(path):
-        return False
-    # detect FEAT directory, check for for stats/, logs/, logs/feat4_post
-    for root, dirs, files in os.walk(path):
-        if('stats' in dirs and 'logs' in dirs and 'design.fsf' in files
-           and 'feat4_post' in os.listdir(os.path.join(root,'logs'))):
-            return True
-        else:
-            return False
 
 
 def get_traceback():
@@ -375,51 +257,6 @@ def infer_map_type(nii_obj):
 
 import nibabel as nb
 from nilearn.image import resample_img
-def not_in_mni(nii, plot=False):
-    this_path = os.path.abspath(os.path.dirname(__file__))
-    mask_nii = nb.load(os.path.join(this_path, "static", 'anatomical','MNI152_T1_2mm_brain_mask.nii.gz'))
-
-    #resample to the smaller one
-    if np.prod(nii.shape) > np.prod(mask_nii.shape):
-        nan_mask = np.isnan(nii.get_data())
-        if nan_mask.sum() > 0:
-            nii.get_data()[nan_mask] = 0
-        nii = resample_img(nii, target_affine=mask_nii.get_affine(), target_shape=mask_nii.get_shape(),interpolation='nearest')
-    else:
-        mask_nii = resample_img(mask_nii, target_affine=nii.get_affine(), target_shape=nii.get_shape(),interpolation='nearest')
-
-    brain_mask = mask_nii.get_data() > 0
-    excursion_set = np.logical_not(np.logical_or(nii.get_data() == 0, np.isnan(nii.get_data())))
-
-    # deals with AFNI files
-    if len(excursion_set.shape) == 5:
-        excursion_set = excursion_set[:, :, :, 0, 0]
-    # deal with 4D files
-    elif len(excursion_set.shape) == 4:
-        excursion_set = excursion_set[:, :, :, 0]
-    in_brain_voxels = np.logical_and(excursion_set, brain_mask).sum()
-    out_of_brain_voxels = np.logical_and(excursion_set, np.logical_not(brain_mask)).sum()
-
-
-    perc_mask_covered = in_brain_voxels/float(brain_mask.sum())*100.0
-    if np.isnan(perc_mask_covered):
-        perc_mask_covered = 0
-    perc_voxels_outside_of_mask = out_of_brain_voxels/float(excursion_set.sum())*100.0
-
-    if perc_mask_covered > 50:
-        if perc_mask_covered < 90 and perc_voxels_outside_of_mask > 20:
-            ret = True
-        else:
-            ret = False
-    elif perc_mask_covered == 0:
-        ret = True
-    elif perc_voxels_outside_of_mask > 50:
-        ret = True
-    else:
-        ret = False
-
-    return ret, perc_mask_covered, perc_voxels_outside_of_mask
-
 
 # QUERY FUNCTIONS -------------------------------------------------------------------------------
 
@@ -440,7 +277,7 @@ def is_search_compatible(pk):
 
 
 def get_images_to_compare_with(pk1, for_generation=False):
-    from afqvault.apps.afqmaps.models import AFQMap, NIDMResultAFQMap, Image
+    from afqvault.apps.afqmaps.models import AFQMap, Image
 
     # if the map in question is invalid do not generate any comparisons
     if not is_search_compatible(pk1):
@@ -448,7 +285,7 @@ def get_images_to_compare_with(pk1, for_generation=False):
 
     img = Image.objects.get(pk=pk1)
     image_pks = []
-    for cls in [AFQMap, NIDMResultAFQMap]:
+    for cls in [AFQMap]:
         qs = cls.objects.filter(collection__private=False, is_thresholded=False)
         if not (for_generation and img.collection.DOI is not None):
             qs = qs.exclude(collection__DOI__isnull=True)
@@ -465,8 +302,7 @@ def count_existing_comparisons(pk1):
 def count_possible_comparisons(pk1):
     # Comparisons possible for one pk is the number of other pks
     count_statistic_maps = AFQMap.objects.filter(is_thresholded=False,collection__private=False).exclude(pk=pk1).exclude(analysis_level='S').count()
-    count_nidm_maps = NIDMResultAFQMap.objects.filter(is_thresholded=False,collection__private=False).exclude(pk=pk1).exclude(analysis_level='S').count()
-    return count_statistic_maps + count_nidm_maps
+    return count_statistic_maps
 
 # Returns image comparisons still processing for a given pk
 def count_processing_comparisons(pk1):

@@ -8,15 +8,12 @@ from rest_framework import serializers
 from rest_framework.relations import PrimaryKeyRelatedField, StringRelatedField
 
 from afqvault.apps.afqmaps.forms import (
-    handle_update_ttl_urls,
     ImageValidationMixin,
 )
 
 from afqvault.apps.afqmaps.models import (
     Atlas,
     BaseCollectionItem,
-    CognitiveAtlasTask,
-    CognitiveAtlasContrast,
     Collection,
     AFQMap
 )
@@ -122,8 +119,6 @@ class ImageSerializer(serializers.HyperlinkedModelSerializer,
         return {key: initial_data[key] for key in metadata_field_set}
 
     def validate(self, data):
-        self.afni_subbricks = []
-        self.afni_tmp = None
         self._errors = ErrorDict()
         self.error_class = ErrorList
 
@@ -152,7 +147,6 @@ class EditableAFQMapSerializer(ImageSerializer):
 
 
 class AFQMapSerializer(ImageSerializer):
-    read_only=True, source="cognitive_contrast_cogatlas")
     map_type = serializers.SerializerMethodField()
     analysis_level = serializers.SerializerMethodField()
 

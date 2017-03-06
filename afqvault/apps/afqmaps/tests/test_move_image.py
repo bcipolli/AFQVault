@@ -6,7 +6,6 @@ from uuid import uuid4
 import tempfile
 import os
 import shutil
-from afqvault.apps.afqmaps.utils import detect_4D, split_4D_to_3D
 import nibabel
 from .utils import clearDB
 from afqvault.settings import PRIVATE_MEDIA_ROOT

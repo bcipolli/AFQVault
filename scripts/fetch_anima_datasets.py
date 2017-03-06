@@ -1,3 +1,3 @@
-from afqvault.apps.statmaps.tasks import crawl_anima
+from afqvault.apps.afqmaps.tasks import crawl_anima
 
 crawl_anima()

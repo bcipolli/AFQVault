@@ -6,7 +6,7 @@ automatically when the collection is deleted so this is simply to delete folders
 from afqvault.settings import PRIVATE_MEDIA_ROOT
 import os
 import os.path
-from afqvault.apps.statmaps.models import *
+from afqvault.apps.afqmaps.models import *
 
 def delOldCollDir():
     collDir = os.path.join(PRIVATE_MEDIA_ROOT, 'images')

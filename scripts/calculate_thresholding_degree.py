@@ -3,7 +3,7 @@ import django
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "afqvault.settings")
 django.setup()
 
-from afqvault.apps.statmaps.models import Image, BaseStatisticMap
+from afqvault.apps.afqmaps.models import Image, BaseStatisticMap
 
 
 # Now, we need to generate a "comparison" object for all files in the database

@@ -4,8 +4,8 @@ from gzip import GzipFile
 import django
 import nibabel as nb
 
-import afqvault.apps.statmaps.utils as nvutils
-from afqvault.apps.statmaps.models import StatisticMap, BaseStatisticMap
+import afqvault.apps.afqmaps.utils as nvutils
+from afqvault.apps.afqmaps.models import StatisticMap, BaseStatisticMap
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "afqvault.settings")
 django.setup()

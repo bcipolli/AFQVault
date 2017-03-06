@@ -5,11 +5,11 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 
 from rest_framework import status
 
-from afqvault.apps.statmaps.models import (
+from afqvault.apps.afqmaps.models import (
     Collection, StatisticMap, NIDMResults
 )
-from afqvault.apps.statmaps.tests.utils import clearDB
-from afqvault.apps.statmaps.tests.test_nidm import NIDM_TEST_FILES
+from afqvault.apps.afqmaps.tests.utils import clearDB
+from afqvault.apps.afqmaps.tests.test_nidm import NIDM_TEST_FILES
 from afqvault.api.tests.base import APITestCase
 
 
@@ -27,7 +27,7 @@ class TestCollectionItemUpload(APITestCase):
         self.client.force_authenticate(user=self.user)
 
         url = '/api/collections/%s/images/' % self.coll.pk
-        fname = self.abs_data_path('statmaps/motor_lips.nii.gz')
+        fname = self.abs_data_path('afqmaps/motor_lips.nii.gz')
 
         post_dict = {
             'name': 'test map',
@@ -60,7 +60,7 @@ class TestCollectionItemUpload(APITestCase):
         self.client.force_authenticate(user=self.user)
 
         url = '/api/collections/%s/images/' % self.coll.pk
-        fname = self.abs_data_path('statmaps/motor_lips.nii.gz')
+        fname = self.abs_data_path('afqmaps/motor_lips.nii.gz')
 
         post_dict = {
             'name': 'test map',
@@ -104,7 +104,7 @@ class TestCollectionItemUpload(APITestCase):
         self.client.force_authenticate(user=self.user)
 
         url = '/api/collections/%s/images/' % self.coll.pk
-        fname = self.abs_data_path('statmaps/motor_lips.nii.gz')
+        fname = self.abs_data_path('afqmaps/motor_lips.nii.gz')
 
         post_dict = {
             'name': 'test map',
@@ -175,7 +175,7 @@ class TestCollectionItemUpload(APITestCase):
 
         nidm = NIDMResults.objects.get(pk=response.data['id'])
         self.assertEquals(len(nidm.nidmresultstatisticmap_set.all()),
-                          data['num_statmaps'])
+                          data['num_afqmaps'])
 
         map_type = data['output_row']['type'][0]
         map_img = nidm.nidmresultstatisticmap_set.filter(
@@ -203,7 +203,7 @@ class TestCollectionItemUpload(APITestCase):
 
     def test_missing_required_authentication(self):
         url = '/api/collections/%s/images/' % self.coll.pk
-        fname = self.abs_data_path('statmaps/motor_lips.nii.gz')
+        fname = self.abs_data_path('afqmaps/motor_lips.nii.gz')
 
         post_dict = {
             'name': 'test map',
@@ -229,7 +229,7 @@ class TestCollectionItemUpload(APITestCase):
         other_collection.save()
 
         url = '/api/collections/%s/images/' % other_collection.pk
-        fname = self.abs_data_path('statmaps/motor_lips.nii.gz')
+        fname = self.abs_data_path('afqmaps/motor_lips.nii.gz')
 
         post_dict = {
             'name': 'test map',

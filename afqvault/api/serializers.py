@@ -7,14 +7,14 @@ from django.utils.http import urlquote
 from rest_framework import serializers
 from rest_framework.relations import PrimaryKeyRelatedField, StringRelatedField
 
-from afqvault.apps.statmaps.forms import (
+from afqvault.apps.afqmaps.forms import (
     handle_update_ttl_urls,
     ImageValidationMixin,
     NIDMResultsValidationMixin,
-    save_nidm_statmaps
+    save_nidm_afqmaps
 )
 
-from afqvault.apps.statmaps.models import (
+from afqvault.apps.afqmaps.models import (
     Atlas,
     BaseCollectionItem,
     CognitiveAtlasTask,
@@ -26,7 +26,7 @@ from afqvault.apps.statmaps.models import (
 )
 
 from afqvault.utils import strip, logical_xor
-from afqvault.apps.statmaps.utils import get_paper_properties
+from afqvault.apps.afqmaps.utils import get_paper_properties
 
 
 class HyperlinkedFileField(serializers.FileField):
@@ -268,7 +268,7 @@ class NIDMResultsSerializer(serializers.ModelSerializer,
                             NIDMResultsValidationMixin):
     zip_file = HyperlinkedFileField()
     ttl_file = HyperlinkedFileField(required=False)
-    statmaps = ImageSerializer(many=True, source='nidmresultstatisticmap_set')
+    afqmaps = ImageSerializer(many=True, source='nidmresultstatisticmap_set')
     url = HyperlinkedImageURL(source='get_absolute_url', read_only=True)
 
     def validate(self, data):
@@ -281,7 +281,7 @@ class NIDMResultsSerializer(serializers.ModelSerializer,
 
         if nidm:
             # Handle file upload
-            save_nidm_statmaps(nidm, instance)
+            save_nidm_afqmaps(nidm, instance)
             handle_update_ttl_urls(instance)
 
         return instance
@@ -303,7 +303,7 @@ class EditableNIDMResultsSerializer(serializers.ModelSerializer,
     def save(self):
         instance = super(EditableNIDMResultsSerializer, self).save()
 
-        save_nidm_statmaps(self.nidm, instance)
+        save_nidm_afqmaps(self.nidm, instance)
         handle_update_ttl_urls(instance)
 
         return instance

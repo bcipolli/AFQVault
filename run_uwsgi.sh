@@ -12,7 +12,7 @@ if [ ! -d "/var/www/image_data/images" ]; then
     echo "COLLECTING"
     python manage.py collectmedia --noinput
     echo "REMOVING"
-    rm -R /code/afqvault/apps/statmaps/fixtures
+    rm -R /code/afqvault/apps/afqmaps/fixtures
     echo "GENERATING GLASSBRAINS AND SIMILARITY MEASURES"
     python manage.py trigger_comparisons
 fi

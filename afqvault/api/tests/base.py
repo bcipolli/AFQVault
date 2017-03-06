@@ -7,10 +7,10 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework import test as rest_framework_test
 from rest_framework import status
 
-from afqvault.apps.statmaps.models import Collection
-from afqvault.apps.statmaps.tests.utils import clearDB
+from afqvault.apps.afqmaps.models import Collection
+from afqvault.apps.afqmaps.tests.utils import clearDB
 
-STATMAPS_TESTS_PATH = '../../apps/statmaps/tests/'
+STATMAPS_TESTS_PATH = '../../apps/afqmaps/tests/'
 
 
 class APITestCase(rest_framework_test.APITestCase):

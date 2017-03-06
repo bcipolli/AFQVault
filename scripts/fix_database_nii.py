@@ -3,7 +3,7 @@ Created on 1 Sep 2014
 
 @author: gorgolewski
 '''
-from afqvault.apps.statmaps.models import Image
+from afqvault.apps.afqmaps.models import Image
 import os
 
 import os, errno

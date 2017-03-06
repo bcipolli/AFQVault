@@ -8,7 +8,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "afqvault.settings")
 django.setup()
 
 from nidmfsl.fsl_exporter.fsl_exporter import FSLtoNIDMExporter
-from afqvault.apps.statmaps.utils import detect_feat_directory, get_traceback
+from afqvault.apps.afqmaps.utils import detect_feat_directory, get_traceback
 
 
 if __name__ == '__main__':

@@ -10,7 +10,7 @@ import django
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "afqvault.settings")
 django.setup()
 
-from afqvault.apps.statmaps.models import Image
+from afqvault.apps.afqmaps.models import Image
 
 import errno
 

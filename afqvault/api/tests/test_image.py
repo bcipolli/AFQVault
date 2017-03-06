@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 
-from afqvault.apps.statmaps.models import Collection
-from afqvault.apps.statmaps.tests.utils import (
+from afqvault.apps.afqmaps.models import Collection
+from afqvault.apps.afqmaps.tests.utils import (
     save_atlas_form, save_nidm_form, save_statmap_form, clearDB
 )
 from afqvault.api.tests.base import APITestCase
@@ -28,14 +28,14 @@ class TestImage(APITestCase):
 
         self.image1 = save_statmap_form(
             image_path=self.abs_data_path(
-                'statmaps/motor_lips.nii.gz'
+                'afqmaps/motor_lips.nii.gz'
             ),
             collection=self.collection
         )
 
         self.image2 = save_statmap_form(
             image_path=self.abs_data_path(
-                'statmaps/beta_0001.nii.gz'
+                'afqmaps/beta_0001.nii.gz'
             ),
             collection=self.collection
         )
@@ -60,7 +60,7 @@ class TestImage(APITestCase):
         url = '/api/images/%d/' % self.image1.pk
         response = self.client.get(url)
         self.assertTrue('http' in response.data['collection'])
-        image_path = self.abs_data_path('statmaps/motor_lips.nii.gz')
+        image_path = self.abs_data_path('afqmaps/motor_lips.nii.gz')
         self.assertEqual(response.data['name'], image_path)
 
     def test_images_datatable(self):

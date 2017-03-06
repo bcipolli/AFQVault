@@ -57,7 +57,7 @@ We need to create a dedicated "celery module" and a celery_tasks script that wil
 
 The celery.py has a line that will "autodiscover" tasks defined in app directories in a module script named "tasks.py" (the app.autodiscover part below)
 
-     vim /opt/nv_env/AFQVault/afqvault/apps/statmaps/tasks.py
+     vim /opt/nv_env/AFQVault/afqvault/apps/afqmaps/tasks.py
 
      from __future__ import absolute_import
 
@@ -125,7 +125,7 @@ In one terminal window, I start the server:
 
 
      [tasks]
-       . afqvault.apps.statmaps.tasks.test
+       . afqvault.apps.afqmaps.tasks.test
        . afqvault.celery.debug_task
 
      [2015-01-21 22:18:10,710: INFO/MainProcess] Connected to redis://localhost:6379/0
@@ -141,7 +141,7 @@ In another terminal window, I submit a job to it!
      source /opt/nv_env/bin/activate
      cd /opt/nv_env/AFQVault
      python manage.py shell
-     >>> from afqvault.apps.statmaps.tasks import test
+     >>> from afqvault.apps.afqmaps.tasks import test
      >>> result = test.delay('Vanessa')
      >>> result
      <AsyncResult: 1a3f1e7b-4678-4e3e-98e5-5386d6376439>
@@ -152,7 +152,7 @@ In another terminal window, I submit a job to it!
 
 In the other window I see:
 
-     [2015-01-21 22:40:38,170: INFO/MainProcess] Task afqvault.apps.statmaps.tasks.test[1a3f1e7b-4678-4e3e-98e5-5386d6376439] succeeded in 0.00690895300067s: u'Hello Vanessa!'
+     [2015-01-21 22:40:38,170: INFO/MainProcess] Task afqvault.apps.afqmaps.tasks.test[1a3f1e7b-4678-4e3e-98e5-5386d6376439] succeeded in 0.00690895300067s: u'Hello Vanessa!'
 
      # If we want to get any error:
      >>> result.traceback
@@ -209,7 +209,7 @@ Now I want to try running my task again:
 
      cd /opt/nv_env/AFQVault
      python manage.py shell
-     from afqvault.apps.statmaps.tasks import test
+     from afqvault.apps.afqmaps.tasks import test
      result = test.delay('vanessa')
 
 That worked too! It looks like this one is initialized from django, and the other option (above) is command line. I'll let Chris and Gabriel decide how they want to do this best, since I have no opinion, and more importantly, I'll probably mess it up. I'm now going to try to write tasks to produce the brain images when someone uploads, and also to generate a matrix each night.

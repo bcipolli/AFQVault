@@ -1,7 +1,7 @@
 from django.db.models.aggregates import Count
 from django.shortcuts import render
 
-from ..statmaps.models import Collection
+from ..afqmaps.models import Collection
 
 
 def index_view(request):

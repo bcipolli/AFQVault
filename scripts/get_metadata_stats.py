@@ -1,4 +1,4 @@
-from afqvault.apps.statmaps.models import Collection, StatisticMap,\
+from afqvault.apps.afqmaps.models import Collection, StatisticMap,\
     BaseStatisticMap
 from django.db.models import Q
 total_collection = Collection.objects.all().count()

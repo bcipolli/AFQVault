@@ -10,8 +10,8 @@ afqvault/secrets.py
 afqvault/static/
 
 # test data
-afqvault/apps/statmaps/tests/test_data/feat/*
-afqvault/apps/statmaps/tests/bench/*
+afqvault/apps/afqmaps/tests/test_data/feat/*
+afqvault/apps/afqmaps/tests/bench/*
 
 # celery generated schedule
 celerybeat-schedule

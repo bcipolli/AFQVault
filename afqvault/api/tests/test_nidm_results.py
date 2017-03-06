@@ -4,8 +4,8 @@ from django.contrib.auth.models import User
 
 from rest_framework import status
 
-from afqvault.apps.statmaps.models import NIDMResults, Collection
-from afqvault.apps.statmaps.tests.utils import save_nidm_form, clearDB
+from afqvault.apps.afqmaps.models import NIDMResults, Collection
+from afqvault.apps.afqmaps.tests.utils import save_nidm_form, clearDB
 from afqvault.api.tests.base import BaseTestCases
 
 from afqvault.api.tests.base import APITestCase
@@ -26,7 +26,7 @@ class TestNIDMResults(APITestCase):
         print "\nTesting NIDM results API...."
         response = self.client.get('/api/nidm_results/')
         descriptions = [item[u'description']
-                        for item in response.data['results'][0][u'statmaps']]
+                        for item in response.data['results'][0][u'afqmaps']]
         self.assertIn(
             'NIDM Results: spm_example.nidm.zip > TStatistic.nii.gz',
             descriptions
@@ -36,7 +36,7 @@ class TestNIDMResults(APITestCase):
         url = '/api/nidm_results/%d/' % self.nidm.pk
         response = self.client.get(url)
         self.assertTrue('spm_example.nidm.ttl' in response.data['ttl_file'])
-        self.assertEqual(response.data['statmaps'][0][u'figure'], None)
+        self.assertEqual(response.data['afqmaps'][0][u'figure'], None)
 
     def tearDown(self):
         clearDB()

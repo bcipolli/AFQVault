@@ -10,8 +10,8 @@ import django
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "afqvault.settings")
 django.setup()
 
-from afqvault.apps.statmaps.models import Similarity, Comparison, StatisticMap
-from afqvault.apps.statmaps.tasks import save_voxelwise_pearson_similarity
+from afqvault.apps.afqmaps.models import Similarity, Comparison, StatisticMap
+from afqvault.apps.afqmaps.tasks import save_voxelwise_pearson_similarity
 from django.db import IntegrityError
 import errno
 

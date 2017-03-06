@@ -11,8 +11,8 @@ import django
 import numpy as np
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "afqvault.settings")
 django.setup()
-from afqvault.apps.statmaps.models import Similarity, Comparison, Image
-from afqvault.apps.statmaps.utils import count_existing_comparisons, \
+from afqvault.apps.afqmaps.models import Similarity, Comparison, Image
+from afqvault.apps.afqmaps.utils import count_existing_comparisons, \
     count_processing_comparisons, get_existing_comparisons, count_possible_comparisons
 
 

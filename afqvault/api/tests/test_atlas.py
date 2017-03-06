@@ -7,12 +7,12 @@ import xml.etree.ElementTree as ET
 from django.contrib.auth.models import User
 from rest_framework import status
 
-from afqvault.apps.statmaps.models import Atlas
+from afqvault.apps.afqmaps.models import Atlas
 
-from afqvault.apps.statmaps.tests.utils import (
+from afqvault.apps.afqmaps.tests.utils import (
     clearDB, save_atlas_form, save_nidm_form, save_statmap_form
 )
-from afqvault.apps.statmaps.models import Collection
+from afqvault.apps.afqmaps.models import Collection
 from afqvault.api.tests.base import APITestCase, BaseTestCases
 
 
@@ -57,7 +57,7 @@ class TestAtlas(APITestCase):
         # Statistical Map 1 and 2
         print "Adding statistical maps..."
         nii_path = self.abs_data_path(
-            'statmaps/motor_lips.nii.gz'
+            'afqmaps/motor_lips.nii.gz'
         )
         self.Image1 = save_statmap_form(
             image_path=nii_path,
@@ -65,7 +65,7 @@ class TestAtlas(APITestCase):
         )
 
         nii_path = self.abs_data_path(
-            'statmaps/beta_0001.nii.gz'
+            'afqmaps/beta_0001.nii.gz'
         )
         self.Image2 = save_statmap_form(
             image_path=nii_path,

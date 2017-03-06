@@ -97,7 +97,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'afqvault.apps.statmaps.middleware.CollectionRedirectMiddleware',
+    'afqvault.apps.afqmaps.middleware.CollectionRedirectMiddleware',
     # Uncomment the next line for simple clickjacking protection:
     # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
@@ -139,7 +139,7 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'afqvault.apps.main',
-    'afqvault.apps.statmaps',
+    'afqvault.apps.afqmaps',
     'afqvault.apps.users',
     'django.contrib.sitemaps',
     # Uncomment the next line to enable the admin:
@@ -302,7 +302,7 @@ CELERY_DEFAULT_QUEUE = 'default'
 CELERY_QUEUES = (
     Queue('default', Exchange('default'), routing_key='default'),
 )
-CELERY_IMPORTS = ('afqvault.apps.statmaps.tasks', )
+CELERY_IMPORTS = ('afqvault.apps.afqmaps.tasks', )
 
 CELERYBEAT_SCHEDULE = {
     'anima_crawl_every day': {
@@ -345,7 +345,7 @@ os.environ["PATH"] += os.pathsep + '/path/to/lib/provToolbox/bin'
 
 #CELERYBEAT_SCHEDULE = {
 #    'run_make_correlation_df': {
-#        'task': 'afqvault.apps.statmaps.tasks...',
+#        'task': 'afqvault.apps.afqmaps.tasks...',
 #        'schedule': timedelta(minutes=30),
 #    },
 #}
@@ -362,7 +362,7 @@ if "test" in sys.argv or "benchmark" in sys.argv:
 TAGGIT_CASE_INSENSITIVE=True
 
 FIXTURE_DIRS = (
-    'apps/statmaps/fixtures/',
+    'apps/afqmaps/fixtures/',
 )
 
 MEDIA_ROOT = PRIVATE_MEDIA_ROOT

@@ -1,7 +1,7 @@
 from django.forms.models import model_to_dict
 
-from afqvault.apps.statmaps.forms import EditStatisticMapForm
-from afqvault.apps.statmaps.models import StatisticMap
+from afqvault.apps.afqmaps.forms import EditStatisticMapForm
+from afqvault.apps.afqmaps.models import StatisticMap
 
 count = StatisticMap.objects.count()
 for i, image in enumerate(StatisticMap.objects.all()):

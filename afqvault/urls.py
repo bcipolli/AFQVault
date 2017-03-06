@@ -27,7 +27,7 @@ urlpatterns = patterns('',
                        url('', include(
                            'social.apps.django_app.urls', namespace='social')),
                        url(r'^', include('afqvault.apps.main.urls')),
-                       url(r'^', include('afqvault.apps.statmaps.urls')),
+                       url(r'^', include('afqvault.apps.afqmaps.urls')),
                        url(r'^accounts/',
                            include('afqvault.apps.users.urls')),
                        url(r'^admin/', include(admin.site.urls)),

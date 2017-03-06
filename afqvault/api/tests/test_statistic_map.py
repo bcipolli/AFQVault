@@ -2,8 +2,8 @@ import uuid
 
 from rest_framework import status
 
-from afqvault.apps.statmaps.models import StatisticMap
-from afqvault.apps.statmaps.tests.utils import save_statmap_form
+from afqvault.apps.afqmaps.models import StatisticMap
+from afqvault.apps.afqmaps.tests.utils import save_statmap_form
 
 from afqvault.api.tests.base import BaseTestCases
 
@@ -12,7 +12,7 @@ class TestStatisticMapChange(BaseTestCases.TestCollectionItemChange):
     def setUp(self):
         super(TestStatisticMapChange, self).setUp()
         self.item = save_statmap_form(
-            image_path=self.abs_data_path('statmaps/motor_lips.nii.gz'),
+            image_path=self.abs_data_path('afqmaps/motor_lips.nii.gz'),
             collection=self.coll
         )
 
@@ -21,7 +21,7 @@ class TestStatisticMapChange(BaseTestCases.TestCollectionItemChange):
     def test_statistic_map_update(self):
         self.client.force_authenticate(user=self.user)
 
-        file = self.simple_uploaded_file('statmaps/motor_lips.nii.gz')
+        file = self.simple_uploaded_file('afqmaps/motor_lips.nii.gz')
 
         put_dict = {
             'name': "renamed %s" % uuid.uuid4(),

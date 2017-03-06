@@ -11,11 +11,11 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from taggit.models import Tag
 
-from afqvault.apps.statmaps.models import (Atlas, Collection, Image,
+from afqvault.apps.afqmaps.models import (Atlas, Collection, Image,
                                              StatisticMap, NIDMResults)
-from afqvault.apps.statmaps.views import (get_collection, get_image,
+from afqvault.apps.afqmaps.views import (get_collection, get_image,
                                             owner_or_contrib)
-from afqvault.apps.statmaps.voxel_query_functions import (getAtlasVoxels,
+from afqvault.apps.afqmaps.voxel_query_functions import (getAtlasVoxels,
                                                             getSynonyms,
                                                             toAtlas,
                                                             voxelToRegion)
@@ -208,7 +208,7 @@ class AtlasViewSet(ImageViewSet):
                 searchList = [search]
             else:
                 synonymsDict = {}
-                with open(os.path.join(afqvault_root, 'afqvault/apps/statmaps/NIFgraph.pkl'), 'rb') as input:
+                with open(os.path.join(afqvault_root, 'afqvault/apps/afqmaps/NIFgraph.pkl'), 'rb') as input:
                     graph = pickle.load(input)
                 for atlasRegion in atlasRegions:
                     synonymsDict[atlasRegion] = getSynonyms(atlasRegion)

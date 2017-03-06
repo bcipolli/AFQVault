@@ -21,12 +21,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.AddField(
-            model_name='nidmresultstatisticmap',
-            name='number_of_subjects',
-            field=models.IntegerField(help_text=b'Number of subjects used to generate this map', null=True, verbose_name=b'No. of subjects', blank=True),
-        ),
-        migrations.AddField(
-            model_name='statisticmap',
+            model_name='afqmap',
             name='number_of_subjects',
             field=models.IntegerField(help_text=b'Number of subjects used to generate this map', null=True, verbose_name=b'No. of subjects', blank=True),
         ),

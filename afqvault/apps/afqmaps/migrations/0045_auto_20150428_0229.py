@@ -14,11 +14,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RemoveField(
-            model_name='nidmresultstatisticmap',
-            name='transform',
-        ),
-        migrations.RemoveField(
-            model_name='statisticmap',
+            model_name='afqmap',
             name='transform',
         ),
         migrations.AddField(

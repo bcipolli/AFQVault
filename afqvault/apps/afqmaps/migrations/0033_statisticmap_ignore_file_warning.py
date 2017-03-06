@@ -12,7 +12,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.AddField(
-            model_name='statisticmap',
+            model_name='afqmap',
             name='ignore_file_warning',
             field=models.BooleanField(default=False),
             preserve_default=True,

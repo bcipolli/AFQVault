@@ -12,11 +12,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RemoveField(
-            model_name='nidmresultstatisticmap',
-            name='thumbnail',
-        ),
-        migrations.RemoveField(
-            model_name='statisticmap',
+            model_name='afqmap',
             name='thumbnail',
         ),
         migrations.AddField(

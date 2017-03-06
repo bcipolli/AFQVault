@@ -12,13 +12,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.AddField(
-            model_name='nidmresultstatisticmap',
-            name='transform',
-            field=models.CharField(help_text=b'The path to the pickle file with a brain masked vector of resampled image data', max_length=200, null=True, verbose_name=b'Image transformation pickle path', blank=True),
-            preserve_default=True,
-        ),
-        migrations.AddField(
-            model_name='statisticmap',
+            model_name='afqmap',
             name='transform',
             field=models.CharField(help_text=b'The path to the pickle file with a brain masked vector of resampled image data', max_length=200, null=True, verbose_name=b'Image transformation pickle path', blank=True),
             preserve_default=True,

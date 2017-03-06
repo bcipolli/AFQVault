@@ -13,12 +13,12 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.AddField(
-            model_name='statisticmap',
+            model_name='afqmap',
             name='cognitive_paradigm_description_url',
             field=models.URLField(help_text=b'Link to a paper, poster, abstract or other form text describing in detail the task performed by the subject(s) in the scanner.', null=True, verbose_name=b'Cognitive Paradigm Description URL', blank=True),
         ),
         migrations.AlterField(
-            model_name='statisticmap',
+            model_name='afqmap',
             name='cognitive_paradigm_cogatlas',
             field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, verbose_name=b'Cognitive Atlas Paradigm', to='afqmaps.CognitiveAtlasTask', help_text=b"Task (or lack of it) performed by the subjects in the scanner described using <a href='http://www.cognitiveatlas.org/' target='_blank'>Cognitive Atlas</a> terms", null=True),
         ),

@@ -7,7 +7,7 @@ def add_contenttype(apps, schema_editor):
     ContentType = apps.get_model("contenttypes", "ContentType")
     AFQMap = apps.get_model("afqmaps", "AFQMap")
     for statisticmap in AFQMap.objects.all():
-        statisticmap.polymorphic_ctype = ContentType.objects.get(model='statisticmap', app_label='afqmaps')
+        statisticmap.polymorphic_ctype = ContentType.objects.get(model='afqmap', app_label='afqmaps')
         statisticmap.save()
 
 class Migration(migrations.Migration):

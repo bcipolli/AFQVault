@@ -12,13 +12,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.AlterField(
-            model_name='nidmresultstatisticmap',
-            name='perc_bad_voxels',
-            field=models.FloatField(null=True, blank=True),
-            preserve_default=True,
-        ),
-        migrations.AlterField(
-            model_name='statisticmap',
+            model_name='afqmap',
             name='perc_bad_voxels',
             field=models.FloatField(null=True, blank=True),
             preserve_default=True,

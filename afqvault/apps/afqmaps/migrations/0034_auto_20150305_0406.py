@@ -12,25 +12,13 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.AddField(
-            model_name='nidmresultstatisticmap',
+            model_name='afqmap',
             name='is_thresholded',
             field=models.NullBooleanField(),
             preserve_default=True,
         ),
         migrations.AddField(
-            model_name='nidmresultstatisticmap',
-            name='perc_bad_voxels',
-            field=models.FloatField(null=True),
-            preserve_default=True,
-        ),
-        migrations.AddField(
-            model_name='statisticmap',
-            name='is_thresholded',
-            field=models.NullBooleanField(),
-            preserve_default=True,
-        ),
-        migrations.AddField(
-            model_name='statisticmap',
+            model_name='afqmap',
             name='perc_bad_voxels',
             field=models.FloatField(null=True),
             preserve_default=True,

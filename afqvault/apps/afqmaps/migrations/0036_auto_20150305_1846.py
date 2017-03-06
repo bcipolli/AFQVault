@@ -12,7 +12,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.AlterField(
-            model_name='statisticmap',
+            model_name='afqmap',
             name='ignore_file_warning',
             field=models.BooleanField(default=False, help_text=b'Ignore the warning when the map is sparse by nature, an ROI mask, or was acquired with limited field of view.', verbose_name=b'Ignore the warning about thresholding'),
             preserve_default=True,

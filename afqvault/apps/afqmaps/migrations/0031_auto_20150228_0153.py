@@ -20,13 +20,13 @@ class Migration(migrations.Migration):
             options={'ordering': ['name']},
         ),
         migrations.AlterField(
-            model_name='statisticmap',
+            model_name='afqmap',
             name='cognitive_paradigm_cogatlas',
             field=models.ForeignKey(verbose_name=b'Cognitive Paradigm', to='afqmaps.CognitiveAtlasTask', help_text=b"Task (or lack of it) performed by the subjects in the scanner described using <a href='http://www.cognitiveatlas.org/'>Cognitive Atlas</a> terms", null=True),
             preserve_default=True,
         ),
         migrations.AlterField(
-            model_name='statisticmap',
+            model_name='afqmap',
             name='contrast_definition_cogatlas',
             field=models.CharField(help_text=b"Link to <a href='http://www.cognitiveatlas.org/'>Cognitive Atlas</a> definition of this contrast", max_length=200, null=True, verbose_name=b'Cognitive Atlas definition', blank=True),
             preserve_default=True,

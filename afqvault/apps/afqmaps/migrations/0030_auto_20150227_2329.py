@@ -12,7 +12,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.AlterField(
-            model_name='statisticmap',
+            model_name='afqmap',
             name='contrast_definition_cogatlas',
             field=models.ForeignKey(to='afqmaps.CognitiveAtlasTask', max_length=200, blank=True, help_text=b"Link to <a href='http://www.cognitiveatlas.org/'>Cognitive Atlas</a> definition of this contrast", null=True, verbose_name=b'Cognitive Atlas definition'),
             preserve_default=True,

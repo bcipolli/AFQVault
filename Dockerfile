@@ -60,6 +60,7 @@ RUN pip install zipstream
 
 RUN pip install git+https://github.com/benkonrath/django-guardian.git@7cded9081249e9a4cd9f5cd85e67cf843c138b0c#egg=django-guardian
 RUN pip install nidmviewer==0.1.3
+RUN pip install git+https://github.com/bcipolli/social_orcid.git
 
 RUN pip install tables
 RUN pip install statsmodels

@@ -5,9 +5,9 @@ from django.db import models, migrations
 
 def move_afqmaps(apps, schema_editor):
     Image = apps.get_model("afqmaps", "Image")
-    StatisticMap = apps.get_model("afqmaps", "StatisticMap")
+    AFQMap = apps.get_model("afqmaps", "AFQMap")
     for image in Image.objects.all():
-        statisticmap = StatisticMap(image_ptr_id=image.pk)
+        statisticmap = AFQMap(image_ptr_id=image.pk)
         statisticmap.__dict__.update(image.__dict__)
         statisticmap.save() # save first time
         statisticmap.__dict__.update(image.__dict__)

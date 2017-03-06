@@ -2,7 +2,7 @@ import numpy as np
 from cognitiveatlas.api import get_task, get_concept
 from exceptions import ValueError
 
-from afqvault.apps.afqmaps.models import CognitiveAtlasTask, CognitiveAtlasContrast, StatisticMap
+from afqvault.apps.afqmaps.models import CognitiveAtlasTask, CognitiveAtlasContrast, AFQMap
 
 
 # Function to make a node
@@ -43,7 +43,7 @@ def get_task_graph(task_id, images=None):
 
         # Do we have images tagged with the contrast?
         if not images:
-            images = StatisticMap.objects.filter(cognitive_contrast_cogatlas=contrast)
+            images = AFQMap.objects.filter(cognitive_contrast_cogatlas=contrast)
 
         for concept in contrast_concepts.json:
             if concept and concept["name"] not in current_names:

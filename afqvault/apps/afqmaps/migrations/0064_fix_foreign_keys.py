@@ -5,10 +5,10 @@ import taggit.managers
 from django.db import migrations, models
 
 def fix_foreign_keys(apps, schema_editor):
-    NIDMResultStatisticMap = apps.get_model("afqmaps", "NIDMResultStatisticMap")
+    NIDMResultAFQMap = apps.get_model("afqmaps", "NIDMResultAFQMap")
     NIDMResults = apps.get_model("afqmaps", "NIDMResults")
 
-    for nidmresultmap in NIDMResultStatisticMap.objects.all():
+    for nidmresultmap in NIDMResultAFQMap.objects.all():
         nidmresultmap.nidm_results_id = NIDMResults.objects.get(old_id=nidmresultmap.nidm_results_id).pk
         nidmresultmap.save()
 

@@ -21,8 +21,8 @@ from afqvault.apps.afqmaps.models import (
     CognitiveAtlasContrast,
     Collection,
     NIDMResults,
-    NIDMResultStatisticMap,
-    StatisticMap
+    NIDMResultAFQMap,
+    AFQMap
 )
 
 from afqvault.utils import strip, logical_xor
@@ -114,14 +114,14 @@ class ImageSerializer(serializers.HyperlinkedModelSerializer,
         """
         Because Image is Polymorphic
         """
-        if isinstance(obj, StatisticMap):
-            serializer = StatisticMapSerializer
+        if isinstance(obj, AFQMap):
+            serializer = AFQMapSerializer
             image_type = 'statistic_map'
         elif isinstance(obj, Atlas):
             serializer = AtlasSerializer
             image_type = 'atlas'
-        elif isinstance(obj, NIDMResultStatisticMap):
-            serializer = NIDMResultStatisticMapSerializer
+        elif isinstance(obj, NIDMResultAFQMap):
+            serializer = NIDMResultAFQMapSerializer
             image_type = 'NIDM results statistic map'
         elif isinstance(obj, NIDMResults):
             serializer = NIDMResultsSerializer
@@ -163,7 +163,7 @@ class ImageSerializer(serializers.HyperlinkedModelSerializer,
         super(ImageSerializer, self).save(*args, **kwargs)
 
 
-class EditableStatisticMapSerializer(ImageSerializer):
+class EditableAFQMapSerializer(ImageSerializer):
     cognitive_paradigm_cogatlas = PrimaryKeyRelatedField(
         queryset=CognitiveAtlasTask.objects.all(),
         allow_null=True,
@@ -176,12 +176,12 @@ class EditableStatisticMapSerializer(ImageSerializer):
     )
 
     class Meta:
-        model = StatisticMap
+        model = AFQMap
         read_only_fields = ('collection',)
         exclude = ['polymorphic_ctype', 'ignore_file_warning', 'data']
 
 
-class StatisticMapSerializer(ImageSerializer):
+class AFQMapSerializer(ImageSerializer):
 
     cognitive_paradigm_cogatlas = StringRelatedField(read_only=True)
     cognitive_paradigm_cogatlas_id = PrimaryKeyRelatedField(
@@ -199,7 +199,7 @@ class StatisticMapSerializer(ImageSerializer):
         return obj.get_analysis_level_display()
 
     class Meta:
-        model = StatisticMap
+        model = AFQMap
         exclude = ['polymorphic_ctype', 'ignore_file_warning', 'data']
 
     def value_to_python(self, value):
@@ -218,7 +218,7 @@ class StatisticMapSerializer(ImageSerializer):
         return ret
 
 
-class NIDMResultStatisticMapSerializer(ImageSerializer):
+class NIDMResultAFQMapSerializer(ImageSerializer):
 
     nidm_results = HyperlinkedRelatedURL(read_only=True)
     nidm_results_ttl = serializers.SerializerMethodField()
@@ -238,7 +238,7 @@ class NIDMResultStatisticMapSerializer(ImageSerializer):
         )
 
     class Meta:
-        model = NIDMResultStatisticMap
+        model = NIDMResultAFQMap
         exclude = ['polymorphic_ctype']
 
     def to_representation(self, obj):

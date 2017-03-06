@@ -1,4 +1,4 @@
-from afqvault.apps.afqmaps.forms import StatisticMapForm, AtlasForm, NIDMResultsForm
+from afqvault.apps.afqmaps.forms import AFQMapForm, AtlasForm, NIDMResultsForm
 from afqvault.apps.afqmaps.models import Collection, Image
 from django.core.files.uploadedfile import SimpleUploadedFile
 from afqvault.settings import PRIVATE_MEDIA_ROOT
@@ -44,7 +44,7 @@ def save_statmap_form(image_path,collection,ignore_file_warning=False,image_name
                      'hdr_file': SimpleUploadedFile(image_path[1], open(image_path[1]).read())}
     else:
         file_dict = {'file': SimpleUploadedFile(image_path, open(image_path).read())}
-    form = StatisticMapForm(post_dict, file_dict)
+    form = AFQMapForm(post_dict, file_dict)
     # this is necessary to split 4D volumes
     form.is_valid()
     return form.save()

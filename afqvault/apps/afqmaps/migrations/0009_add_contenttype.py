@@ -5,8 +5,8 @@ from django.db import models, migrations
 
 def add_contenttype(apps, schema_editor):
     ContentType = apps.get_model("contenttypes", "ContentType")
-    StatisticMap = apps.get_model("afqmaps", "StatisticMap")
-    for statisticmap in StatisticMap.objects.all():
+    AFQMap = apps.get_model("afqmaps", "AFQMap")
+    for statisticmap in AFQMap.objects.all():
         statisticmap.polymorphic_ctype = ContentType.objects.get(model='statisticmap', app_label='afqmaps')
         statisticmap.save()
 

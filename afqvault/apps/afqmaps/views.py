@@ -41,11 +41,11 @@ from xml.dom import minidom
 import afqvault
 from afqvault import settings
 from afqvault.apps.afqmaps.ahba import calculate_gene_expression_similarity
-from afqvault.apps.afqmaps.forms import CollectionForm, UploadFileForm, SimplifiedStatisticMapForm,NeuropowerStatisticMapForm,\
-    StatisticMapForm, EditStatisticMapForm, OwnerCollectionForm, EditAtlasForm, AtlasForm, \
-    EditNIDMResultStatisticMapForm, NIDMResultsForm, NIDMViewForm, AddStatisticMapForm
-from afqvault.apps.afqmaps.models import Collection, Image, Atlas, StatisticMap, NIDMResults, NIDMResultStatisticMap, \
-    CognitiveAtlasTask, CognitiveAtlasContrast, BaseStatisticMap
+from afqvault.apps.afqmaps.forms import CollectionForm, UploadFileForm, SimplifiedAFQMapForm,NeuropowerAFQMapForm,\
+    AFQMapForm, EditAFQMapForm, OwnerCollectionForm, EditAtlasForm, AtlasForm, \
+    EditNIDMResultAFQMapForm, NIDMResultsForm, NIDMViewForm, AddAFQMapForm
+from afqvault.apps.afqmaps.models import Collection, Image, Atlas, AFQMap, NIDMResults, NIDMResultAFQMap, \
+    CognitiveAtlasTask, CognitiveAtlasContrast, BaseAFQMap
 from afqvault.apps.afqmaps.tasks import save_resampled_transformation_single
 from afqvault.apps.afqmaps.utils import split_filename, generate_pycortex_volume, \
     generate_pycortex_static, generate_url_token, HttpRedirectException, get_paper_properties, \
@@ -169,7 +169,7 @@ def choice_datasources(model):
 
 
 def get_field_datasources():
-    ds = choice_datasources(StatisticMap)
+    ds = choice_datasources(AFQMap)
     ds['cognitive_paradigm_cogatlas'] = [x.name for x in (CognitiveAtlasTask
                                                           .objects
                                                           .all())]
@@ -251,7 +251,7 @@ def view_image(request, pk, collection_cid=None):
         'comparison_is_possible': comparison_is_possible
     }
 
-    if isinstance(image, NIDMResultStatisticMap):
+    if isinstance(image, NIDMResultAFQMap):
         context['img_basename'] = os.path.basename(image.file.url)
         context['ttl_basename'] = os.path.basename(image.nidm_results.ttl_file.url)
 
@@ -291,7 +291,7 @@ def view_collection(request, cid):
             'edit_permission': edit_permission,
             'cid':cid}
 
-    if not all(collection.basecollectionitem_set.instance_of(StatisticMap).values_list('is_valid', flat=True)):
+    if not all(collection.basecollectionitem_set.instance_of(AFQMap).values_list('is_valid', flat=True)):
         msg = "Some of the images in this collection are missing crucial metadata."
         if owner_or_contrib(request,collection):
             msg += " Please add the missing information by <a href='editmetadata'>editing images metadata</a>."
@@ -321,12 +321,12 @@ def delete_collection(request, cid):
 @login_required
 def edit_image(request, pk):
     image = get_object_or_404(Image,pk=pk)
-    if isinstance(image, StatisticMap):
-        form = EditStatisticMapForm
+    if isinstance(image, AFQMap):
+        form = EditAFQMapForm
     elif isinstance(image, Atlas):
         form = EditAtlasForm
-    elif isinstance(image, NIDMResultStatisticMap):
-        form = EditNIDMResultStatisticMapForm
+    elif isinstance(image, NIDMResultAFQMap):
+        form = EditNIDMResultAFQMapForm
     else:
         raise Exception("unsupported image type")
     if not owner_or_contrib(request,image.collection):
@@ -417,7 +417,7 @@ def view_task(request, cog_atlas_id=None):
         return search(request, error_message="Invalid search for Cognitive Atlas.")
 
     if task:
-        images = StatisticMap.objects.filter(cognitive_paradigm_cogatlas=cog_atlas_id,
+        images = AFQMap.objects.filter(cognitive_paradigm_cogatlas=cog_atlas_id,
                                              collection__private=False).order_by("pk")
 
         if len(images) > 0:
@@ -453,7 +453,7 @@ def add_image_redirect(request,formclass,template_path,redirect_url,is_private):
                                      private=is_private,
                                      private_token=priv_token)
         temp_collection.save()
-    image = StatisticMap(collection=temp_collection)
+    image = AFQMap(collection=temp_collection)
     if request.method == "POST":
         form = formclass(request.POST, request.FILES, instance=image, user=request.user)
         if form.is_valid():
@@ -472,27 +472,27 @@ def add_image_redirect(request,formclass,template_path,redirect_url,is_private):
 def add_image_for_neurosynth(request):
     redirect_url = "http://neurosynth.org/decode/?afqvault=%(private_token)s-%(image_id)s"
     template_path = "afqmaps/add_image_for_neurosynth.html"
-    return add_image_redirect(request,SimplifiedStatisticMapForm,template_path,redirect_url,False)
+    return add_image_redirect(request,SimplifiedAFQMapForm,template_path,redirect_url,False)
 
 @login_required
 def add_image_for_neuropower(request):
     redirect_url = "http://neuropowertools.org/neuropower/neuropowerinput/?afqvault=%(private_token)s-%(image_id)s"
     template_path = "afqmaps/add_image_for_neuropower.html"
-    return add_image_redirect(request,NeuropowerStatisticMapForm,template_path,redirect_url,True)
+    return add_image_redirect(request,NeuropowerAFQMapForm,template_path,redirect_url,True)
 
 @login_required
 def add_image(request, collection_cid):
     collection = get_collection(collection_cid,request)
     if not owner_or_contrib(request,collection):
         return HttpResponseForbidden()
-    image = StatisticMap(collection=collection)
+    image = AFQMap(collection=collection)
     if request.method == "POST":
-        form = AddStatisticMapForm(request.POST, request.FILES, instance=image)
+        form = AddAFQMapForm(request.POST, request.FILES, instance=image)
         if form.is_valid():
             image = form.save()
             return HttpResponseRedirect(image.get_absolute_url())
     else:
-        form = AddStatisticMapForm(instance=image)
+        form = AddAFQMapForm(instance=image)
 
     contrasts = get_contrast_lookup()
     context = {"form": form,"contrasts": json.dumps(contrasts)}
@@ -598,13 +598,13 @@ def upload_folder(request, collection_cid):
                     # Fregexp = re.compile('spmF.*')
 
                     if Tregexp.search(fpath) is not None:
-                        map_type = StatisticMap.T
+                        map_type = AFQMap.T
                     else:
                         # Check if filename corresponds to a F-map
                         if Tregexp.search(fpath) is not None:
-                            map_type = StatisticMap.F
+                            map_type = AFQMap.F
                         else:
-                            map_type = StatisticMap.OTHER
+                            map_type = AFQMap.OTHER
 
                     path, name, ext = split_filename(fpath)
                     dname = name + ".nii.gz"
@@ -639,7 +639,7 @@ def upload_folder(request, collection_cid):
                                     open(atlases[os.path.join(path,name)]).read(),
                                                                     name=name + ".xml")
                     else:
-                        new_image = StatisticMap(name=spaced_name, is_valid=False,
+                        new_image = AFQMap(name=spaced_name, is_valid=False,
                                 description=raw_hdr['descrip'] or label, collection=collection)
                         new_image.map_type = map_type
 
@@ -1102,7 +1102,7 @@ class ImagesByTaskJson(BaseDatatableView):
     def get_initial_queryset(self):
         # Do not filter by task here, we may want other parameters
         cog_atlas_id = self.kwargs['cog_atlas_id']
-        return StatisticMap.objects.filter(collection__private=False).filter(cognitive_paradigm_cogatlas=cog_atlas_id)
+        return AFQMap.objects.filter(collection__private=False).filter(cognitive_paradigm_cogatlas=cog_atlas_id)
 
     def render_column(self, row, column):
         # We want to render user as a custom column
@@ -1132,7 +1132,7 @@ class AtlasesAndParcellationsJson(BaseDatatableView):
         # these are simply objects displayed in datatable
         # You should not filter data returned here by any filter values entered by user. This is because
         # we need some base queryset to count total number of records.
-        qs = Image.objects.instance_of(Atlas) | Image.objects.instance_of(StatisticMap).filter(statisticmap__map_type=BaseStatisticMap.Pa)
+        qs = Image.objects.instance_of(Atlas) | Image.objects.instance_of(AFQMap).filter(statisticmap__map_type=BaseAFQMap.Pa)
         qs = qs.filter(collection__private=False).exclude(collection__DOI__isnull=True)
         return qs
 
@@ -1208,7 +1208,7 @@ def download_collection(request, cid):
 
     filenames = [img.zip_file.path for img in collection.basecollectionitem_set.instance_of(NIDMResults)] + \
                 [img.file.path for img in
-                 (collection.basecollectionitem_set.instance_of(Image).not_instance_of(NIDMResultStatisticMap))]
+                 (collection.basecollectionitem_set.instance_of(Image).not_instance_of(NIDMResultAFQMap))]
 
     # Folder name in ZIP archive which contains the above files
     # E.g [collection.name.zip]/collection.name/img.id.nii.gz

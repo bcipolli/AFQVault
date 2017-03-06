@@ -4,8 +4,8 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.urlresolvers import reverse
 from django.test import TestCase, Client
 
-from afqvault.apps.afqmaps.forms import StatisticMapForm
-from afqvault.apps.afqmaps.models import Collection,User, StatisticMap
+from afqvault.apps.afqmaps.forms import AFQMapForm
+from afqvault.apps.afqmaps.models import Collection,User, AFQMap
 from afqvault.apps.afqmaps.utils import detect_4D, split_4D_to_3D
 from .utils import clearDB
 
@@ -35,13 +35,13 @@ class AddStatmapsTests(TestCase):
             testpath = os.path.abspath(os.path.dirname(__file__))
             fname = os.path.join(testpath,'test_data/afqmaps/motor_lips.nii.gz')
             file_dict = {'file': SimpleUploadedFile(fname, open(fname).read())}
-            form = StatisticMapForm(post_dict, file_dict)
+            form = AFQMapForm(post_dict, file_dict)
 
             self.assertTrue(form.is_valid())
 
             form.save()
 
-            self.assertEqual(StatisticMap.objects.filter(collection=self.coll.pk)[0].name, "test map")
+            self.assertEqual(AFQMap.objects.filter(collection=self.coll.pk)[0].name, "test map")
 
     def testaddAFNI(self):
 
@@ -61,13 +61,13 @@ class AddStatmapsTests(TestCase):
             self.assertTrue(len(split_4D_to_3D(nii)) > 0)
 
             file_dict = {'file': SimpleUploadedFile(fname, open(fname).read())}
-            form = StatisticMapForm(post_dict, file_dict)
+            form = AFQMapForm(post_dict, file_dict)
 
             self.assertTrue(form.is_valid())
 
             form.save()
 
-            self.assertEqual(StatisticMap.objects.filter(collection=self.coll.pk).count(), 2)
+            self.assertEqual(AFQMap.objects.filter(collection=self.coll.pk).count(), 2)
 
     def testaddImgHdr(self):
 
@@ -83,7 +83,7 @@ class AddStatmapsTests(TestCase):
             fname_hdr = os.path.join(testpath,'test_data/afqmaps/box_0b_vs_1b.hdr')
             file_dict = {'file': SimpleUploadedFile(fname_img, open(fname_img).read()),
                          'hdr_file': SimpleUploadedFile(fname_hdr, open(fname_hdr).read())}
-            form = StatisticMapForm(post_dict, file_dict)
+            form = AFQMapForm(post_dict, file_dict)
             self.assertFalse(form.is_valid())
             self.assertTrue("thresholded" in form.errors["file"][0])
 
@@ -100,12 +100,12 @@ class AddStatmapsTests(TestCase):
             fname_hdr = os.path.join(testpath,'test_data/afqmaps/box_0b_vs_1b.hdr')
             file_dict = {'file': SimpleUploadedFile(fname_img, open(fname_img).read()),
                          'hdr_file': SimpleUploadedFile(fname_hdr, open(fname_hdr).read())}
-            form = StatisticMapForm(post_dict, file_dict)
+            form = AFQMapForm(post_dict, file_dict)
             self.assertTrue(form.is_valid())
 
             form.save()
 
-            self.assertEqual(StatisticMap.objects.filter(collection=self.coll.pk)[0].name, "test map")
+            self.assertEqual(AFQMap.objects.filter(collection=self.coll.pk)[0].name, "test map")
 
     def test_add_image_non_owner(self):
         non_owner = User.objects.create_user('non_owner', password="pass")
@@ -147,5 +147,5 @@ class AddStatmapsTests(TestCase):
         cid = self.coll.pk
         response = self.client.post(reverse('add_image', kwargs={'collection_cid':cid}), post_dict)
         self.assertEqual(response.status_code, 302)
-        image_pk = StatisticMap.objects.order_by('-pk')[0].pk
+        image_pk = AFQMap.objects.order_by('-pk')[0].pk
         self.assertRedirects(response, reverse('image_details', kwargs={'pk':image_pk}))

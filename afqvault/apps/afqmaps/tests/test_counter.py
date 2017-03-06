@@ -5,7 +5,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, Client
 
 from afqvault.apps.afqmaps.forms import NIDMResultsForm
-from afqvault.apps.afqmaps.models import Collection, StatisticMap, Comparison
+from afqvault.apps.afqmaps.models import Collection, AFQMap, Comparison
 from afqvault.apps.afqmaps.utils import count_processing_comparisons,count_existing_comparisons
 from .utils import clearDB
 
@@ -38,7 +38,7 @@ class Test_Counter(TestCase):
         # image in the database (case below) we cannot calculate comparisons, and the "transform" field remains none
         # This is currently the only way that we can test the counter, which will be "1" in this case
         print "\nTesting Counter - added statistic maps ###"
-        Image1 = StatisticMap(name='Image1', collection=self.Collection1, file='motor_lips.nii.gz', map_type="Z")
+        Image1 = AFQMap(name='Image1', collection=self.Collection1, file='motor_lips.nii.gz', map_type="Z")
         Image1.file = SimpleUploadedFile('motor_lips.nii.gz', file(os.path.join(self.test_path,'test_data/afqmaps/motor_lips.nii.gz')).read())
         Image1.save()
         images_processing = count_processing_comparisons(Image1.pk)
@@ -50,7 +50,7 @@ class Test_Counter(TestCase):
         # after the other, instead of being sent to worker nodes) so there is no way to test submitting a batch of async
         # jobs and watching the "images still processing" counter go from N to 0. There is also no way of arbitrarily
         # setting an image transform field to "None" because on save, all image comparisons are automatically re-calcualted
-        Image2 = StatisticMap(name='Image2', collection=self.Collection2, file='beta_0001.nii.gz', map_type="Other")
+        Image2 = AFQMap(name='Image2', collection=self.Collection2, file='beta_0001.nii.gz', map_type="Other")
         Image2.file = SimpleUploadedFile('beta_0001.nii.gz', file(os.path.join(self.test_path,'test_data/afqmaps/beta_0001.nii.gz')).read())
         Image2.save()
         images_processing = count_processing_comparisons(Image1.pk)
@@ -63,7 +63,7 @@ class Test_Counter(TestCase):
 
     # Adding a group of NIDM result images
     def test_adding_nidm(self):
-        Image2 = StatisticMap(name='Image2', collection=self.Collection1, file='beta_0001.nii.gz', map_type="Other")
+        Image2 = AFQMap(name='Image2', collection=self.Collection1, file='beta_0001.nii.gz', map_type="Other")
         Image2.file = SimpleUploadedFile('beta_0001.nii.gz', file(os.path.join(self.test_path,'test_data/afqmaps/beta_0001.nii.gz')).read())
         Image2.save()
 
@@ -85,7 +85,7 @@ class Test_Counter(TestCase):
         self.assertEqual(total_comparisons,1)
 
         #Let's add a single subject map - this should not trigger a comparison
-        Image2ss = StatisticMap(name='Image2 - single subject', collection=self.Collection3, file='beta_0001.nii.gz', map_type="Other", analysis_level='S')
+        Image2ss = AFQMap(name='Image2 - single subject', collection=self.Collection3, file='beta_0001.nii.gz', map_type="Other", analysis_level='S')
         Image2ss.file = SimpleUploadedFile('beta_0001.nii.gz', file(os.path.join(self.test_path,'test_data/afqmaps/beta_0001.nii.gz')).read())
         Image2ss.save()
         total_comparisons = count_existing_comparisons(Image2ss.pk)

@@ -12,7 +12,6 @@ from ast import literal_eval
 from datetime import datetime,date
 from subprocess import CalledProcessError
 
-import cortex
 import nibabel as nib
 import pandas as pd
 import numpy as np
@@ -26,8 +25,8 @@ from django.db.models import Q
 from django.template.loader import render_to_string
 from lxml import etree
 
-from afqvault.apps.afqmaps.models import Collection, NIDMResults, StatisticMap, Comparison, NIDMResultStatisticMap, \
-    BaseStatisticMap
+from afqvault.apps.afqmaps.models import Collection, NIDMResults, AFQMap, Comparison, NIDMResultAFQMap, \
+    BaseAFQMap
 
 
 # see CollectionRedirectMiddleware
@@ -433,17 +432,17 @@ def infer_map_type(nii_obj):
     missing_mask = zero_mask | nan_mask
     unique_values = np.unique(data[np.logical_not(missing_mask)])
     if len(unique_values) == 1:
-        map_type = BaseStatisticMap.R
+        map_type = BaseAFQMap.R
     elif len(unique_values) > 1200:
-        map_type = BaseStatisticMap.OTHER
+        map_type = BaseAFQMap.OTHER
     else:
-        map_type = BaseStatisticMap.Pa
+        map_type = BaseAFQMap.Pa
         for val in unique_values:
             if not(isinstance(val, np.integer) or (isinstance(val, np.floating) and float(val).is_integer())):
-                map_type = BaseStatisticMap.OTHER
+                map_type = BaseAFQMap.OTHER
                 break
             if (data == val).sum() == 1:
-                map_type = BaseStatisticMap.OTHER
+                map_type = BaseAFQMap.OTHER
                 break
     return map_type
 
@@ -514,7 +513,7 @@ def is_search_compatible(pk):
 
 
 def get_images_to_compare_with(pk1, for_generation=False):
-    from afqvault.apps.afqmaps.models import StatisticMap, NIDMResultStatisticMap, Image
+    from afqvault.apps.afqmaps.models import AFQMap, NIDMResultAFQMap, Image
 
     # if the map in question is invalid do not generate any comparisons
     if not is_search_compatible(pk1):
@@ -522,7 +521,7 @@ def get_images_to_compare_with(pk1, for_generation=False):
 
     img = Image.objects.get(pk=pk1)
     image_pks = []
-    for cls in [StatisticMap, NIDMResultStatisticMap]:
+    for cls in [AFQMap, NIDMResultAFQMap]:
         qs = cls.objects.filter(collection__private=False, is_thresholded=False)
         if not (for_generation and img.collection.DOI is not None):
             qs = qs.exclude(collection__DOI__isnull=True)
@@ -538,8 +537,8 @@ def count_existing_comparisons(pk1):
 # Returns number of total comparisons possible
 def count_possible_comparisons(pk1):
     # Comparisons possible for one pk is the number of other pks
-    count_statistic_maps = StatisticMap.objects.filter(is_thresholded=False,collection__private=False).exclude(pk=pk1).exclude(analysis_level='S').count()
-    count_nidm_maps = NIDMResultStatisticMap.objects.filter(is_thresholded=False,collection__private=False).exclude(pk=pk1).exclude(analysis_level='S').count()
+    count_statistic_maps = AFQMap.objects.filter(is_thresholded=False,collection__private=False).exclude(pk=pk1).exclude(analysis_level='S').count()
+    count_nidm_maps = NIDMResultAFQMap.objects.filter(is_thresholded=False,collection__private=False).exclude(pk=pk1).exclude(analysis_level='S').count()
     return count_statistic_maps + count_nidm_maps
 
 # Returns image comparisons still processing for a given pk

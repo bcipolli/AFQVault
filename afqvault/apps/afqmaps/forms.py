@@ -19,8 +19,8 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Submit, Button
 from crispy_forms.bootstrap import TabHolder, Tab
 
-from .models import Collection, Image, User, StatisticMap, BaseStatisticMap, \
-    Atlas, NIDMResults, NIDMResultStatisticMap
+from .models import Collection, Image, User, AFQMap, BaseAFQMap, \
+    Atlas, NIDMResults, NIDMResultAFQMap
 
 from django.forms.forms import Form
 from django.forms.fields import FileField
@@ -580,15 +580,15 @@ class ImageForm(ModelForm, ImageValidationMixin):
         return self.clean_and_validate(cleaned_data)
 
 
-class StatisticMapForm(ImageForm):
+class AFQMapForm(ImageForm):
 
     def __init__(self, *args, **kwargs):
-        super(StatisticMapForm, self).__init__(*args, **kwargs)
+        super(AFQMapForm, self).__init__(*args, **kwargs)
         self.helper.form_tag = False
         self.helper.add_input(Submit('submit', 'Submit'))
 
     def clean(self, **kwargs):
-        cleaned_data = super(StatisticMapForm, self).clean()
+        cleaned_data = super(AFQMapForm, self).clean()
         django_file = cleaned_data.get("file")
 
         cleaned_data["is_valid"] = True #This will be only saved if the form will validate
@@ -635,7 +635,7 @@ class StatisticMapForm(ImageForm):
         return cleaned_data
 
     class Meta(ImageForm.Meta):
-        model = StatisticMap
+        model = AFQMap
         fields = ('name', 'collection', 'description', 'map_type', 'modality', 'cognitive_paradigm_cogatlas',
                   'cognitive_contrast_cogatlas', 'cognitive_paradigm_description_url', 'analysis_level', 'number_of_subjects', 'contrast_definition', 'figure',
                   'file', 'ignore_file_warning', 'tags', 'statistic_parameters',
@@ -659,7 +659,7 @@ class StatisticMapForm(ImageForm):
             for n, (label, brick) in enumerate(self.afni_subbricks):
                 brick_fname = os.path.split(brick)[-1]
                 mfile = memory_uploadfile(brick, brick_fname, orig_img.file)
-                brick_img = StatisticMap(name='%s - %s' % (orig_img.name, label), collection=orig_img.collection,
+                brick_img = AFQMap(name='%s - %s' % (orig_img.name, label), collection=orig_img.collection,
                                          file=mfile)
                 for field in set(self.Meta.fields) - set(['file', 'name', 'collection']):
                     if field in self.cleaned_data:
@@ -679,7 +679,7 @@ class StatisticMapForm(ImageForm):
         if self.afni_subbricks:
             return self.save_afni_slices(commit)
         else:
-            return super(StatisticMapForm, self).save(commit=commit)
+            return super(AFQMapForm, self).save(commit=commit)
 
 
 class AtlasForm(ImageForm):
@@ -702,16 +702,16 @@ class PolymorphicImageForm(ImageForm):
             if self.instance.polymorphic_ctype.model == 'atlas':
                 self.fields = AtlasForm.base_fields
             elif self.instance.polymorphic_ctype.model == 'nidmresultstatisticmap':
-                self.fields = NIDMResultStatisticMapForm(self.instance.collection.owner,
+                self.fields = NIDMResultAFQMapForm(self.instance.collection.owner,
                                                          instance=self.instance).fields
             else:
-                self.fields = StatisticMapForm.base_fields
+                self.fields = AFQMapForm.base_fields
 
     def clean(self, **kwargs):
         if "label_description_file" in self.fields.keys():
             use_form = AtlasForm
         elif "map_type" in self.fields.keys():
-            use_form = StatisticMapForm
+            use_form = AFQMapForm
         else:
             raise Exception("unknown image type! %s" % str(self.fields.keys()))
 
@@ -722,12 +722,12 @@ class PolymorphicImageForm(ImageForm):
         return new_instance.clean()
 
 
-class EditStatisticMapForm(StatisticMapForm):
+class EditAFQMapForm(AFQMapForm):
 
     def __init__(self, *args, **kwargs):
         user = kwargs['user']
         del kwargs['user']
-        super(EditStatisticMapForm, self).__init__(*args, **kwargs)
+        super(EditAFQMapForm, self).__init__(*args, **kwargs)
         if user.is_superuser:
             self.fields['collection'].queryset = Collection.objects.all()
         else:
@@ -735,9 +735,9 @@ class EditStatisticMapForm(StatisticMapForm):
                 user, 'afqmaps.change_collection')
 
 
-class AddStatisticMapForm(StatisticMapForm):
+class AddAFQMapForm(AFQMapForm):
 
-    class Meta(StatisticMapForm.Meta):
+    class Meta(AFQMapForm.Meta):
         fields = ('name', 'description', 'map_type', 'modality', 'cognitive_paradigm_cogatlas',
                   'cognitive_contrast_cogatlas', 'cognitive_paradigm_description_url', 'analysis_level', 'number_of_subjects', 'contrast_definition', 'figure',
                   'file', 'ignore_file_warning', 'surface_left_file', 'surface_right_file', 'tags', 'statistic_parameters',
@@ -762,20 +762,20 @@ class EditAtlasForm(AtlasForm):
         exclude = ()
 
 
-class SimplifiedStatisticMapForm(EditStatisticMapForm):
+class SimplifiedAFQMapForm(EditAFQMapForm):
 
-    class Meta(EditStatisticMapForm.Meta):
+    class Meta(EditAFQMapForm.Meta):
         fields = ('name', 'collection', 'description', 'map_type', 'modality', 'cognitive_paradigm_cogatlas',
                   'cognitive_contrast_cogatlas', 'cognitive_paradigm_description_url', 'file', 'ignore_file_warning', 'tags', 'is_thresholded',
                   'perc_bad_voxels')
 
-class NeuropowerStatisticMapForm(EditStatisticMapForm):
+class NeuropowerAFQMapForm(EditAFQMapForm):
     def __init__(self, *args, **kwargs):
-        super(NeuropowerStatisticMapForm, self).__init__(*args, **kwargs)
+        super(NeuropowerAFQMapForm, self).__init__(*args, **kwargs)
         self.fields['analysis_level'].required = True
         self.fields['number_of_subjects'].required = True
 
-    class Meta(EditStatisticMapForm.Meta):
+    class Meta(EditAFQMapForm.Meta):
         fields = ('name', 'collection', 'description', 'map_type', 'modality', 'map_type','analysis_level','number_of_subjects','cognitive_paradigm_cogatlas',
                   'cognitive_contrast_cogatlas', 'cognitive_paradigm_description_url', 'file', 'ignore_file_warning', 'tags', 'is_thresholded',
                   'perc_bad_voxels')
@@ -810,7 +810,7 @@ class MapTypeListWidget(forms.Widget):
 
     def render(self, name, value, attrs=None):
         map_type = [
-            v for k, v in BaseStatisticMap.MAP_TYPE_CHOICES if k == value].pop()
+            v for k, v in BaseAFQMap.MAP_TYPE_CHOICES if k == value].pop()
         input = '<input type="hidden" name="%s" value="%s" />' % (name, value)
         return mark_safe('%s<strong>%s</strong><br /><br />' % (input, map_type))
 
@@ -878,7 +878,7 @@ class NIDMResultsValidationMixin(object):
     def clean_nidm(self, cleaned_data):
         for s in self.nidm.afqmaps:
             s['fname'] = os.path.split(s['file'])[-1]
-            s['statmap'] = NIDMResultStatisticMap(name=s['name'])
+            s['statmap'] = NIDMResultAFQMap(name=s['name'])
             s['statmap'].collection = cleaned_data['collection']
             s['statmap'].description = cleaned_data['description']
             s['statmap'].map_type = s['type']
@@ -1011,15 +1011,15 @@ class NIDMViewForm(forms.ModelForm):
         self.helper.form_tag = True
 
 
-class NIDMResultStatisticMapForm(ImageForm):
+class NIDMResultAFQMapForm(ImageForm):
 
     class Meta():
-        model = NIDMResultStatisticMap
+        model = NIDMResultAFQMap
         fields = ('name', 'collection', 'description', 'map_type', 'figure',
                   'file', 'tags', 'nidm_results')
 
     def __init__(self, *args, **kwargs):
-        super(NIDMResultStatisticMapForm, self).__init__(*args, **kwargs)
+        super(NIDMResultAFQMapForm, self).__init__(*args, **kwargs)
         self.helper = FormHelper(self)
         self.helper.form_class = 'form-horizontal'
         if self.instance.pk is None:
@@ -1036,10 +1036,10 @@ class NIDMResultStatisticMapForm(ImageForm):
             self.fields['file'].widget = PathOnlyWidget()
 
 
-class EditNIDMResultStatisticMapForm(NIDMResultStatisticMapForm):
+class EditNIDMResultAFQMapForm(NIDMResultAFQMapForm):
 
     def __init__(self, user, *args, **kwargs):
-        super(EditNIDMResultStatisticMapForm, self).__init__(*args, **kwargs)
+        super(EditNIDMResultAFQMapForm, self).__init__(*args, **kwargs)
 
 
 def clean_tags(self):

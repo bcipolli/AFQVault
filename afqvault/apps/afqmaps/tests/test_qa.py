@@ -4,7 +4,7 @@ import nibabel as nb
 import numpy as np
 from django.test import TestCase
 
-from afqvault.apps.afqmaps.models import BaseStatisticMap
+from afqvault.apps.afqmaps.models import BaseAFQMap
 from afqvault.apps.afqmaps.utils import is_thresholded, infer_map_type
 
 
@@ -33,6 +33,6 @@ class QATest(TestCase):
             self.assertEquals(t, is_thr)
 
     def testInferMapType(self):
-        self.assertEquals(infer_map_type(self.roi_map), BaseStatisticMap.R)
-        self.assertEquals(infer_map_type(self.parcellation), BaseStatisticMap.Pa)
-        self.assertEquals(infer_map_type(self.brain), BaseStatisticMap.OTHER)
+        self.assertEquals(infer_map_type(self.roi_map), BaseAFQMap.R)
+        self.assertEquals(infer_map_type(self.parcellation), BaseAFQMap.Pa)
+        self.assertEquals(infer_map_type(self.brain), BaseAFQMap.OTHER)

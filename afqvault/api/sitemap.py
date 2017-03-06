@@ -1,7 +1,7 @@
 from django.contrib.sitemaps import Sitemap
 from django.db.models.aggregates import Count
 
-from afqvault.apps.afqmaps.models import Image, Collection, CognitiveAtlasTask, StatisticMap
+from afqvault.apps.afqmaps.models import Image, Collection, CognitiveAtlasTask, AFQMap
 
 class BaseSitemap(Sitemap):
     priority = 0.5
@@ -30,7 +30,7 @@ class CognitiveAtlasTaskSitemap(Sitemap):
     priority = 0.5
 
     def items(self):
-        task_ids = StatisticMap.objects.filter(collection__private=False).values_list('cognitive_paradigm_cogatlas',
+        task_ids = AFQMap.objects.filter(collection__private=False).values_list('cognitive_paradigm_cogatlas',
                                                                                       flat=True).distinct()
         return CognitiveAtlasTask.objects.filter(cog_atlas_id__in=task_ids)
 

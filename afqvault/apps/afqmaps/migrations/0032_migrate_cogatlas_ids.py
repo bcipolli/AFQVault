@@ -7,8 +7,8 @@ dir = os.path.abspath(os.path.dirname(__file__))
 
 def migrate_cogatlas_ids(apps, schema_editor):
     CognitiveAtlasTask = apps.get_model("afqmaps", "CognitiveAtlasTask")
-    StatisticMap = apps.get_model("afqmaps", "StatisticMap")
-    for smap in StatisticMap.objects.all():
+    AFQMap = apps.get_model("afqmaps", "AFQMap")
+    for smap in AFQMap.objects.all():
         if smap.cognitive_paradigm_cogatlas_id:
             smap.cognitive_paradigm_cogatlas_id =  CognitiveAtlasTask.objects.filter(name=smap.cognitive_paradigm_cogatlas_id)[0].pk
             smap.save()

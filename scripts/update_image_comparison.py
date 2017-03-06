@@ -10,7 +10,7 @@ import django
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "afqvault.settings")
 django.setup()
 
-from afqvault.apps.afqmaps.models import Similarity, Comparison, StatisticMap
+from afqvault.apps.afqmaps.models import Similarity, Comparison, AFQMap
 from afqvault.apps.afqmaps.tasks import save_voxelwise_pearson_similarity
 from django.db import IntegrityError
 import errno
@@ -27,7 +27,7 @@ pearson_metric = Similarity.objects.update_or_create(similarity_metric="pearson 
 all_comparisons = Comparison.objects.all()
 all_comparisons.delete()
 
-all_images = StatisticMap.objects.filter(collection__private=False).exclude(is_thresholded = True).exclude(analysis_level = 'S')
+all_images = AFQMap.objects.filter(collection__private=False).exclude(is_thresholded = True).exclude(analysis_level = 'S')
 
 # Filter down to images that are not private, not thresholded
 # Now, we need to generate a "comparison" object for all files in the database

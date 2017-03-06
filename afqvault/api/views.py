@@ -12,7 +12,7 @@ from rest_framework.views import APIView
 from taggit.models import Tag
 
 from afqvault.apps.afqmaps.models import (Atlas, Collection, Image,
-                                             StatisticMap, NIDMResults)
+                                             AFQMap, NIDMResults)
 from afqvault.apps.afqmaps.views import (get_collection, get_image,
                                             owner_or_contrib)
 from afqvault.apps.afqmaps.voxel_query_functions import (getAtlasVoxels,
@@ -22,7 +22,7 @@ from afqvault.apps.afqmaps.voxel_query_functions import (getAtlasVoxels,
 from .serializers import (UserSerializer, AtlasSerializer,
                           CollectionSerializer, EditableAtlasSerializer,
                           EditableNIDMResultsSerializer,
-                          EditableStatisticMapSerializer, ImageSerializer,
+                          EditableAFQMapSerializer, ImageSerializer,
                           NIDMResultsSerializer)
 
 from .permissions import (ObjectOnlyPermissions,
@@ -112,8 +112,8 @@ class ImageViewSet(mixins.RetrieveModelMixin,
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
-        if isinstance(instance, StatisticMap):
-            serializer = EditableStatisticMapSerializer(
+        if isinstance(instance, AFQMap):
+            serializer = EditableAFQMapSerializer(
                 data=request.data,
                 instance=instance,
                 context={'request': request},
@@ -294,7 +294,7 @@ class CollectionViewSet(viewsets.ModelViewSet):
     @detail_route(methods=['get', 'post'])
     def images(self, request, pk=None):
         if request.method == 'POST':
-            return self.add_item(request, pk, EditableStatisticMapSerializer)
+            return self.add_item(request, pk, EditableAFQMapSerializer)
 
         return self._get_paginated_results(Image, pk, request, ImageSerializer)
 

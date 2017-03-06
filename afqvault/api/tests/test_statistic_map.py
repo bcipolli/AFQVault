@@ -2,15 +2,15 @@ import uuid
 
 from rest_framework import status
 
-from afqvault.apps.afqmaps.models import StatisticMap
+from afqvault.apps.afqmaps.models import AFQMap
 from afqvault.apps.afqmaps.tests.utils import save_statmap_form
 
 from afqvault.api.tests.base import BaseTestCases
 
 
-class TestStatisticMapChange(BaseTestCases.TestCollectionItemChange):
+class TestAFQMapChange(BaseTestCases.TestCollectionItemChange):
     def setUp(self):
-        super(TestStatisticMapChange, self).setUp()
+        super(TestAFQMapChange, self).setUp()
         self.item = save_statmap_form(
             image_path=self.abs_data_path('afqmaps/motor_lips.nii.gz'),
             collection=self.coll
@@ -39,7 +39,7 @@ class TestStatisticMapChange(BaseTestCases.TestCollectionItemChange):
         self.assertEqual(response.data['name'], put_dict['name'])
         self.assertEqual(response.data['custom_metadata_numeric_field'], 42)
 
-        statmap = StatisticMap.objects.get(pk=response.data['id'])
+        statmap = AFQMap.objects.get(pk=response.data['id'])
         self.assertEqual(statmap.cognitive_paradigm_cogatlas.name,
                          'action observation task')
         self.assertEqual(statmap.cognitive_contrast_cogatlas.name,
@@ -70,7 +70,7 @@ class TestStatisticMapChange(BaseTestCases.TestCollectionItemChange):
         )
         self.assertEqual(response.data['custom_metadata_field_c'], 42)
 
-        statmap = StatisticMap.objects.get(pk=response.data['id'])
+        statmap = AFQMap.objects.get(pk=response.data['id'])
         self.assertEqual(statmap.data['custom_metadata_field_a'], 'a text')
         self.assertEqual(
             statmap.data['custom_metadata_field_b'],
@@ -88,8 +88,8 @@ class TestStatisticMapChange(BaseTestCases.TestCollectionItemChange):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         self.assertEqual(response.data['data'], 42)
-        statmap = StatisticMap.objects.get(pk=response.data['id'])
+        statmap = AFQMap.objects.get(pk=response.data['id'])
         self.assertEqual(statmap.data['data'], '42')
 
     def test_statistic_map_destroy(self):
-        self._test_collection_item_destroy(StatisticMap)
+        self._test_collection_item_destroy(AFQMap)

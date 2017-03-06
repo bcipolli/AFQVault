@@ -4,10 +4,10 @@ from __future__ import unicode_literals
 from django.db import migrations, models
 
 def move_collection_data(apps, schema_editor):
-    StatisticMap = apps.get_model("afqmaps", "StatisticMap")
+    AFQMap = apps.get_model("afqmaps", "AFQMap")
     BaseCollectionItem = apps.get_model("afqmaps", "BaseCollectionItem")
-    count = StatisticMap.objects.count()
-    for i, image in enumerate(StatisticMap.objects.all()):
+    count = AFQMap.objects.count()
+    for i, image in enumerate(AFQMap.objects.all()):
         print "Fixing image %d (%d/%d)"%(image.pk, i+1, count)
         print vars(image)
         image.number_of_subjects = image.basecollectionitem_ptr.collection.number_of_subjects

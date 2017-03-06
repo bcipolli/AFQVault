@@ -6,7 +6,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework import status
 
 from afqvault.apps.afqmaps.models import (
-    Collection, StatisticMap, NIDMResults
+    Collection, AFQMap, NIDMResults
 )
 from afqvault.apps.afqmaps.tests.utils import clearDB
 from afqvault.apps.afqmaps.tests.test_nidm import NIDM_TEST_FILES
@@ -50,7 +50,7 @@ class TestCollectionItemUpload(APITestCase):
         for key in ('name', 'modality'):
             self.assertEqual(response.data[key], post_dict[key])
 
-        statmap = StatisticMap.objects.get(pk=response.data['id'])
+        statmap = AFQMap.objects.get(pk=response.data['id'])
         self.assertEqual(statmap.cognitive_paradigm_cogatlas.name,
                          'action observation task')
         self.assertEqual(statmap.cognitive_contrast_cogatlas.name,
@@ -90,7 +90,7 @@ class TestCollectionItemUpload(APITestCase):
 
         self.assertEqual(response.data['custom_metadata_numeric_field'], 42)
 
-        statmap = StatisticMap.objects.get(pk=response.data['id'])
+        statmap = AFQMap.objects.get(pk=response.data['id'])
         self.assertEqual(
             statmap.map_type, 'T'
         )
@@ -119,7 +119,7 @@ class TestCollectionItemUpload(APITestCase):
 
         self.assertEqual(response.data['data'], 42)
 
-        statmap = StatisticMap.objects.get(pk=response.data['id'])
+        statmap = AFQMap.objects.get(pk=response.data['id'])
         self.assertEqual(statmap.data['data'], '42')
 
     def test_upload_atlas(self):

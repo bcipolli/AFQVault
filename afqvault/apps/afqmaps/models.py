@@ -126,7 +126,7 @@ class Collection(models.Model):
 
     @property
     def is_statisticmap_set(self):
-        return all((isinstance(i, StatisticMap) for i in self.basecollectionitem_set.all()))
+        return all((isinstance(i, AFQMap) for i in self.basecollectionitem_set.all()))
 
     def get_absolute_url(self):
         return_cid = self.id
@@ -412,7 +412,7 @@ class Image(BaseCollectionItem):
 
 
 
-class BaseStatisticMap(Image):
+class BaseAFQMap(Image):
     OTHER = 'Other'
     AFQ = 'AFQ'
     MAP_TYPE_CHOICES = (
@@ -484,7 +484,7 @@ class BaseStatisticMap(Image):
                 comparisons = Comparison.objects.filter(Q(image1=self) | Q(image2=self))
                 if comparisons:
                     comparisons.delete()
-        super(BaseStatisticMap, self).save()
+        super(BaseAFQMap, self).save()
 
         # Calculate comparisons
         if do_update or new_image:
@@ -494,14 +494,14 @@ class BaseStatisticMap(Image):
 
     @classmethod
     def get_fixed_fields(cls):
-        return super(BaseStatisticMap, cls).get_fixed_fields() + (
+        return super(BaseAFQMap, cls).get_fixed_fields() + (
             'map_type', 'analysis_level', 'number_of_subjects')
 
     class Meta:
         abstract = True
 
 
-class StatisticMap(BaseStatisticMap):
+class AFQMap(BaseAFQMap):
     Diffusion_MRI = 'Diffusion MRI'
     Other = 'Other'
     MODALITY_CHOICES = (
@@ -517,10 +517,10 @@ class StatisticMap(BaseStatisticMap):
 
     @classmethod
     def get_fixed_fields(cls):
-        return super(StatisticMap, cls).get_fixed_fields() + (
+        return super(AFQMap, cls).get_fixed_fields() + (
             'modality', 'contrast_definition', 'cognitive_paradigm_cogatlas', 'cognitive_paradigm_description_url')
 
-post_save.connect(basecollectionitem_created, sender=StatisticMap, weak=True)
+post_save.connect(basecollectionitem_created, sender=AFQMap, weak=True)
 
 class NIDMResults(BaseCollectionItem):
     ttl_file = models.FileField(upload_to=upload_nidm_to,
@@ -556,10 +556,10 @@ def mymodel_delete(sender, instance, **kwargs):
 post_save.connect(basecollectionitem_created, sender=NIDMResults, weak=True)
 
 
-class NIDMResultStatisticMap(BaseStatisticMap):
+class NIDMResultAFQMap(BaseAFQMap):
     nidm_results = models.ForeignKey(NIDMResults)
 
-post_save.connect(basecollectionitem_created, sender=NIDMResultStatisticMap, weak=True)
+post_save.connect(basecollectionitem_created, sender=NIDMResultAFQMap, weak=True)
 
 class Atlas(Image):
     label_description_file = models.FileField(

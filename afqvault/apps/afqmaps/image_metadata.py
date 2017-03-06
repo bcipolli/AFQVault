@@ -9,7 +9,7 @@ from django.db.models import Model
 from django.db.models.fields import FieldDoesNotExist
 from django.db.models.fields.related import ForeignKey
 
-from .models import StatisticMap, Image
+from .models import AFQMap, Image
 
 
 class MetadataGridValidationError(ValidationError):
@@ -223,7 +223,7 @@ def get_data_headers(image_obj_list):
         }
 
     fixed_field_headers = map(to_fixed_header,
-                              get_fixed_fields(StatisticMap))
+                              get_fixed_fields(AFQMap))
 
     extra_field_headers = map(to_extra_field_header, metadata_keys)
 
@@ -232,7 +232,7 @@ def get_data_headers(image_obj_list):
 
 def get_images_metadata(image_obj_list):
     metadata_keys = list(get_all_metadata_keys(image_obj_list))
-    fixed_fields = get_fixed_fields(StatisticMap)
+    fixed_fields = get_fixed_fields(AFQMap)
 
     def serialize(obj, field):
         value = getattr(obj, field)

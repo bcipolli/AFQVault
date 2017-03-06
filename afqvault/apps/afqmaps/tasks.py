@@ -33,7 +33,7 @@ app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
 @app.task(name='crawl_anima')
 def crawl_anima():
     import afqvault.apps.afqmaps.models as models
-    from afqvault.apps.afqmaps.forms import StatisticMapForm, CollectionForm
+    from afqvault.apps.afqmaps.forms import AFQMapForm, CollectionForm
     username = "ANIMA"
     email = "a.reid@fz-juelich.de"
     try:
@@ -111,13 +111,13 @@ def crawl_anima():
                         xml_obj.find(".").attrib['directory'] + "/" + xml_obj.find(".").attrib['directory'] + "/" +
                         image_filename)
 
-                map_type = models.BaseStatisticMap.OTHER
+                map_type = models.BaseAFQMap.OTHER
 
-                quantity_dict = {"Mask": models.BaseStatisticMap.M,
-                                 "F-statistic": models.BaseStatisticMap.F,
-                                 "T-statistic": models.BaseStatisticMap.T,
-                                 "Z-statistic": models.BaseStatisticMap.Z,
-                                 "Beta": models.BaseStatisticMap.U}
+                quantity_dict = {"Mask": models.BaseAFQMap.M,
+                                 "F-statistic": models.BaseAFQMap.F,
+                                 "T-statistic": models.BaseAFQMap.T,
+                                 "Z-statistic": models.BaseAFQMap.Z,
+                                 "Beta": models.BaseAFQMap.U}
 
                 quantity = study_element.find("./Metadata/Element[@name='Quantity']")
                 if quantity != None:
@@ -127,9 +127,9 @@ def crawl_anima():
 
                 post_dict = {
                     'name': image_name,
-                    'modality': models.StatisticMap.fMRI_BOLD,
+                    'modality': models.AFQMap.fMRI_BOLD,
                     'map_type': map_type,
-                    'analysis_level': models.BaseStatisticMap.M,
+                    'analysis_level': models.BaseAFQMap.M,
                     'collection': collection.pk,
                     'ignore_file_warning': True,
                     'cognitive_paradigm_cogatlas': 'None',
@@ -141,7 +141,7 @@ def crawl_anima():
                     post_dict["description"] = image_description.strip()
 
                 file_dict = {'file': SimpleUploadedFile(image_filename, image_fileobject.read())}
-                form = StatisticMapForm(post_dict, file_dict)
+                form = AFQMapForm(post_dict, file_dict)
                 form.is_valid()
                 form.save()
 

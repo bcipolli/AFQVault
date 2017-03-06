@@ -344,10 +344,6 @@ os.environ["FSLOUTPUTTYPE"] = "NIFTI_GZ"
 os.environ["PATH"] += os.pathsep + '/path/to/lib/provToolbox/bin'
 
 #CELERYBEAT_SCHEDULE = {
-#    'run_make_correlation_df': {
-#        'task': 'afqvault.apps.afqmaps.tasks...',
-#        'schedule': timedelta(minutes=30),
-#    },
 #}
 # or manage periodic schedule in django admin
 #CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
@@ -362,7 +358,6 @@ if "test" in sys.argv or "benchmark" in sys.argv:
 TAGGIT_CASE_INSENSITIVE=True
 
 FIXTURE_DIRS = (
-    'apps/afqmaps/fixtures/',
 )
 
 MEDIA_ROOT = PRIVATE_MEDIA_ROOT

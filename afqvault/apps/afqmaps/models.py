@@ -413,31 +413,10 @@ class Image(BaseCollectionItem):
 
 
 class BaseStatisticMap(Image):
-    T = 'T'
-    Z = 'Z'
-    F = 'F'
-    X2 = 'X2'
-    P = 'P'
-    M ='M'
-    U = 'U'
-    R = 'R'
-    Pa = 'Pa'
     OTHER = 'Other'
-    S = 'S'
-    G = 'G'
-    M = 'M'
-    A = 'A'
+    AFQ = 'AFQ'
     MAP_TYPE_CHOICES = (
-        (T, 'T map'),
-        (Z, 'Z map'),
-        (F, 'F map'),
-        (X2, 'Chi squared map'),
-        (P, 'P map (given null hypothesis)'),
-        (M, 'multivariate-beta map'),
-        (U, 'univariate-beta map'),
-        (R, 'ROI/mask'),
-        (Pa, 'parcellation'),
-        (A, 'anatomical'),
+        (AFQ, 'AFQ map'),
         (OTHER, 'other'),
     )
     ANALYSIS_LEVEL_CHOICES = (
@@ -523,28 +502,10 @@ class BaseStatisticMap(Image):
 
 
 class StatisticMap(BaseStatisticMap):
-    fMRI_BOLD = 'fMRI-BOLD'
-    fMRI_CBF = 'fMRI-CBF'
-    fMRI_CBV = 'fMRI-CBV'
     Diffusion_MRI = 'Diffusion MRI'
-    Structural_MRI = 'Structural MRI'
-    PET_FDG = 'PET FDG'
-    PET_15O = 'PET [15O]-water'
-    PET_OTHER = 'PET other'
-    MEG = 'MEG'
-    EEG = 'EEG'
     Other = 'Other'
     MODALITY_CHOICES = (
-        (fMRI_BOLD, 'fMRI-BOLD'),
-        (fMRI_CBF, 'fMRI-CBF'),
-        (fMRI_CBV, 'fMRI-CBV'),
         (Diffusion_MRI, 'Diffusion MRI'),
-        (Structural_MRI, 'Structural MRI'),
-        (PET_FDG, 'PET FDG'),
-        (PET_15O, 'PET [15O]-water'),
-        (PET_OTHER, 'PET other'),
-        (MEG, 'MEG'),
-        (EEG, 'EEG'),
         (Other, 'Other')
     )
     ignore_file_warning = models.BooleanField(blank=False, default=False, verbose_name='Ignore the warning',
@@ -553,17 +514,6 @@ class StatisticMap(BaseStatisticMap):
                                 max_length=200, null=False, blank=False, choices=MODALITY_CHOICES)
     statistic_parameters = models.FloatField(help_text="Parameters of the null distribution of the test statistic, typically degrees of freedom (should be clear from the test statistic what these are).", null=True, verbose_name="Statistic parameters", blank=True)
     smoothness_fwhm = models.FloatField(help_text="Noise smoothness for statistical inference; this is the estimated smoothness used with Random Field Theory or a simulation-based inference method.", verbose_name="Smoothness FWHM", null=True, blank=True)
-    contrast_definition = models.CharField(help_text="Exactly what terms are subtracted from what? Define these in terms of task or stimulus conditions (e.g., 'one-back task with objects versus zero-back task with objects') instead of underlying psychological concepts (e.g., 'working memory').", verbose_name="Contrast definition", max_length=200, null=True, blank=True)
-    contrast_definition_cogatlas = models.CharField(help_text="Link to <a href='http://www.cognitiveatlas.org/'>Cognitive Atlas</a> definition of this contrast", verbose_name="Cognitive Atlas definition", max_length=200, null=True, blank=True)
-    cognitive_paradigm_cogatlas = models.ForeignKey(CognitiveAtlasTask, help_text="Task (or lack of it) performed by the subjects in the scanner described using <a href='http://www.cognitiveatlas.org/' target='_blank'>Cognitive Atlas</a> terms",
-                                                    verbose_name="Cognitive Atlas Paradigm", null=True, blank=False,
-                                                    on_delete=models.PROTECT)
-    cognitive_contrast_cogatlas = models.ForeignKey(CognitiveAtlasContrast, help_text="Link to <a href='http://www.cognitiveatlas.org/'>Cognitive Atlas</a> definition of this contrast",
-                                                    verbose_name="Cognitive Atlas Contrast", null=True, blank=True,
-                                                    on_delete=models.PROTECT)
-    cognitive_paradigm_description_url = models.URLField(help_text="Link to a paper, poster, abstract or other form text describing in detail the task performed by the subject(s) in the scanner.",
-                                                         verbose_name="Cognitive Paradigm Description URL",
-                                                         null=True, blank=True)
 
     @classmethod
     def get_fixed_fields(cls):

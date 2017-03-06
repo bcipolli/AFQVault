@@ -493,26 +493,6 @@ class ImageValidationMixin(object):
             file_map = {'image': nb.FileHolder(file.name, fileobj)}
             try:
                 tmp_dir = tempfile.mkdtemp()
-                if ext.lower() == ".img":
-                    hdr_file = cleaned_data.get('hdr_file')
-                    if hdr_file:
-                        # check extension of the hdr file
-                        _, _, hdr_ext = split_filename(hdr_file.name)
-                        if not hdr_ext.lower() in [".hdr"]:
-                            self._errors["hdr_file"] = self.error_class(
-                                ["Doesn't have proper extension"])
-                            del cleaned_data["hdr_file"]
-                            return cleaned_data
-                        else:
-                            hdr_file.open()
-                            file_map["header"] = nb.FileHolder(hdr_file.name,
-                                                               hdr_file.file)
-                    else:
-                        self._errors["hdr_file"] = self.error_class(
-                            [".img file requires .hdr file"]
-                        )
-                        del cleaned_data["hdr_file"]
-                        return cleaned_data
 
                 # check if it is really nifti
                 try:
@@ -579,9 +559,6 @@ class ImageValidationMixin(object):
 
 
 class ImageForm(ModelForm, ImageValidationMixin):
-    hdr_file = FileField(
-        required=False, label='.hdr part of the map (if applicable)', widget=AdminResubmitFileWidget)
-
     def __init__(self, *args, **kwargs):
         ImageValidationMixin.__init__(self, *args, **kwargs)
         ModelForm.__init__(self, *args, **kwargs)
@@ -594,7 +571,6 @@ class ImageForm(ModelForm, ImageValidationMixin):
         exclude = []
         widgets = {
             'file': AdminResubmitFileWidget,
-            'hdr_file': AdminResubmitFileWidget,
             'data_origin': HiddenInput
         }
 
@@ -602,8 +578,6 @@ class ImageForm(ModelForm, ImageValidationMixin):
         cleaned_data = super(ImageForm, self).clean()
         cleaned_data["tags"] = clean_tags(cleaned_data)
         return self.clean_and_validate(cleaned_data)
-
-
 
 
 class StatisticMapForm(ImageForm):
@@ -626,7 +600,7 @@ class StatisticMapForm(ImageForm):
             cleaned_data["not_mni"] = False
             cleaned_data["perc_bad_voxels"] = 0
             cleaned_data["brain_coverage"] = 100
-        elif django_file and "file" not in self._errors and "hdr_file" not in self._errors:
+        elif django_file and "file" not in self._errors:
             django_file.open()
             fileobj = StringIO(django_file.read())
             django_file.seek(0)
@@ -640,9 +614,6 @@ class StatisticMapForm(ImageForm):
             if cleaned_data["is_thresholded"] and not cleaned_data.get("ignore_file_warning") and cleaned_data.get("map_type") != "R":
                 self._errors["file"] = self.error_class(
                     ["This map seems to be thresholded (%.4g%% of voxels are zeros). Please use an unthresholded version of the map if possible." % (cleaned_data["perc_bad_voxels"])])
-                if cleaned_data.get("hdr_file"):
-                    self._errors["hdr_file"] = self.error_class(
-                        ["This map seems to be thresholded (%.4g%% of voxels are zeros). Please use an unthresholded version of the map if possible." % (cleaned_data["perc_bad_voxels"])])
                 self.fields[
                     "ignore_file_warning"].widget = forms.CheckboxInput()
             else:
@@ -652,9 +623,6 @@ class StatisticMapForm(ImageForm):
                     "map_type") != "R":
                     self._errors["file"] = self.error_class(
                         ["This map seems not to be in the MNI space (%.4g%% of meaningful voxels are outside of the brain). Please use transform your data to MNI space." % (cleaned_data["perc_voxels_outside"])])
-                    if cleaned_data.get("hdr_file"):
-                        self._errors["hdr_file"] = self.error_class(
-                            ["This map seems not to be in the MNI space (%.4g%% of meaningful voxels are outside of the brain). Please use transform your data to MNI space." % (cleaned_data["perc_voxels_outside"])])
                     self.fields[
                         "ignore_file_warning"].widget = forms.CheckboxInput()
 
@@ -670,11 +638,10 @@ class StatisticMapForm(ImageForm):
         model = StatisticMap
         fields = ('name', 'collection', 'description', 'map_type', 'modality', 'cognitive_paradigm_cogatlas',
                   'cognitive_contrast_cogatlas', 'cognitive_paradigm_description_url', 'analysis_level', 'number_of_subjects', 'contrast_definition', 'figure',
-                  'file', 'ignore_file_warning', 'hdr_file', 'tags', 'statistic_parameters',
+                  'file', 'ignore_file_warning', 'tags', 'statistic_parameters',
                   'smoothness_fwhm', 'is_thresholded', 'perc_bad_voxels', 'is_valid', 'data_origin')
         widgets = {
             'file': AdminResubmitFileWidget,
-            'hdr_file': AdminResubmitFileWidget,
             'is_thresholded': HiddenInput,
             'ignore_file_warning': HiddenInput,
             'perc_bad_voxels': HiddenInput,
@@ -694,7 +661,7 @@ class StatisticMapForm(ImageForm):
                 mfile = memory_uploadfile(brick, brick_fname, orig_img.file)
                 brick_img = StatisticMap(name='%s - %s' % (orig_img.name, label), collection=orig_img.collection,
                                          file=mfile)
-                for field in set(self.Meta.fields) - set(['file', 'hdr_file', 'name', 'collection']):
+                for field in set(self.Meta.fields) - set(['file', 'name', 'collection']):
                     if field in self.cleaned_data:
                         setattr(brick_img, field, self.cleaned_data[field])
 
@@ -720,7 +687,7 @@ class AtlasForm(ImageForm):
     class Meta(ImageForm.Meta):
         model = Atlas
         fields = ('name', 'collection', 'description', 'figure',
-                  'file', 'hdr_file', 'label_description_file', 'tags')
+                  'file', 'label_description_file', 'tags')
 
 
 class PolymorphicImageForm(ImageForm):
@@ -773,7 +740,7 @@ class AddStatisticMapForm(StatisticMapForm):
     class Meta(StatisticMapForm.Meta):
         fields = ('name', 'description', 'map_type', 'modality', 'cognitive_paradigm_cogatlas',
                   'cognitive_contrast_cogatlas', 'cognitive_paradigm_description_url', 'analysis_level', 'number_of_subjects', 'contrast_definition', 'figure',
-                  'file', 'ignore_file_warning', 'hdr_file', 'surface_left_file', 'surface_right_file', 'tags', 'statistic_parameters',
+                  'file', 'ignore_file_warning', 'surface_left_file', 'surface_right_file', 'tags', 'statistic_parameters',
                   'smoothness_fwhm', 'is_thresholded', 'perc_bad_voxels', 'data_origin')
 
 
@@ -799,7 +766,7 @@ class SimplifiedStatisticMapForm(EditStatisticMapForm):
 
     class Meta(EditStatisticMapForm.Meta):
         fields = ('name', 'collection', 'description', 'map_type', 'modality', 'cognitive_paradigm_cogatlas',
-                  'cognitive_contrast_cogatlas', 'cognitive_paradigm_description_url', 'file', 'ignore_file_warning', 'hdr_file', 'tags', 'is_thresholded',
+                  'cognitive_contrast_cogatlas', 'cognitive_paradigm_description_url', 'file', 'ignore_file_warning', 'tags', 'is_thresholded',
                   'perc_bad_voxels')
 
 class NeuropowerStatisticMapForm(EditStatisticMapForm):
@@ -810,7 +777,7 @@ class NeuropowerStatisticMapForm(EditStatisticMapForm):
 
     class Meta(EditStatisticMapForm.Meta):
         fields = ('name', 'collection', 'description', 'map_type', 'modality', 'map_type','analysis_level','number_of_subjects','cognitive_paradigm_cogatlas',
-                  'cognitive_contrast_cogatlas', 'cognitive_paradigm_description_url', 'file', 'ignore_file_warning', 'hdr_file', 'tags', 'is_thresholded',
+                  'cognitive_contrast_cogatlas', 'cognitive_paradigm_description_url', 'file', 'ignore_file_warning', 'tags', 'is_thresholded',
                   'perc_bad_voxels')
 
 class UploadFileForm(Form):
@@ -1055,8 +1022,6 @@ class NIDMResultStatisticMapForm(ImageForm):
         super(NIDMResultStatisticMapForm, self).__init__(*args, **kwargs)
         self.helper = FormHelper(self)
         self.helper.form_class = 'form-horizontal'
-        # problem with exclude() and fields()
-        self.fields['hdr_file'].widget = HiddenInput()
         if self.instance.pk is None:
             self.fields['file'].widget = HiddenInput()
         else:

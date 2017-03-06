@@ -249,11 +249,10 @@
 </div>
 <br><br>
 <ul class="list-group">
-<li class="list-group-item"><a href="{% url 'add_image' cid %}">Add images one by one</a></li>
-<li class="list-group-item"><a class="upload_archive" href="#">Upload an archive with images (.zip or .tar.gz)</a></li>
-<li class="list-group-item"><a class="upload_archive" href="#">Upload a NIDM-Results file (.nidm.zip)</a></li>
+<li class="list-group-item"><a href="{% url 'add_image' cid %}">Add AFQ results one by one</a></li>
+<li class="list-group-item"><a class="upload_archive" href="#">Upload an archive with AFQ results (.zip or .tar.gz)</a></li>
 <!--[if !IE]> -->
-<li class="list-group-item"><a class="upload_folder" href="#">Upload a folder with images</a></li>
+<li class="list-group-item"><a class="upload_folder" href="#">Upload a folder with AFQ results</a></li>
 <!-- <![endif]-->
 <div id="upload_process" class="modal" style="margin-top: 175px;" data-keyboard="false"></div>
 </div>
@@ -263,7 +262,7 @@
 <div class="col-md-6">
         <!-- COLLECTION TABS -->
         <ul id='collection-tabs' class='nav nav-tabs'>
-              <li><a data-toggle='tab' href='#images'>Images</a></li>
+              <li><a data-toggle='tab' href='#images'>Results</a></li>
               <li><a data-toggle='tab' href='#details'>Details</a></li>
         </ul>
 

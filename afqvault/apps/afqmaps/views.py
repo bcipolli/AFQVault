@@ -47,8 +47,8 @@ from afqvault.apps.afqmaps.forms import CollectionForm, UploadFileForm, Simplifi
 from afqvault.apps.afqmaps.models import Collection, Image, Atlas, AFQMap, NIDMResults, NIDMResultAFQMap, \
     CognitiveAtlasTask, CognitiveAtlasContrast, BaseAFQMap
 from afqvault.apps.afqmaps.tasks import save_resampled_transformation_single
-from afqvault.apps.afqmaps.utils import split_filename, generate_pycortex_volume, \
-    generate_pycortex_static, generate_url_token, HttpRedirectException, get_paper_properties, \
+from afqvault.apps.afqmaps.utils import split_filename, \
+    generate_url_token, HttpRedirectException, get_paper_properties, \
     get_file_ctime, detect_4D, split_4D_to_3D, splitext_nii_gz, mkdir_p, \
     send_email_notification, populate_nidm_results, get_server_url, populate_feat_directory, \
     detect_feat_directory, format_image_collection_names, is_search_compatible, \
@@ -684,87 +684,9 @@ def view_images_by_tag(request, tag):
     context = {'images': images, 'tag': tag}
     return render(request, 'afqmaps/images_by_tag.html.haml', context)
 
-
-def view_image_with_pycortex(request, pk, collection_cid=None):
-    image = get_image(pk,collection_cid,request)
-    base, fname, _ = split_filename(image.file.path)
-    pycortex_dir = os.path.join(base, fname + "_pycortex")
-
-    if not os.path.exists(pycortex_dir):
-        volume = generate_pycortex_volume(image)
-        generate_pycortex_static({image.name: volume}, pycortex_dir)
-
-    _, _, ext = split_filename(image.file.url)
-    pycortex_url = image.file.url[:-len(ext)] + "_pycortex/index.html"
-    return redirect(pycortex_url)
-
-
-def view_collection_with_pycortex(request, cid):
-    volumes = {}
-    collection = get_collection(cid,request,mode='file')
-    images = collection.basecollectionitem_set.instance_of(Image)
-
-    if not images:
-        return redirect(collection)
-
-    else:
-        basedir = os.path.join(settings.PRIVATE_MEDIA_ROOT,'images',str(collection.id))
-        baseurl = os.path.join(settings.PRIVATE_MEDIA_URL,cid)
-
-        output_dir = os.path.join(basedir, "pycortex_all")
-        html_path = os.path.join(basedir, "pycortex_all/index.html")
-        pycortex_url = os.path.join(baseurl, "pycortex_all/index.html")
-
-        if os.path.exists(output_dir):
-            # check if collection contents have changed
-            if (not os.path.exists(html_path)) or collection.modify_date > get_file_ctime(html_path):
-                shutil.rmtree(output_dir)
-                return view_collection_with_pycortex(request, cid)
-        else:
-            for image in images:
-                vol = generate_pycortex_volume(image)
-                volumes[image.name] = vol
-            generate_pycortex_static(volumes, output_dir,
-                                     title=collection.name)
-
-        return redirect(pycortex_url)
-
-
 def serve_image(request, collection_cid, img_name):
     collection = get_collection(collection_cid,request,mode='file')
     path = os.path.join(settings.PRIVATE_MEDIA_ROOT,'images',str(collection.id),img_name)
-    return sendfile(request, path, encoding="utf-8")
-
-
-def serve_pycortex(request, collection_cid, path, pycortex_dir='pycortex_all'):
-    collection = get_collection(collection_cid,request,mode='file')
-    int_path = os.path.join(settings.PRIVATE_MEDIA_ROOT,
-                            'images',str(collection.id),pycortex_dir,path)
-    return sendfile(request, int_path)
-
-
-def serve_nidm(request, collection_cid, nidmdir, sep, path):
-    collection = get_collection(collection_cid, request, mode='file')
-    basepath = os.path.join(settings.PRIVATE_MEDIA_ROOT, 'images')
-    fpath = path if sep is '/' else ''.join([nidmdir, sep, path])
-    try:
-        nidmr = collection.basecollectionitem_set.instance_of(NIDMResults).get(name=nidmdir)
-    except ObjectDoesNotExist:
-        return HttpResponseForbidden()
-
-    if path in ['zip', 'ttl']:
-        fieldf = getattr(nidmr, '{0}_file'.format(path))
-        fpath = fieldf.path
-    else:
-        zipfile = nidmr.zip_file.path
-        fpathbase = os.path.dirname(zipfile)
-        fpath = ''.join([fpathbase,sep,path])
-
-    return sendfile(request, os.path.join(basepath, fpath), encoding="utf-8")
-
-def serve_nidm_image(request, collection_cid, nidmdir, sep, path):
-    collection = get_collection(collection_cid,request,mode='file')
-    path = os.path.join(settings.PRIVATE_MEDIA_ROOT,'images',str(collection.id),nidmdir,path)
     return sendfile(request, path, encoding="utf-8")
 
 def stats_view(request):

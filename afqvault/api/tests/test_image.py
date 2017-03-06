@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 
 from afqvault.apps.afqmaps.models import Collection
 from afqvault.apps.afqmaps.tests.utils import (
-    save_atlas_form, save_nidm_form, save_statmap_form, clearDB
+    save_atlas_form, save_statmap_form, clearDB
 )
 from afqvault.api.tests.base import APITestCase
 from afqvault.api.pagination import StandardResultPagination
@@ -36,13 +36,6 @@ class TestImage(APITestCase):
         self.image2 = save_statmap_form(
             image_path=self.abs_data_path(
                 'afqmaps/beta_0001.nii.gz'
-            ),
-            collection=self.collection
-        )
-
-        self.nidm = save_nidm_form(
-            zip_file=self.abs_data_path(
-                'nidm/spm_example.nidm.zip'
             ),
             collection=self.collection
         )

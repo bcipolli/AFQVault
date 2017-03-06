@@ -10,7 +10,7 @@ from rest_framework import status
 from afqvault.apps.afqmaps.models import Atlas
 
 from afqvault.apps.afqmaps.tests.utils import (
-    clearDB, save_atlas_form, save_nidm_form, save_statmap_form
+    clearDB, save_atlas_form, save_statmap_form
 )
 from afqvault.apps.afqmaps.models import Collection
 from afqvault.api.tests.base import APITestCase, BaseTestCases
@@ -69,16 +69,6 @@ class TestAtlas(APITestCase):
         )
         self.Image2 = save_statmap_form(
             image_path=nii_path,
-            collection=self.Collection1
-        )
-
-        # Zip file with nidm results
-        print "Adding nidm results..."
-        zip_file = self.abs_data_path(
-            'nidm/spm_example.nidm.zip'
-        )
-        self.nidm = save_nidm_form(
-            zip_file=zip_file,
             collection=self.Collection1
         )
 

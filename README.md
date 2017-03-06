@@ -53,12 +53,3 @@ If you add a dependency to requirements.txt or modify Dockerfile you will need t
 ```
 docker build -t afqvault/afqvault .
 ```
-
-### Using pycortex
-To use pycortex you will need a different image (that includes FreeSurfer). Just change "afqvault/afqvault" with "afqvault/afqvault_fs" in docker-compose.yml. This image is significantly bigger and will take longer to download.
-
-You can also build it locally
-```
-docker build -t afqvault/afqvault_fs -f fs_docker/Dockerfile .
-```
-

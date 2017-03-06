@@ -6,10 +6,9 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework import status
 
 from afqvault.apps.afqmaps.models import (
-    Collection, AFQMap, NIDMResults
+    Collection, AFQMap
 )
 from afqvault.apps.afqmaps.tests.utils import clearDB
-from afqvault.apps.afqmaps.tests.test_nidm import NIDM_TEST_FILES
 from afqvault.api.tests.base import APITestCase
 
 
@@ -149,39 +148,6 @@ class TestCollectionItemUpload(APITestCase):
                                  r'\.xml$')
 
         self.assertEqual(response.data['name'], post_dict['name'])
-
-    def test_upload_nidm_results(self):
-        self.client.force_authenticate(user=self.user)
-        url = '/api/collections/%s/nidm_results/' % self.coll.pk
-
-        for name, data in NIDM_TEST_FILES.items():
-            self._test_upload_nidm_results(url, name, data)
-
-    def _test_upload_nidm_results(self, url, name, data):
-        fname = os.path.basename(data['file'])
-
-        post_dict = {
-            'name': name,
-            'description': '{0} upload test'.format(name),
-            'zip_file': SimpleUploadedFile(fname,
-                                           open(data['file'], 'rb').read())
-        }
-
-        response = self.client.post(url, post_dict, format='multipart')
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data['collection'], self.coll.id)
-        self.assertRegexpMatches(response.data['zip_file'], r'\.nidm\.zip$')
-        self.assertRegexpMatches(response.data['url'], r'\.nidm$')
-
-        nidm = NIDMResults.objects.get(pk=response.data['id'])
-        self.assertEquals(len(nidm.nidmresultstatisticmap_set.all()),
-                          data['num_afqmaps'])
-
-        map_type = data['output_row']['type'][0]
-        map_img = nidm.nidmresultstatisticmap_set.filter(
-            map_type=map_type).first()
-
-        self.assertEquals(map_img.name, data['output_row']['name'])
 
     def test_missing_required_fields(self):
         self.client.force_authenticate(user=self.user)

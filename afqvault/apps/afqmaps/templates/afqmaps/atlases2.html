@@ -11,7 +11,7 @@
 <script type="text/javascript">
 
 var params = [];
-     
+
 {% if first_image %}
    params["images"] = ["{% static "images/MNI152.nii.gz"%}","{{ first_image.file.url|urlencode }}".replace(" ","")];
    var tmpname = "{{ first_image.file.url }}".replace(/^.*[\\\/]/, '')
@@ -25,7 +25,7 @@ var params = [];
 {% else %}
    params["images"] = ["{% static "images/MNI152.nii.gz"%}"];
 {% endif %}
-     
+
    params["{% static "images/MNI152.nii.gz"%}"] = {"parametric": true,  "min":0, "lut":"OrRd", "negative_lut":"PuBu", "alpha":"0.75", "symmetric":true};
    params["worldSpace"] = true;
    params["expandable"] = true;
@@ -50,7 +50,7 @@ var params = [];
 
 <script type='text/javascript'>
 
- function showLoader() {   
+ function showLoader() {
     document.getElementById('spinny').style.display = 'block';
     document.getElementById('fade').style.display = 'block';
   }
@@ -76,7 +76,7 @@ var params = [];
       } else {
       	params[tmpname] = {"parametric": true,  "min":0, "lut":"OrRd", "negative_lut":"PuBu", "alpha":"0.75", "symmetric":true};
       }
-   
+
       params["{% static "images/MNI152.nii.gz"%}"] = {"parametric": true,  "min":0, "lut":"OrRd", "negative_lut":"PuBu", "alpha":"0.75", "symmetric":true};
       params["worldSpace"] = true;
       params["expandable"] = true;
@@ -88,7 +88,7 @@ var params = [];
 
       papaya.Container.resetViewer(0, params);  // specify new ones
       $(mrimage).addClass("active")
-  
+
   }
 
 (function() {
@@ -109,9 +109,6 @@ var params = [];
       return document.upload_folder_form.submit();
     });
 
-    if (navigator.userAgent.indexOf("Safari") > -1 && navigator.userAgent.indexOf("Chrome") === -1) {
-      return $('a[href="pycortex"]').hide();
-    }
   });
 }).call(this);
 

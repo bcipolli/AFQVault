@@ -41,8 +41,6 @@ RUN pip install lxml
 RUN pip install markdown
 RUN pip install networkx
 RUN pip install nibabel==2.1.0
-RUN pip install nidmresults==0.3.2
-RUN pip install nidmfsl==0.3.4
 RUN pip install nilearn
 RUN pip install numexpr
 RUN pip install opbeat
@@ -59,7 +57,6 @@ RUN pip install uwsgi
 RUN pip install zipstream
 
 RUN pip install git+https://github.com/benkonrath/django-guardian.git@7cded9081249e9a4cd9f5cd85e67cf843c138b0c#egg=django-guardian
-RUN pip install nidmviewer==0.1.3
 RUN pip install git+https://github.com/bcipolli/social_orcid.git
 
 RUN pip install tables

@@ -12,7 +12,7 @@ from rest_framework.views import APIView
 from taggit.models import Tag
 
 from afqvault.apps.afqmaps.models import (Atlas, Collection, Image,
-                                             AFQMap, NIDMResults)
+                                             AFQMap)
 from afqvault.apps.afqmaps.views import (get_collection, get_image,
                                             owner_or_contrib)
 from afqvault.apps.afqmaps.voxel_query_functions import (getAtlasVoxels,
@@ -21,9 +21,7 @@ from afqvault.apps.afqmaps.voxel_query_functions import (getAtlasVoxels,
                                                             voxelToRegion)
 from .serializers import (UserSerializer, AtlasSerializer,
                           CollectionSerializer, EditableAtlasSerializer,
-                          EditableNIDMResultsSerializer,
-                          EditableAFQMapSerializer, ImageSerializer,
-                          NIDMResultsSerializer)
+                          EditableAFQMapSerializer, ImageSerializer)
 
 from .permissions import (ObjectOnlyPermissions,
                           ObjectOnlyPolymorphicPermissions)
@@ -314,13 +312,6 @@ class CollectionViewSet(viewsets.ModelViewSet):
 
         return self._get_paginated_results(Atlas, pk, request, AtlasSerializer)
 
-    @detail_route(methods=['get', 'post'])
-    def nidm_results(self, request, pk):
-        if request.method == 'POST':
-            return self.add_item(request, pk, EditableNIDMResultsSerializer)
-
-        return self._get_paginated_results(NIDMResults, pk, request, NIDMResultsSerializer)
-
     def add_item(self, request, pk, obj_serializer):
         collection = get_collection(pk, request, mode='api')
 
@@ -354,17 +345,6 @@ class MyCollectionsViewSet(CollectionViewSet):
     def get_queryset(self):
         user = self.request.user
         return Collection.objects.filter(owner=user)
-
-
-class NIDMResultsViewSet(mixins.RetrieveModelMixin,
-                         mixins.ListModelMixin,
-                         mixins.UpdateModelMixin,
-                         mixins.DestroyModelMixin,
-                         viewsets.GenericViewSet):
-
-    queryset = NIDMResults.objects.filter(collection__private=False)
-    serializer_class = NIDMResultsSerializer
-    permission_classes = (ObjectOnlyPolymorphicPermissions,)
 
 
 class TagViewSet(viewsets.ModelViewSet):

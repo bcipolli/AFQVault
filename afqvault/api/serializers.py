@@ -10,8 +10,6 @@ from rest_framework.relations import PrimaryKeyRelatedField, StringRelatedField
 from afqvault.apps.afqmaps.forms import (
     handle_update_ttl_urls,
     ImageValidationMixin,
-    NIDMResultsValidationMixin,
-    save_nidm_afqmaps
 )
 
 from afqvault.apps.afqmaps.models import (
@@ -20,8 +18,6 @@ from afqvault.apps.afqmaps.models import (
     CognitiveAtlasTask,
     CognitiveAtlasContrast,
     Collection,
-    NIDMResults,
-    NIDMResultAFQMap,
     AFQMap
 )
 
@@ -68,15 +64,6 @@ class SerializedContributors(serializers.CharField):
             return ', '.join([v.username for v in value.all()])
 
 
-class NIDMDescriptionSerializedField(serializers.CharField):
-
-    def to_representation(self, value):
-        if value and self.parent.instance is not None:
-            parent = self.parent.instance.nidm_results.name
-            fname = os.path.split(self.parent.instance.file.name)[-1]
-            return 'NIDM Results: {0}.zip > {1}'.format(parent, fname)
-
-
 class UserSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
@@ -120,12 +107,6 @@ class ImageSerializer(serializers.HyperlinkedModelSerializer,
         elif isinstance(obj, Atlas):
             serializer = AtlasSerializer
             image_type = 'atlas'
-        elif isinstance(obj, NIDMResultAFQMap):
-            serializer = NIDMResultAFQMapSerializer
-            image_type = 'NIDM results statistic map'
-        elif isinstance(obj, NIDMResults):
-            serializer = NIDMResultsSerializer
-            image_type = 'NIDM Results'
 
         orderedDict = serializer(obj, context={
             'request': self.context['request']}).to_representation(obj)
@@ -164,17 +145,6 @@ class ImageSerializer(serializers.HyperlinkedModelSerializer,
 
 
 class EditableAFQMapSerializer(ImageSerializer):
-    cognitive_paradigm_cogatlas = PrimaryKeyRelatedField(
-        queryset=CognitiveAtlasTask.objects.all(),
-        allow_null=True,
-        required=False
-    )
-    cognitive_contrast_cogatlas = PrimaryKeyRelatedField(
-        queryset=CognitiveAtlasContrast.objects.all(),
-        allow_null=True,
-        required=False
-    )
-
     class Meta:
         model = AFQMap
         read_only_fields = ('collection',)
@@ -182,13 +152,7 @@ class EditableAFQMapSerializer(ImageSerializer):
 
 
 class AFQMapSerializer(ImageSerializer):
-
-    cognitive_paradigm_cogatlas = StringRelatedField(read_only=True)
-    cognitive_paradigm_cogatlas_id = PrimaryKeyRelatedField(
-        read_only=True, source="cognitive_paradigm_cogatlas")
-    cognitive_contrast_cogatlas = StringRelatedField(read_only=True)
-    cognitive_contrast_cogatlas_id = PrimaryKeyRelatedField(
-        read_only=True, source="cognitive_contrast_cogatlas")
+    read_only=True, source="cognitive_contrast_cogatlas")
     map_type = serializers.SerializerMethodField()
     analysis_level = serializers.SerializerMethodField()
 
@@ -218,33 +182,6 @@ class AFQMapSerializer(ImageSerializer):
         return ret
 
 
-class NIDMResultAFQMapSerializer(ImageSerializer):
-
-    nidm_results = HyperlinkedRelatedURL(read_only=True)
-    nidm_results_ttl = serializers.SerializerMethodField()
-    description = NIDMDescriptionSerializedField(source='get_absolute_url')
-    map_type = serializers.SerializerMethodField()
-    analysis_level = serializers.SerializerMethodField()
-
-    def get_map_type(self, obj):
-        return obj.get_map_type_display()
-
-    def get_analysis_level(self, obj):
-        return obj.get_analysis_level_display()
-
-    def get_nidm_results_ttl(self, obj):
-        return self.context['request'].build_absolute_uri(
-            obj.nidm_results.ttl_file.url
-        )
-
-    class Meta:
-        model = NIDMResultAFQMap
-        exclude = ['polymorphic_ctype']
-
-    def to_representation(self, obj):
-        return super(ImageSerializer, self).to_representation(obj)
-
-
 class AtlasSerializer(ImageSerializer):
 
     label_description_file = HyperlinkedFileField()
@@ -262,56 +199,6 @@ class EditableAtlasSerializer(ImageSerializer):
     class Meta:
         model = Atlas
         read_only_fields = ('collection',)
-
-
-class NIDMResultsSerializer(serializers.ModelSerializer,
-                            NIDMResultsValidationMixin):
-    zip_file = HyperlinkedFileField()
-    ttl_file = HyperlinkedFileField(required=False)
-    afqmaps = ImageSerializer(many=True, source='nidmresultstatisticmap_set')
-    url = HyperlinkedImageURL(source='get_absolute_url', read_only=True)
-
-    def validate(self, data):
-        data['collection'] = self.instance.collection
-        return self.clean_and_validate(data)
-
-    def save(self):
-        instance = super(NIDMResultsSerializer, self).save()
-        nidm = getattr(self, 'nidm', False)
-
-        if nidm:
-            # Handle file upload
-            save_nidm_afqmaps(nidm, instance)
-            handle_update_ttl_urls(instance)
-
-        return instance
-
-    class Meta:
-        model = NIDMResults
-        exclude = ['is_valid']
-        read_only_fields = ('collection',)
-
-
-class EditableNIDMResultsSerializer(serializers.ModelSerializer,
-                                    NIDMResultsValidationMixin):
-    url = HyperlinkedImageURL(source='get_absolute_url', read_only=True)
-
-    def validate(self, data):
-        data['collection'] = self.instance.collection
-        return self.clean_and_validate(data)
-
-    def save(self):
-        instance = super(EditableNIDMResultsSerializer, self).save()
-
-        save_nidm_afqmaps(self.nidm, instance)
-        handle_update_ttl_urls(instance)
-
-        return instance
-
-    class Meta:
-        model = NIDMResults
-        read_only_fields = ('collection',)
-        exclude = ['is_valid']
 
 
 class CollectionSerializer(serializers.ModelSerializer):

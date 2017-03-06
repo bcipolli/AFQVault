@@ -10,9 +10,9 @@ from afqvault.apps.afqmaps.views import ImagesInCollectionJson,\
     ImagesByTaskJson
 from .views import edit_collection, view_image, delete_image, edit_image, \
                 view_collection, delete_collection, download_collection, upload_folder, add_image_for_neurosynth, \
-                serve_image, serve_pycortex, view_collection_with_pycortex, add_image, \
+                serve_image, add_image, \
                 papaya_js_embed, view_images_by_tag, add_image_for_neuropower, \
-                view_image_with_pycortex, stats_view, serve_nidm, serve_nidm_image, \
+                stats_view, serve_nidm, serve_nidm_image, \
                 view_nidm_results, find_similar, find_similar_json, compare_images, edit_metadata, \
                 export_images_filenames, delete_nidm_results, view_task, search, gene_expression_json, \
                 gene_expression, serve_surface_archive
@@ -61,9 +61,6 @@ urlpatterns = patterns('',
     url(r'^collections/(?P<collection_cid>\d+|[A-Z]{8})/images/(?P<pk>\d+)/$',
         view_image,
         name="private_image_details"),
-    url(r'^collections/(?P<cid>\d+|[A-Z]{8})/pycortex$',
-        view_collection_with_pycortex,
-        name='view_collection_pycortex'),
     url(r'^collections/(?P<collection_cid>\d+|[A-Z]{8})/export/imagesfilenames$',
         export_images_filenames,
         name="export_images_filenames"),
@@ -89,12 +86,6 @@ urlpatterns = patterns('',
     url(r'^images/(?P<pk>\d+)/$',
         view_image,
         name='image_details'),
-    url(r'^images/(?P<pk>\d+)/pycortex$',
-        view_image_with_pycortex,
-        name='pycortex_view_image'),
-    url(r'^collections/(?P<collection_cid>\d+|[A-Z]{8})/images/(?P<pk>\d+)/pycortex$',
-        view_image_with_pycortex,
-        name="private_pycortex_view_image"),
     url(r'^images/(?P<pk>\d+)/edit$',
         edit_image,
         name='edit_image'),
@@ -132,32 +123,6 @@ urlpatterns = patterns('',
     url(r'^collections/(?P<collection_cid>\d+|[A-Z]{8})/images/(?P<pk>\d+)/download_surfaces$',
         serve_surface_archive,
         name='serve_surface_archive'),
-
-    url(r'^media/images/(?P<collection_cid>\d+|[A-Z]{8})/(?P<nidmdir>[0-9a-zA-Z\^\&\'\@\{\}\[\]\,\$\=\!\-\#\(\)\.\%\+\~\_ ]+\.nidm\_?[0-9]*)(?P<sep>\.|/)(?P<path>.*)$',
-        serve_nidm_image,
-        name='serve_nidm_images'),
-
-    # redirect dynamically loaded pycortex scripts
-    url(r'^media/images/(\d+|[A-Z]{8})/(.*_pycortex|pycortex_all)/resources/(?P<path>.*).js$',
-        RedirectView.as_view(url='{0}pycortex-resources/%(path)s.js'.format(settings.STATIC_URL)),
-        name='redirect_pycortex_js'),
-
-    # redirect cached ctm assets
-    url(r'^media/images/(\d+|[A-Z]{8})/(.*_pycortex|pycortex_all)/(?P<ctmfile>fsaverage.*).(?P<ext>json|svg|ctm)$',
-        RedirectView.as_view(url='{0}pycortex-ctmcache/%(ctmfile)s.%(ext)s'.format(settings.STATIC_URL)),
-        name='redirect_pycortex_ctm'),
-
-    url(r'^media/images/(?P<collection_cid>\d+|[A-Z]{8})/(?P<pycortex_dir>[0-9a-zA-Z\^\&\'\@\{\}\[\]\,\$\=\!\-\#\(\)\.\%\+\~\_ ]+\_pycortex/)(?P<path>.*)$',
-        serve_pycortex,
-        name='serve_pycortex'),
-
-    url(r'^media/images/(?P<collection_cid>\d+|[A-Z]{8})/pycortex_all/(?P<path>.*)$',
-        serve_pycortex,
-        name='serve_pycortex_collection'),
-
-    url(r'^collections/(?P<collection_cid>\d+|[A-Z]{8})/(?P<nidmdir>[0-9a-zA-Z\^\&\'\@\{\}\[\]\,\$\=\!\-\#\(\)\.\%\+\~\_ ]+\.nidm\_?[0-9]*)(?P<sep>\.|/)(?P<path>.*)$',
-        serve_nidm,
-        name='serve_nidm_files'),
 
     # Compare images and search
     url(r'^images/compare/(?P<pk1>\d+)/(?P<pk2>\d+)$',

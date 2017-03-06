@@ -268,8 +268,6 @@ SENDFILE_BACKEND = 'sendfile.backends.development'
 
 PRIVATE_MEDIA_REDIRECT_HEADER = 'X-Accel-Redirect'
 
-PYCORTEX_DATASTORE = os.path.join(BASE_DIR,'pycortex_data')
-
 CACHES = {
             'default': {
                 'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
@@ -285,12 +283,6 @@ EMAIL_BACKEND = 'django_mailgun.MailgunBackend'
 MAILGUN_ACCESS_KEY = 'key-3ax6xnjp29jd6fds4gc373sgvjxteol0' # replace with a real key in production
 MAILGUN_SERVER_NAME = 'samples.mailgun.org'# replace with 'afqvault.org' in production
 DEFAULT_FROM_EMAIL = "noreply@afqvault.org"
-
-if os.path.exists('/usr/local/share/pycortex/db/fsaverage'):
-    STATICFILES_DIRS = (
-                        ('pycortex-resources', '/usr/local/lib/python2.7/site-packages/cortex/webgl/resources'),
-                        ('pycortex-ctmcache', '/usr/local/share/pycortex/db/fsaverage/cache')
-                        )
 
 # Celery config
 BROKER_URL = 'redis://redis:6379/0'
@@ -333,12 +325,6 @@ try:
     from local_settings import *
 except ImportError:
     pass
-
-# freesurfer/pycortex environment
-os.environ["XDG_CONFIG_HOME"] = PYCORTEX_DATASTORE
-os.environ["FREESURFER_HOME"] = "/opt/freesurfer"
-os.environ["SUBJECTS_DIR"] = os.path.join(os.environ["FREESURFER_HOME"],"subjects")
-os.environ["FSLOUTPUTTYPE"] = "NIFTI_GZ"
 
 # provToolbox path
 os.environ["PATH"] += os.pathsep + '/path/to/lib/provToolbox/bin'

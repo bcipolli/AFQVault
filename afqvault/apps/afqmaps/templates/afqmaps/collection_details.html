@@ -135,9 +135,6 @@
       xhr.send(data);
       //return document.location = "";
     });
-    if (navigator.userAgent.indexOf("Safari") > -1 && navigator.userAgent.indexOf("Chrome") === -1) {
-      return $('a[href="pycortex"]').hide();
-    }
   });
 }).call(this);
 
@@ -182,7 +179,6 @@
              <form action="upload_folder" enctype="multipart/form-data" method= "POST" name="upload_folder_form">
 
             {% if not is_empty %}
-            <a class="btn btn-primary" href="pycortex">3D View</a>
             <a class="btn btn-primary" href="{% url 'download_collection' cid %}">Download</a>
             {% endif %}
 

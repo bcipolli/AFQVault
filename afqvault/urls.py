@@ -5,14 +5,13 @@ from django.contrib import admin
 from django.contrib.sitemaps.views import sitemap, index
 from oauth2_provider import views as oauth_views
 
-from afqvault.api.sitemap import CollectionSitemap, ImageSitemap, CognitiveAtlasTaskSitemap
+from afqvault.api.sitemap import CollectionSitemap, ImageSitemap
 from afqvault.api.urls import api_urls
 
 admin.autodiscover()
 
 sitemaps = {"Collections":CollectionSitemap,
-            "Images":ImageSitemap,
-            "CognitiveAtlasTasks":CognitiveAtlasTaskSitemap}
+            "Images":ImageSitemap}
 
 oauth_urlpatterns = [
     url(r'^authorize/$', oauth_views.AuthorizationView.as_view(),

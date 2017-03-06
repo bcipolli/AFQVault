@@ -379,8 +379,7 @@ def add_image(request, collection_cid):
 @login_required
 def upload_folder(request, collection_cid):
     collection = get_collection(collection_cid,request)
-    allowed_extensions = ['.nii', '.img', '.nii.gz']
-    niftiFiles = []
+    files = []
     if request.method == 'POST':
         print request.POST
         print request.FILES
@@ -433,62 +432,17 @@ def upload_folder(request, collection_cid):
                                     nifti_name = nifti_name[1:]
                                 atlases[str(os.path.join(root,
                                             nifti_name))] = os.path.join(root, fname)
-                        if ext in allowed_extensions:
-                            nii = nib.load(nii_path)
-                            if detect_4D(nii):
-                                niftiFiles.extend(split_4D_to_3D(nii))
-                            else:
-                                niftiFiles.append((fname, nii_path))
+                        if ext in Image.allowed_extensions:
+                            files.append((fname, nii_path))
 
-                for label,fpath in niftiFiles:
-                    # Read nifti file information
-                    nii = nib.load(fpath)
-                    if len(nii.get_shape()) > 3 and nii.get_shape()[3] > 1:
-                        messages.warning(request, "Skipping %s - not a 3D file."%label)
-                        continue
-                    hdr = nii.get_header()
-                    raw_hdr = hdr.structarr
-
-                    # SPM only !!!
-                    # Check if filename corresponds to a T-map
-                    Tregexp = re.compile('spmT.*')
-                    # Fregexp = re.compile('spmF.*')
-
-                    if Tregexp.search(fpath) is not None:
-                        map_type = AFQMap.T
-                    else:
-                        # Check if filename corresponds to a F-map
-                        if Tregexp.search(fpath) is not None:
-                            map_type = AFQMap.F
-                        else:
-                            map_type = AFQMap.OTHER
-
+                for label, fpath in files:
                     path, name, ext = split_filename(fpath)
-                    dname = name + ".nii.gz"
-                    spaced_name = name.replace('_',' ').replace('-',' ')
+                    spaced_name = name.replace('_',' ').replace('-', ' ')
+                    f = ContentFile(open(fpath).read(), name=dname)
 
-                    squeezable_dimensions = len([a for a in nii.shape if a not in [0, 1]])
-
-                    if (ext.lower() != ".nii.gz" or squeezable_dimensions < len(nii.shape)):
-
-                        if squeezable_dimensions < len(nii.shape):
-                            new_data = np.squeeze(nii.get_data())
-                            nii = nib.Nifti1Image(new_data, nii.get_affine(),
-                                                  nii.get_header())
-
-                        new_file_tmp_dir = tempfile.mkdtemp()
-                        new_file_tmp = os.path.join(new_file_tmp_dir, name) + '.nii.gz'
-                        nib.save(nii, new_file_tmp)
-                        f = ContentFile(open(new_file_tmp).read(), name=dname)
-                        shutil.rmtree(new_file_tmp_dir)
-                        label += " (old ext: %s)" % ext
-                    else:
-                        f = ContentFile(open(fpath).read(), name=dname)
-
-                    collection = get_collection(collection_cid,request)
+                    collection = get_collection(collection_cid, request)
 
                     if os.path.join(path, name) in atlases:
-
                         new_image = Atlas(name=spaced_name,
                                           description=raw_hdr['descrip'], collection=collection)
 
@@ -510,8 +464,8 @@ def upload_folder(request, collection_cid):
                 return HttpResponseRedirect(collection.get_absolute_url())
             finally:
                 shutil.rmtree(tmp_directory)
-            if not niftiFiles:
-                messages.warning(request, "No NIFTI files (.nii, .nii.gz, .img/.hdr) found in the upload.")
+            if not files:
+                messages.warning(request, "No files (%s) found in the upload." % ','.join(Image.allowed_extensions))
             return HttpResponseRedirect(collection.get_absolute_url())
     else:
         form = UploadFileForm()

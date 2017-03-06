@@ -350,78 +350,34 @@ class ImageValidationMixin(object):
         print file
         if file:
             # check extension of the data file
+            print file.name, file.file
             _, fname, ext = split_filename(file.name)
-            if not ext.lower() in [".nii.gz", ".nii", ".img"]:
+            if not ext.lower() in Image.allowed_extensions:
                 self._errors["file"] = self.error_class(
-                    ["Doesn't have proper extension"]
+                    ["Doesn't have proper extension (%s)" % ','.join(Image.allowed_extensions)]
                 )
                 del cleaned_data["file"]
                 return cleaned_data
 
             # prepare file to loading into memory
-            file.open()
-            fileobj = file.file
-            if file.name.lower().endswith(".gz"):
-                fileobj = GzipFile(filename=file.name, mode='rb',
-                                   fileobj=fileobj)
-
-            file_map = {'image': nb.FileHolder(file.name, fileobj)}
             try:
                 tmp_dir = tempfile.mkdtemp()
+                tmp_file = os.path.join(tmp_dir, file.name)
+                with open(tmp_file, 'wb') as fp:
+                    fp.write(file.file.read())
 
-                # check if it is really nifti
-                try:
-                    # print file_map
-                    if "header" in file_map:
-                        nii = nb.Nifti1Pair.from_file_map(file_map)
-                    else:
-                        nii = nb.Nifti1Image.from_file_map(file_map)
-                except Exception as e:
-                    raise
+                print "updating file in cleaned_data"
 
-                # detect AFNI 4D files and prepare 3D slices
-                if nii is not None and detect_4D(nii):
-                    self.afni_subbricks = split_4D_to_3D(nii, tmp_dir=tmp_dir)
-                else:
-                    squeezable_dimensions = len([a for a in nii.shape if a not in [0, 1]])
-
-                    if squeezable_dimensions != 3:
-                        self._errors["file"] = self.error_class(
-                            ["4D files are not supported.\n "
-                             "If it's multiple maps in one "
-                             "file please split them and "
-                             "upload separately"])
-                        del cleaned_data["file"]
-                        return cleaned_data
-
-                    # convert to nii.gz if needed
-                    if (ext.lower() != ".nii.gz"
-                            or squeezable_dimensions < len(nii.shape)):
-                        # convert pseudo 4D to 3D
-                        if squeezable_dimensions < len(nii.shape):
-                            new_data = np.squeeze(nii.get_data())
-                            nii = nb.Nifti1Image(new_data, nii.get_affine(),
-                                                 nii.get_header())
-
-                        # Papaya does not handle float64, but by converting
-                        # files we loose precision
-                        # if nii.get_data_dtype() == np.float64:
-                        # ii.set_data_dtype(np.float32)
-                        new_name = fname + ".nii.gz"
-                        nii_tmp = os.path.join(tmp_dir, new_name)
-                        nb.save(nii, nii_tmp)
-
-                        print "updating file in cleaned_data"
-
-                        cleaned_data['file'] = memory_uploadfile(
-                            nii_tmp, new_name, cleaned_data['file']
-                        )
+                cleaned_data['file'] = memory_uploadfile(
+                    tmp_file, file.name, cleaned_data['file']
+                )
             finally:
                 try:
                     shutil.rmtree(tmp_dir)
                 except OSError as exc:
                     if exc.errno != 2:  # code 2 - no such file or directory
                         raise  # re-raise exception
+
         elif not getattr(self, 'partial', False):
             # Skip validation error if this is a partial update from the API
             raise ValidationError("Couldn't read uploaded file")
@@ -460,7 +416,7 @@ class AFQMapForm(ImageForm):
     def clean(self, **kwargs):
         cleaned_data = super(AFQMapForm, self).clean()
 
-        cleaned_data["is_valid"] = True #This will be only saved if the form will validate
+        cleaned_data["is_valid"] = True  # This will be only saved if the form will validate
         cleaned_data["tags"] = clean_tags(cleaned_data)
         print cleaned_data
 

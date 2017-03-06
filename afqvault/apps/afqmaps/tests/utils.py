@@ -1,4 +1,4 @@
-from afqvault.apps.afqmaps.forms import AFQMapForm, AtlasForm, NIDMResultsForm
+from afqvault.apps.afqmaps.forms import AFQMapForm, AtlasForm
 from afqvault.apps.afqmaps.models import Collection, Image
 from django.core.files.uploadedfile import SimpleUploadedFile
 from afqvault.settings import PRIVATE_MEDIA_ROOT
@@ -64,19 +64,3 @@ def save_atlas_form(nii_path,xml_path,collection,ignore_file_warning=False,name=
                      'label_description_file': SimpleUploadedFile(xml_path, open(xml_path).read())}
     form = AtlasForm(post_dict, file_dict)
     return form.save()
-
-
-def save_nidm_form(zip_file,collection,name=None):
-
-    if name == None:
-        name = "fsl_nidm"
-    zip_file_obj = open(zip_file, 'rb')
-    post_dict = {'name': name,
-                 'description':'{0} upload test'.format('fsl_nidm'),
-                 'collection':collection.pk}
-    fname = os.path.basename(zip_file)
-    file_dict = {'zip_file': SimpleUploadedFile(fname, zip_file_obj.read())}
-    zip_file_obj.close()
-    form = NIDMResultsForm(post_dict, file_dict)
-    return form.save()
-

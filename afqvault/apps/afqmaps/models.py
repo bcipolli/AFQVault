@@ -419,6 +419,10 @@ class BaseAFQMap(Image):
         (AFQ, 'AFQ map'),
         (OTHER, 'other'),
     )
+    S = 'Single'
+    G = 'Group'
+    M = 'Meta'
+    OTHER = 'Other'
     ANALYSIS_LEVEL_CHOICES = (
         (S, 'single-subject'),
         (G, 'group'),

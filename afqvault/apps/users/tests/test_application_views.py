@@ -72,7 +72,7 @@ class TestApplicationViews(BaseTest):
                           password=self.user_password)
 
         response = self.client.get(reverse('developerapps_update',
-                                   args=(self.app.pk,)))
+                                           args=(self.app.pk,)))
         self.assertEqual(response.status_code, 200)
 
     def test_application_update(self):
@@ -89,7 +89,7 @@ class TestApplicationViews(BaseTest):
         }
 
         response = self.client.post(reverse('developerapps_update',
-                                    args=(self.app.pk,)),
+                                            args=(self.app.pk,)),
                                     form_data)
         self.assertEqual(response.status_code, 302)
 

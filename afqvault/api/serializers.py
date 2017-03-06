@@ -1,11 +1,11 @@
-import os
 import json
 import pandas as pd
 from django.contrib.auth.models import User
 from django.forms.utils import ErrorDict, ErrorList
 from django.utils.http import urlquote
 from rest_framework import serializers
-from rest_framework.relations import PrimaryKeyRelatedField, StringRelatedField
+from rest_framework.relations import PrimaryKeyRelatedField
+from rest_framework.relations import StringRelatedField
 
 from afqvault.apps.afqmaps.forms import (
     ImageValidationMixin,
@@ -203,7 +203,6 @@ class CollectionSerializer(serializers.ModelSerializer):
     contributors = SerializedContributors(required=False)
     owner_name = serializers.SerializerMethodField()
     number_of_images = serializers.SerializerMethodField('num_im')
-
 
     def num_im(self, obj):
         return obj.basecollectionitem_set.count()

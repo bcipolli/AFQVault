@@ -4,8 +4,11 @@ import nilearn
 from django.core.files.base import ContentFile
 from django.http import Http404
 from django.shortcuts import get_object_or_404
-from pybraincompare.compare.maths import calculate_correlation, calculate_pairwise_correlation
-from pybraincompare.compare.mrutils import resample_images_ref, make_binary_deletion_mask, make_binary_deletion_vector
+from pybraincompare.compare.maths import calculate_correlation
+from pybraincompare.compare.maths import calculate_pairwise_correlation
+from pybraincompare.compare.mrutils import make_binary_deletion_mask
+from pybraincompare.compare.mrutils import make_binary_deletion_vector
+from pybraincompare.compare.mrutils import resample_images_ref
 from pybraincompare.mr.datasets import get_data_directory
 from pybraincompare.mr.transformation import make_resampled_transformation_vector
 
@@ -16,7 +19,11 @@ from six import BytesIO
 import nibabel as nb
 import pylab as plt
 import numpy
-import urllib, json, tarfile, requests, os
+import urllib
+import json
+import tarfile
+import requests
+import os
 from StringIO import StringIO
 import xml.etree.cElementTree as e
 from django.db import IntegrityError
@@ -29,6 +36,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'afqvault.settings')
 app = Celery('afqvault')
 app.config_from_object('django.conf:settings')
 app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
+
 
 @app.task(name='crawl_anima')
 def crawl_anima():
@@ -43,7 +51,7 @@ def crawl_anima():
         anima_user = models.User.objects.get(username=username, email=email)
 
     url = "http://anima.fz-juelich.de/api/studies"
-    response = urllib.urlopen(url);
+    response = urllib.urlopen(url)
     datasets = json.loads(response.read())
 
     # results = tarfile.open(mode="r:gz", fileobj=StringIO(response.content))
@@ -58,7 +66,7 @@ def crawl_anima():
 
         version = xml_obj.find(".").find(".//Element[@name='Version']").text.strip()
         study_description = xml_obj.find(".//Element[@name='Description']").text.strip()
-        study_description += " This dataset was automatically imported from the ANIMA <http://anima.fz-juelich.de/> database. Version: %s"%version
+        study_description += " This dataset was automatically imported from the ANIMA <http://anima.fz-juelich.de/> database. Version: %s" % version
         study_name = xml_obj.find(".").attrib['name']
 
         tags = xml_obj.find(".//Element[@name='Keywords']").text.strip().split(";")
@@ -76,7 +84,7 @@ def crawl_anima():
         elif pubmedid != None:
             pubmedid = pubmedid.text.strip()
             url = "http://www.ncbi.nlm.nih.gov/pmc/utils/idconv/v1.0/?ids=%s&format=json" % pubmedid
-            response = urllib.urlopen(url);
+            response = urllib.urlopen(url)
             parsed = json.loads(response.read())
             post_dict['DOI'] = parsed['records'][0]['doi']
 
@@ -88,7 +96,7 @@ def crawl_anima():
         if col and not col.description.endswith(version):
             col.DOI = None
             old_version = re.search(r"Version: (?P<version>\w)", col.description).group("version")
-            col.name = study_name + " (version %s - deprecated)"%old_version
+            col.name = study_name + " (version %s - deprecated)" % old_version
             col.save()
 
         if not col or not col.description.endswith(version):
@@ -153,7 +161,7 @@ def generate_glassbrain_image(image_pk):
     import matplotlib as mpl
     mpl.rcParams['savefig.format'] = 'jpg'
     my_dpi = 50
-    fig = plt.figure(figsize=(330.0/my_dpi, 130.0/my_dpi), dpi=my_dpi)
+    fig = plt.figure(figsize=(330.0 / my_dpi, 130.0 / my_dpi), dpi=my_dpi)
 
     img = Image.objects.get(pk=image_pk)
     f = BytesIO()
@@ -164,7 +172,7 @@ def generate_glassbrain_image(image_pk):
         # Glass brains that do not produce will be given dummy image
         this_path = os.path.abspath(os.path.dirname(__file__))
         f = open(os.path.abspath(os.path.join(this_path,
-                                              "static","images","glass_brain_empty.jpg")))
+                                              "static", "images", "glass_brain_empty.jpg")))
         raise
     finally:
         plt.close('all')
@@ -175,9 +183,12 @@ def generate_glassbrain_image(image_pk):
 
 # HELPER FUNCTIONS ####################################################################################
 
-'''Return list of Images sorted by the primary key'''
+
+"""Return list of Images sorted by the primary key"""
+
+
 def get_images_by_ordered_id(pk1, pk2):
     from afqvault.apps.afqmaps.models import Image
     image1 = get_object_or_404(Image, pk=pk1)
     image2 = get_object_or_404(Image, pk=pk2)
-    return sorted([image1,image2], key=lambda x: x.pk)
+    return sorted([image1, image2], key=lambda x: x.pk)

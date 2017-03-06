@@ -8,10 +8,12 @@ import os
 import os.path
 from afqvault.apps.afqmaps.models import *
 
+
 def delOldCollDir():
     collDir = os.path.join(PRIVATE_MEDIA_ROOT, 'images')
     for folder in os.listdir(collDir):
         if not Collection.objects.filter(pk=folder):
             os.rmdir(os.path.join(collDir, folder))
+
 
 delOldCollDir()

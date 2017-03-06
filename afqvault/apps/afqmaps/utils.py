@@ -2,22 +2,18 @@ import errno
 import os
 import pickle
 import random
-import shutil
 import string
-import subprocess
 import tempfile
 import urllib2
-import zipfile
-from ast import literal_eval
-from datetime import datetime,date
-from subprocess import CalledProcessError
+from datetime import datetime, date
 
 import nibabel as nb
 import pandas as pd
 import numpy as np
 import pytz
 from django.conf import settings
-from django.core.exceptions import ValidationError, ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.core.mail import EmailMultiAlternatives
@@ -86,6 +82,7 @@ def split_filename(fname):
 
     return pth, fname, ext
 
+
 def generate_url_token(length=8):
     chars = string.ascii_uppercase
     token = ''.join(random.choice(chars) for v in range(length))
@@ -93,6 +90,7 @@ def generate_url_token(length=8):
         return generate_url_token()
     else:
         return token
+
 
 def get_paper_properties(doi):
     xmlurl = 'http://doi.crossref.org/servlet/query'
@@ -105,7 +103,7 @@ def get_paper_properties(doi):
     journal_name = doc.findall(".//journal/journal_metadata/full_title")[0].text
     title = doc.findall('.//title')[0].text
     authors = [author.findall('given_name')[0].text + " " + author.findall('surname')[0].text
-            for author in doc.findall('.//contributors/person_name')]
+               for author in doc.findall('.//contributors/person_name')]
     if len(authors) > 1:
         authors = ", ".join(authors[:-1]) + " and " + authors[-1]
     else:
@@ -128,7 +126,7 @@ def get_paper_properties(doi):
 
 
 def get_file_ctime(fpath):
-    return datetime.fromtimestamp(os.path.getctime(fpath),tz=pytz.utc)
+    return datetime.fromtimestamp(os.path.getctime(fpath), tz=pytz.utc)
 
 
 def splitext_nii_gz(fname):
@@ -151,14 +149,14 @@ def mkdir_p(path):
 
 def send_email_notification(notif_type, subject, users, tpl_context=None):
     email_from = 'AFQVault <do_not_reply@afqvault.org>'
-    plain_tpl = os.path.join('email','%s.txt' % notif_type)
-    html_tpl = os.path.join('email','%s.html' % notif_type)
+    plain_tpl = os.path.join('email', '%s.txt' % notif_type)
+    html_tpl = os.path.join('email', '%s.html' % notif_type)
 
     for user in users:
         context = dict(tpl_context.items() + [('username', user.username)])
         dest = user.email
-        text_content = render_to_string(plain_tpl,context)
-        html_content = render_to_string(html_tpl,context)
+        text_content = render_to_string(plain_tpl, context)
+        html_content = render_to_string(html_tpl, context)
         msg = EmailMultiAlternatives(subject, text_content, email_from, [dest])
         msg.attach_alternative(html_content, "text/html")
         msg.send()
@@ -171,15 +169,15 @@ def detect_4D(nii):
 
 def memory_uploadfile(new_file, fname, old_file):
     cfile = ContentFile(open(new_file).read())
-    content_type = getattr(old_file,'content_type',False) or 'application/x-gzip',
-    charset = getattr(old_file,'charset',False) or None
+    content_type = getattr(old_file, 'content_type', False) or 'application/x-gzip',
+    charset = getattr(old_file, 'charset', False) or None
 
     return InMemoryUploadedFile(cfile, "file", fname,
                                 content_type, cfile.size, charset)
 
 
 # Atomic save for a transform pickle file - save to tmp directory and rename
-def save_pickle_atomically(pkl_data,filename,directory=None):
+def save_pickle_atomically(pkl_data, filename, directory=None):
 
     # Give option to save to specific (not /tmp) directory
     if directory == None:
@@ -207,33 +205,39 @@ def get_server_url(request):
     if request.META.get('HTTP_ORIGIN'):
         return request.META['HTTP_ORIGIN']
     urlpref = 'https://' if request.is_secure() else 'http://'
-    return '{0}{1}'.format(urlpref,request.META['HTTP_HOST'])
+    return '{0}{1}'.format(urlpref, request.META['HTTP_HOST'])
 
 
 # Returns string in format image: collection [map_type] to be within total_length
-def format_image_collection_names(image_name,collection_name,total_length,map_type=None):
-   # 3/5 total length should be collection, 2/5 image
-   collection_length = int(np.floor(.60*total_length))
-   image_length = int(np.floor(total_length - collection_length))
-   if len(image_name) > image_length: image_name = "%s..." % image_name[0:image_length]
-   if len(collection_name) > collection_length: collection_name = "%s..." % collection_name[0:collection_length]
-   if map_type == None: return "%s : %s" %(image_name,collection_name)
-   else: return "%s : %s [%s]" %(image_name,collection_name,map_type)
+def format_image_collection_names(image_name, collection_name, total_length, map_type=None):
+    # 3/5 total length should be collection, 2/5 image
+    collection_length = int(np.floor(.60 * total_length))
+    image_length = int(np.floor(total_length - collection_length))
+    if len(image_name) > image_length:
+        image_name = "%s..." % image_name[0:image_length]
+    if len(collection_name) > collection_length:
+        collection_name = "%s..." % collection_name[0:collection_length]
+    if map_type == None:
+        return "%s : %s" % (image_name, collection_name)
+    else:
+        return "%s : %s [%s]" % (image_name, collection_name, map_type)
 
-#checks if map is thresholded
+# checks if map is thresholded
+
+
 def is_thresholded(nii_obj, thr=0.85):
     data = nii_obj.get_data()
     zero_mask = (data == 0)
     nan_mask = (np.isnan(data))
     missing_mask = zero_mask | nan_mask
-    ratio_bad = float(missing_mask.sum())/float(missing_mask.size)
+    ratio_bad = float(missing_mask.sum()) / float(missing_mask.size)
     if ratio_bad > thr:
         return (True, ratio_bad)
     else:
         return (False, ratio_bad)
 
 
-#checks if map is a parcellation or ROI/mask
+# checks if map is a parcellation or ROI/mask
 def infer_map_type(nii_obj):
     data = nii_obj.get_data()
     zero_mask = (data == 0)
@@ -255,10 +259,12 @@ def infer_map_type(nii_obj):
                 break
     return map_type
 
+
 import nibabel as nb
 from nilearn.image import resample_img
 
 # QUERY FUNCTIONS -------------------------------------------------------------------------------
+
 
 def is_search_compatible(pk):
     from afqvault.apps.afqmaps.models import Image
@@ -295,16 +301,23 @@ def get_images_to_compare_with(pk1, for_generation=False):
     return image_pks
 
 # Returns number of total comparisons, with public, not thresholded maps
+
+
 def count_existing_comparisons(pk1):
     return get_existing_comparisons(pk1).count()
 
 # Returns number of total comparisons possible
+
+
 def count_possible_comparisons(pk1):
     # Comparisons possible for one pk is the number of other pks
-    count_statistic_maps = AFQMap.objects.filter(is_thresholded=False,collection__private=False).exclude(pk=pk1).exclude(analysis_level='S').count()
+    count_statistic_maps = AFQMap.objects.filter(is_thresholded=False, collection__private=False).exclude(
+        pk=pk1).exclude(analysis_level='S').count()
     return count_statistic_maps
 
 # Returns image comparisons still processing for a given pk
+
+
 def count_processing_comparisons(pk1):
     return count_possible_comparisons(pk1) - count_existing_comparisons(pk1)
 
@@ -319,6 +332,8 @@ def get_existing_comparisons(pk1):
     return comparisons
 
 # Returns existing comparisons for specific pk in pd format for
+
+
 def get_similar_images(pk, max_results=100):
     comparisons = get_existing_comparisons(pk).extra(select={"abs_score": "abs(similarity_score)"}).order_by(
         "-abs_score")[0:max_results]  # "-" indicates descending

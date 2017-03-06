@@ -21,11 +21,10 @@ def clearDB():
                 print e
 
 
-
-def save_statmap_form(image_path,collection,ignore_file_warning=False,image_name=None):
+def save_statmap_form(image_path, collection, ignore_file_warning=False, image_name=None):
 
     if image_name == None:
-        if isinstance(image_path,list):
+        if isinstance(image_path, list):
             image_name = image_path[0]
         else:
             image_name = image_path
@@ -38,7 +37,7 @@ def save_statmap_form(image_path,collection,ignore_file_warning=False,image_name
         'ignore_file_warning': ignore_file_warning
     }
     # If image path is a list, we have img/hdr
-    if isinstance(image_path,list):
+    if isinstance(image_path, list):
         file_dict = {'file': SimpleUploadedFile(image_path[0], open(image_path[0]).read()),
                      'hdr_file': SimpleUploadedFile(image_path[1], open(image_path[1]).read())}
     else:
@@ -49,7 +48,7 @@ def save_statmap_form(image_path,collection,ignore_file_warning=False,image_name
     return form.save()
 
 
-def save_atlas_form(nii_path,xml_path,collection,ignore_file_warning=False,name=None):
+def save_atlas_form(nii_path, xml_path, collection, ignore_file_warning=False, name=None):
 
     if name == None:
         name = nii_path
@@ -57,10 +56,10 @@ def save_atlas_form(nii_path,xml_path,collection,ignore_file_warning=False,name=
     post_dict = {
         'name': name,
         'map_type': 'Atlas',
-        'collection':collection.pk,
+        'collection': collection.pk,
         'ignore_file_warning': ignore_file_warning
     }
     file_dict = {'file': SimpleUploadedFile(nii_path, open(nii_path).read()),
-                     'label_description_file': SimpleUploadedFile(xml_path, open(xml_path).read())}
+                 'label_description_file': SimpleUploadedFile(xml_path, open(xml_path).read())}
     form = AtlasForm(post_dict, file_dict)
     return form.save()

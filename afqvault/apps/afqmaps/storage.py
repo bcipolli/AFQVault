@@ -5,7 +5,6 @@ import tempfile
 from django.apps import apps
 from django.core.files.move import file_move_safe
 from django.core.files.storage import FileSystemStorage
-from fnmatch import fnmatch
 
 from afqvault import settings
 

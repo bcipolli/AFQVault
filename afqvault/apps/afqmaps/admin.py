@@ -30,6 +30,7 @@ class ImageAdmin(PolymorphicParentModelAdmin):
         (Atlas, AtlasAdmin),
     )
 
+
 admin.site.register(Image, ImageAdmin)
 admin.site.register(Collection)
 admin.site.register(Comparison)

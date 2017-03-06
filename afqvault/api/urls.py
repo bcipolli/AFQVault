@@ -13,4 +13,4 @@ router.register(r'collections', CollectionViewSet,)
 router.register(r'my_collections', MyCollectionsViewSet, '')
 
 api_urls = router.urls + [url(r'^user/?$', AuthUserView.as_view(),
-                          name='api-auth-user')]
+                              name='api-auth-user')]

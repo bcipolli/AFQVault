@@ -27,11 +27,13 @@ SITE_ID = 1
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
+        # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'postgres',
         # The following settings are not used with sqlite3:
         'USER': 'postgres',
-        'HOST': 'db',                      # Empty for localhost through domain sockets or '127.0.0.1' for localhost through TCP.
+        # Empty for localhost through domain sockets or '127.0.0.1' for localhost through TCP.
+        'HOST': 'db',
         'PORT': '5432',        # Set to empty string for default.
     }
 }
@@ -88,7 +90,7 @@ STATIC_URL = '/static/'
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-#    'django.contrib.staticfiles.finders.DefaultStorageFinder',
+    #    'django.contrib.staticfiles.finders.DefaultStorageFinder',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -115,14 +117,14 @@ TEMPLATES = [
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': (),
         'OPTIONS': {'context_processors': ("django.contrib.auth.context_processors.auth",
-                                            "django.core.context_processors.debug",
-                                            "django.core.context_processors.i18n",
-                                            "django.core.context_processors.media",
-                                            "django.core.context_processors.static",
-                                            "django.core.context_processors.tz",
-                                            "django.contrib.messages.context_processors.messages",
-                                            'django.core.context_processors.request',
-                                            'afqvault.context_processors.ga_identifier'),
+                                           "django.core.context_processors.debug",
+                                           "django.core.context_processors.i18n",
+                                           "django.core.context_processors.media",
+                                           "django.core.context_processors.static",
+                                           "django.core.context_processors.tz",
+                                           "django.contrib.messages.context_processors.messages",
+                                           'django.core.context_processors.request',
+                                           'afqvault.context_processors.ga_identifier'),
                     'loaders': ('hamlpy.template.loaders.HamlPyFilesystemLoader',
                                 'hamlpy.template.loaders.HamlPyAppDirectoriesLoader',
                                 'django.template.loaders.filesystem.Loader',
@@ -145,7 +147,7 @@ INSTALLED_APPS = (
     # Uncomment the next line to enable the admin:
     'django.contrib.admin',
     # Uncomment the next line to enable admin documentation:
-     #'django.contrib.admindocs',
+    #'django.contrib.admindocs',
     'social.apps.django_app.default',
     'rest_framework',
     'taggit',
@@ -269,19 +271,19 @@ SENDFILE_BACKEND = 'sendfile.backends.development'
 PRIVATE_MEDIA_REDIRECT_HEADER = 'X-Accel-Redirect'
 
 CACHES = {
-            'default': {
-                'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-            },
-            "file_resubmit": {
-                'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
-                "LOCATION": '/tmp/file_resubmit/'
-            }
-          }
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    },
+    "file_resubmit": {
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        "LOCATION": '/tmp/file_resubmit/'
+    }
+}
 
 # Mandrill config
 EMAIL_BACKEND = 'django_mailgun.MailgunBackend'
-MAILGUN_ACCESS_KEY = 'key-3ax6xnjp29jd6fds4gc373sgvjxteol0' # replace with a real key in production
-MAILGUN_SERVER_NAME = 'samples.mailgun.org'# replace with 'afqvault.org' in production
+MAILGUN_ACCESS_KEY = 'key-3ax6xnjp29jd6fds4gc373sgvjxteol0'  # replace with a real key in production
+MAILGUN_SERVER_NAME = 'samples.mailgun.org'  # replace with 'afqvault.org' in production
 DEFAULT_FROM_EMAIL = "noreply@afqvault.org"
 
 # Celery config
@@ -329,7 +331,7 @@ except ImportError:
 # provToolbox path
 os.environ["PATH"] += os.pathsep + '/path/to/lib/provToolbox/bin'
 
-#CELERYBEAT_SCHEDULE = {
+# CELERYBEAT_SCHEDULE = {
 #}
 # or manage periodic schedule in django admin
 #CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
@@ -341,7 +343,7 @@ if "test" in sys.argv or "benchmark" in sys.argv:
     CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
 
 
-TAGGIT_CASE_INSENSITIVE=True
+TAGGIT_CASE_INSENSITIVE = True
 
 FIXTURE_DIRS = (
 )

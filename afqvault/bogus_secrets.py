@@ -1,8 +1,8 @@
-'''
+"""
 Created on 5 Jan 2014
 
 @author: filo
-'''
+"""
 # those are bogus keys for dev purposes
 SECRET_KEY = 'bogus'
 FACEBOOK_APP_ID = 'bogus'

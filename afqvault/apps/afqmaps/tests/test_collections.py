@@ -22,9 +22,9 @@ class CollectionSharingTest(TestCase):
     def setUp(self):
         self.user = {}
         self.client = {}
-        for role in ['owner','contrib','someguy']:
+        for role in ['owner', 'contrib', 'someguy']:
             self.user[role] = User.objects.create_user('%s_%s' % (role,
-                                                       self.uniqid()), None,'pwd')
+                                                                  self.uniqid()), None, 'pwd')
             self.user[role].save()
             self.client[role] = Client()
             self.client[role].login(username=self.user[role].username,
@@ -45,19 +45,19 @@ class CollectionSharingTest(TestCase):
     def testCollectionSharing(self):
 
         #view_url = self.coll.get_absolute_url()
-        edit_url = reverse('edit_collection',kwargs={'cid': self.coll.pk})
+        edit_url = reverse('edit_collection', kwargs={'cid': self.coll.pk})
         resp = {}
 
-        for role in ['owner','contrib','someguy']:
+        for role in ['owner', 'contrib', 'someguy']:
             resp[role] = self.client[role].get(edit_url, follow=True)
 
         """
         assert that owner and contributor can edit the collection,
         and that some guy cannot:
         """
-        self.assertEqual(resp['owner'].status_code,200)
-        self.assertEqual(resp['contrib'].status_code,200)
-        self.assertEqual(resp['someguy'].status_code,403)
+        self.assertEqual(resp['owner'].status_code, 200)
+        self.assertEqual(resp['contrib'].status_code, 200)
+        self.assertEqual(resp['someguy'].status_code, 403)
 
         """
         assert that only the owner can view/edit contributors:
@@ -73,18 +73,23 @@ class DeleteCollectionsTest(TestCase):
         self.user = User.objects.create(username='afqvault')
         self.client = Client()
         self.client.login(username=self.user)
-        self.Collection1 = Collection(name='Collection1',owner=self.user)
+        self.Collection1 = Collection(name='Collection1', owner=self.user)
         self.Collection1.save()
-        self.unorderedAtlas = Atlas(name='unorderedAtlas', description='',collection=self.Collection1)
-        self.unorderedAtlas.file = SimpleUploadedFile('VentralFrontal_thr75_summaryimage_2mm.nii.gz', file(os.path.join(self.test_path,'test_data/api/VentralFrontal_thr75_summaryimage_2mm.nii.gz')).read())
-        self.unorderedAtlas.label_description_file = SimpleUploadedFile('test_VentralFrontal_thr75_summaryimage_2mm.xml', file(os.path.join(self.test_path,'test_data/api/unordered_VentralFrontal_thr75_summaryimage_2mm.xml')).read())
+        self.unorderedAtlas = Atlas(name='unorderedAtlas', description='', collection=self.Collection1)
+        self.unorderedAtlas.file = SimpleUploadedFile('VentralFrontal_thr75_summaryimage_2mm.nii.gz', file(
+            os.path.join(self.test_path, 'test_data/api/VentralFrontal_thr75_summaryimage_2mm.nii.gz')).read())
+        self.unorderedAtlas.label_description_file = SimpleUploadedFile('test_VentralFrontal_thr75_summaryimage_2mm.xml', file(
+            os.path.join(self.test_path, 'test_data/api/unordered_VentralFrontal_thr75_summaryimage_2mm.xml')).read())
         self.unorderedAtlas.save()
 
-        self.Collection2 = Collection(name='Collection2',owner=self.user)
+        self.Collection2 = Collection(name='Collection2', owner=self.user)
         self.Collection2.save()
-        self.orderedAtlas = Atlas(name='orderedAtlas', collection=self.Collection2, label_description_file='VentralFrontal_thr75_summaryimage_2mm.xml')
-        self.orderedAtlas.file = SimpleUploadedFile('VentralFrontal_thr75_summaryimage_2mm.nii.gz', file(os.path.join(self.test_path,'test_data/api/VentralFrontal_thr75_summaryimage_2mm.nii.gz')).read())
-        self.orderedAtlas.label_description_file = SimpleUploadedFile('test_VentralFrontal_thr75_summaryimage_2mm.xml', file(os.path.join(self.test_path,'test_data/api/VentralFrontal_thr75_summaryimage_2mm.xml')).read())
+        self.orderedAtlas = Atlas(name='orderedAtlas', collection=self.Collection2,
+                                  label_description_file='VentralFrontal_thr75_summaryimage_2mm.xml')
+        self.orderedAtlas.file = SimpleUploadedFile('VentralFrontal_thr75_summaryimage_2mm.nii.gz', file(
+            os.path.join(self.test_path, 'test_data/api/VentralFrontal_thr75_summaryimage_2mm.nii.gz')).read())
+        self.orderedAtlas.label_description_file = SimpleUploadedFile('test_VentralFrontal_thr75_summaryimage_2mm.xml', file(
+            os.path.join(self.test_path, 'test_data/api/VentralFrontal_thr75_summaryimage_2mm.xml')).read())
         self.orderedAtlas.save()
 
     def tearDown(self):
@@ -94,7 +99,7 @@ class DeleteCollectionsTest(TestCase):
         self.client.login(username=self.user)
         pk1 = self.Collection1.pk
         pk2 = self.Collection2.pk
-        request = self.factory.get('/collections/%s/delete' %pk1)
+        request = self.factory.get('/collections/%s/delete' % pk1)
         request.user = self.user
         delete_collection(request, str(pk1))
         imageDir = os.path.join(PRIVATE_MEDIA_ROOT, 'images')
@@ -104,14 +109,13 @@ class DeleteCollectionsTest(TestCase):
         self.assertNotIn(str(self.Collection1.pk), dirList)
 
 
-
 class Afni4DTest(TestCase):
 
     def setUp(self):
         self.tmpdir = tempfile.mkdtemp()
         app_path = os.path.abspath(os.path.dirname(__file__))
-        self.afni_file = os.path.join(app_path,'test_data/TTatlas.nii.gz')
-        self.nii_file = os.path.abspath(os.path.join(app_path,'../static/anatomical/MNI152.nii.gz'))
+        self.afni_file = os.path.join(app_path, 'test_data/TTatlas.nii.gz')
+        self.nii_file = os.path.abspath(os.path.join(app_path, '../static/anatomical/MNI152.nii.gz'))
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
@@ -310,11 +314,13 @@ class DownloadCollectionsTest(TestCase):
         self.user = User.objects.create(username='afqvault')
         self.client = Client()
         self.client.login(username=self.user)
-        self.Collection1 = Collection(name='Collection1',owner=self.user)
+        self.Collection1 = Collection(name='Collection1', owner=self.user)
         self.Collection1.save()
-        self.unorderedAtlas = Atlas(name='unorderedAtlas', description='',collection=self.Collection1)
-        self.unorderedAtlas.file = SimpleUploadedFile('VentralFrontal_thr75_summaryimage_2mm.nii.gz', file(os.path.join(self.test_path,'test_data/api/VentralFrontal_thr75_summaryimage_2mm.nii.gz')).read())
-        self.unorderedAtlas.label_description_file = SimpleUploadedFile('test_VentralFrontal_thr75_summaryimage_2mm.xml', file(os.path.join(self.test_path,'test_data/api/unordered_VentralFrontal_thr75_summaryimage_2mm.xml')).read())
+        self.unorderedAtlas = Atlas(name='unorderedAtlas', description='', collection=self.Collection1)
+        self.unorderedAtlas.file = SimpleUploadedFile('VentralFrontal_thr75_summaryimage_2mm.nii.gz', file(
+            os.path.join(self.test_path, 'test_data/api/VentralFrontal_thr75_summaryimage_2mm.nii.gz')).read())
+        self.unorderedAtlas.label_description_file = SimpleUploadedFile('test_VentralFrontal_thr75_summaryimage_2mm.xml', file(
+            os.path.join(self.test_path, 'test_data/api/unordered_VentralFrontal_thr75_summaryimage_2mm.xml')).read())
         self.unorderedAtlas.save()
 
     def tearDown(self):
@@ -324,7 +330,7 @@ class DownloadCollectionsTest(TestCase):
     def testDownloadCollection(self):
         self.client.login(username=self.user)
         pk1 = self.Collection1.pk
-        request = self.factory.get('/collections/%s/download' %pk1)
+        request = self.factory.get('/collections/%s/download' % pk1)
         request.user = self.user
         response = download_collection(request, str(pk1))
 

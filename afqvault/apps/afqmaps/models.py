@@ -2,7 +2,6 @@
 import os
 import shutil
 from datetime import datetime
-from gzip import GzipFile
 
 from django.contrib.auth.models import User
 from django.core.files import File
@@ -11,7 +10,9 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import Q
 from django.db.models.fields.files import FieldFile
-from django.db.models.signals import m2m_changed, post_delete, post_save
+from django.db.models.signals import m2m_changed
+from django.db.models.signals import post_delete
+from django.db.models.signals import post_save
 from django.dispatch.dispatcher import receiver
 from django_hstore import hstore
 from guardian.shortcuts import assign_perm, get_users_with_perms, remove_perm
@@ -24,102 +25,185 @@ from afqvault.settings import PRIVATE_MEDIA_ROOT
 
 
 class Collection(models.Model):
-    name = models.CharField(max_length=200, unique = True, null=False, verbose_name="Name of collection")
-    DOI = models.CharField(max_length=200, unique=True, blank=True, null=True, default=None, verbose_name="DOI of the corresponding paper (required if you want your maps to be archived in Stanford Digital Repository)")
+    name = models.CharField(max_length=200, unique=True, null=False, verbose_name="Name of collection")
+    DOI = models.CharField(max_length=200, unique=True, blank=True, null=True, default=None,
+                           verbose_name="DOI of the corresponding paper (required if you want your maps to be archived in Stanford Digital Repository)")
     authors = models.CharField(max_length=5000, blank=True, null=True)
     paper_url = models.CharField(max_length=200, blank=True, null=True)
     journal_name = models.CharField(max_length=200, blank=True, null=True, default=None)
     description = models.TextField(blank=True, null=True)
-    full_dataset_url = models.URLField(max_length=200, blank=True, null=True, verbose_name="Full dataset URL", help_text="Link to an external dataset the maps in this collection have been generated from (for example: \"https://openfmri.org/dataset/ds000001\" or \"http://dx.doi.org/10.15387/fcp_indi.corr.mpg1\")")
+    full_dataset_url = models.URLField(max_length=200, blank=True, null=True, verbose_name="Full dataset URL",
+                                       help_text="Link to an external dataset the maps in this collection have been generated from (for example: \"https://openfmri.org/dataset/ds000001\" or \"http://dx.doi.org/10.15387/fcp_indi.corr.mpg1\")")
     owner = models.ForeignKey(User)
-    contributors = models.ManyToManyField(User,related_name="collection_contributors",related_query_name="contributor", blank=True,help_text="Select other AFQVault users to add as contributes to the collection.  Contributors can add, edit and delete images in the collection.",verbose_name="Contributors")
+    contributors = models.ManyToManyField(User, related_name="collection_contributors", related_query_name="contributor", blank=True,
+                                          help_text="Select other AFQVault users to add as contributes to the collection.  Contributors can add, edit and delete images in the collection.", verbose_name="Contributors")
     private = models.BooleanField(choices=((False, 'Public (The collection will be accessible by anyone and all the data in it will be distributed under CC0 license)'),
-                                           (True, 'Private (The collection will be not listed in the AFQVault index. It will be possible to shared it with others at a private URL.)')), default=False,verbose_name="Accessibility")
-    private_token = models.CharField(max_length=8,blank=True,null=True,unique=True,db_index=True, default=None)
+                                           (True, 'Private (The collection will be not listed in the AFQVault index. It will be possible to shared it with others at a private URL.)')), default=False, verbose_name="Accessibility")
+    private_token = models.CharField(max_length=8, blank=True, null=True, unique=True, db_index=True, default=None)
     add_date = models.DateTimeField('date published', auto_now_add=True)
     modify_date = models.DateTimeField('date modified', auto_now=True)
     doi_add_date = models.DateTimeField('date the DOI was added', editable=False, blank=True, null=True, db_index=True)
-    type_of_design = models.CharField(choices=[('blocked', 'blocked'), ('eventrelated', 'event_related'), ('hybridblockevent', 'hybrid block/event'), ('other', 'other')], max_length=200, blank=True, help_text="Blocked, event-related, hybrid, or other", null=True, verbose_name="Type of design")
-    number_of_imaging_runs = models.IntegerField(help_text="Number of imaging runs acquired", null=True, verbose_name="No. of imaging runs", blank=True)
-    number_of_experimental_units = models.IntegerField(help_text="Number of blocks, trials or experimental units per imaging run", null=True, verbose_name="No. of experimental units", blank=True)
-    length_of_runs = models.FloatField(help_text="Length of each imaging run in seconds", null=True, verbose_name="Length of runs", blank=True)
-    length_of_blocks = models.FloatField(help_text="For blocked designs, length of blocks in seconds", null=True, verbose_name="Length of blocks", blank=True)
-    length_of_trials = models.CharField(help_text="Length of individual trials in seconds. If length varies across trials, enter 'variable'. ", max_length=200, null=True, verbose_name="Length of trials", blank=True)
-    optimization = models.NullBooleanField(help_text="Was the design optimized for efficiency", null=True, verbose_name="Optimization?", blank=True)
-    optimization_method = models.CharField(help_text="What method was used for optimization?", verbose_name="Optimization method", max_length=200, null=True, blank=True)
-    subject_age_mean = models.FloatField(help_text="Mean age of subjects", null=True, verbose_name="Subject age mean", blank=True)
-    subject_age_min = models.FloatField(help_text="Minimum age of subjects", null=True, verbose_name="Subject age min", blank=True)
-    subject_age_max = models.FloatField(help_text="Maximum age of subjects", null=True, verbose_name="Subject age max", blank=True)
-    handedness = models.CharField(choices=[('right', 'right'), ('left', 'left'), ('both', 'both')], max_length=200, blank=True, help_text="Handedness of subjects", null=True, verbose_name="Handedness")
-    proportion_male_subjects = models.FloatField(validators =[MinValueValidator(0.0), MaxValueValidator(1.0)], help_text="The proportion (not percentage) of subjects who were male", null=True, verbose_name="Prop. male subjects", blank=True)
-    inclusion_exclusion_criteria = models.CharField(help_text="Additional inclusion/exclusion criteria, if any (including specific sampling strategies that limit inclusion to a specific group, such as laboratory members)", verbose_name="Inclusion / exclusion criteria", max_length=200, null=True, blank=True)
-    number_of_rejected_subjects = models.IntegerField(help_text="Number of subjects scanned but rejected from analysis", null=True, verbose_name="No. of rejected subjects", blank=True)
-    group_comparison = models.NullBooleanField(help_text="Was this study a comparison between subject groups?", null=True, verbose_name="Group comparison?", blank=True)
-    group_description = models.CharField(help_text="A description of the groups being compared", verbose_name="Group description", max_length=200, null=True, blank=True)
-    scanner_make = models.CharField(help_text="Manufacturer of MRI scanner", verbose_name="Scanner make", max_length=200, null=True, blank=True)
-    scanner_model = models.CharField(help_text="Model of MRI scanner", verbose_name="Scanner model", max_length=200, null=True, blank=True)
-    field_strength = models.FloatField(help_text="Field strength of MRI scanner (in Tesla)", null=True, verbose_name="Field strength", blank=True)
-    pulse_sequence = models.CharField(help_text="Description of pulse sequence used for fMRI", verbose_name="Pulse sequence", max_length=200, null=True, blank=True)
-    parallel_imaging = models.CharField(help_text="Description of parallel imaging method and parameters", verbose_name="Parallel imaging", max_length=200, null=True, blank=True)
-    field_of_view = models.FloatField(help_text="Imaging field of view in millimeters", null=True, verbose_name="Field of view", blank=True)
-    matrix_size = models.IntegerField(help_text="Matrix size for MRI acquisition", null=True, verbose_name="Matrix size", blank=True)
-    slice_thickness = models.FloatField(help_text="Distance between slices (includes skip or distance factor) in millimeters", null=True, verbose_name="Slice thickness", blank=True)
-    skip_distance = models.FloatField(help_text="The size of the skipped area between slices in millimeters", null=True, verbose_name="Skip distance", blank=True)
-    acquisition_orientation = models.CharField(help_text="The orientation of slices", verbose_name="Acquisition orientation", max_length=200, null=True, blank=True)
-    order_of_acquisition = models.CharField(choices=[('ascending', 'ascending'), ('descending', 'descending'), ('interleaved', 'interleaved')], max_length=200, blank=True, help_text="Order of acquisition of slices (ascending, descending, or interleaved)", null=True, verbose_name="Order of acquisition")
-    repetition_time = models.FloatField(help_text="Repetition time (TR) in milliseconds", null=True, verbose_name="Repetition time", blank=True)
-    echo_time = models.FloatField(help_text="Echo time (TE) in milliseconds", null=True, verbose_name="Echo time", blank=True)
+    type_of_design = models.CharField(choices=[('blocked', 'blocked'), ('eventrelated', 'event_related'), ('hybridblockevent', 'hybrid block/event'), (
+        'other', 'other')], max_length=200, blank=True, help_text="Blocked, event-related, hybrid, or other", null=True, verbose_name="Type of design")
+    number_of_imaging_runs = models.IntegerField(
+        help_text="Number of imaging runs acquired", null=True, verbose_name="No. of imaging runs", blank=True)
+    number_of_experimental_units = models.IntegerField(
+        help_text="Number of blocks, trials or experimental units per imaging run", null=True, verbose_name="No. of experimental units", blank=True)
+    length_of_runs = models.FloatField(help_text="Length of each imaging run in seconds",
+                                       null=True, verbose_name="Length of runs", blank=True)
+    length_of_blocks = models.FloatField(
+        help_text="For blocked designs, length of blocks in seconds", null=True, verbose_name="Length of blocks", blank=True)
+    length_of_trials = models.CharField(help_text="Length of individual trials in seconds. If length varies across trials, enter 'variable'. ",
+                                        max_length=200, null=True, verbose_name="Length of trials", blank=True)
+    optimization = models.NullBooleanField(
+        help_text="Was the design optimized for efficiency", null=True, verbose_name="Optimization?", blank=True)
+    optimization_method = models.CharField(help_text="What method was used for optimization?",
+                                           verbose_name="Optimization method", max_length=200, null=True, blank=True)
+    subject_age_mean = models.FloatField(help_text="Mean age of subjects", null=True,
+                                         verbose_name="Subject age mean", blank=True)
+    subject_age_min = models.FloatField(help_text="Minimum age of subjects", null=True,
+                                        verbose_name="Subject age min", blank=True)
+    subject_age_max = models.FloatField(help_text="Maximum age of subjects", null=True,
+                                        verbose_name="Subject age max", blank=True)
+    handedness = models.CharField(choices=[('right', 'right'), ('left', 'left'), ('both', 'both')],
+                                  max_length=200, blank=True, help_text="Handedness of subjects", null=True, verbose_name="Handedness")
+    proportion_male_subjects = models.FloatField(validators=[MinValueValidator(0.0), MaxValueValidator(
+        1.0)], help_text="The proportion (not percentage) of subjects who were male", null=True, verbose_name="Prop. male subjects", blank=True)
+    inclusion_exclusion_criteria = models.CharField(help_text="Additional inclusion/exclusion criteria, if any (including specific sampling strategies that limit inclusion to a specific group, such as laboratory members)",
+                                                    verbose_name="Inclusion / exclusion criteria", max_length=200, null=True, blank=True)
+    number_of_rejected_subjects = models.IntegerField(
+        help_text="Number of subjects scanned but rejected from analysis", null=True, verbose_name="No. of rejected subjects", blank=True)
+    group_comparison = models.NullBooleanField(
+        help_text="Was this study a comparison between subject groups?", null=True, verbose_name="Group comparison?", blank=True)
+    group_description = models.CharField(help_text="A description of the groups being compared",
+                                         verbose_name="Group description", max_length=200, null=True, blank=True)
+    scanner_make = models.CharField(help_text="Manufacturer of MRI scanner",
+                                    verbose_name="Scanner make", max_length=200, null=True, blank=True)
+    scanner_model = models.CharField(help_text="Model of MRI scanner",
+                                     verbose_name="Scanner model", max_length=200, null=True, blank=True)
+    field_strength = models.FloatField(help_text="Field strength of MRI scanner (in Tesla)",
+                                       null=True, verbose_name="Field strength", blank=True)
+    pulse_sequence = models.CharField(help_text="Description of pulse sequence used for fMRI",
+                                      verbose_name="Pulse sequence", max_length=200, null=True, blank=True)
+    parallel_imaging = models.CharField(help_text="Description of parallel imaging method and parameters",
+                                        verbose_name="Parallel imaging", max_length=200, null=True, blank=True)
+    field_of_view = models.FloatField(help_text="Imaging field of view in millimeters",
+                                      null=True, verbose_name="Field of view", blank=True)
+    matrix_size = models.IntegerField(help_text="Matrix size for MRI acquisition",
+                                      null=True, verbose_name="Matrix size", blank=True)
+    slice_thickness = models.FloatField(
+        help_text="Distance between slices (includes skip or distance factor) in millimeters", null=True, verbose_name="Slice thickness", blank=True)
+    skip_distance = models.FloatField(
+        help_text="The size of the skipped area between slices in millimeters", null=True, verbose_name="Skip distance", blank=True)
+    acquisition_orientation = models.CharField(
+        help_text="The orientation of slices", verbose_name="Acquisition orientation", max_length=200, null=True, blank=True)
+    order_of_acquisition = models.CharField(choices=[('ascending', 'ascending'), ('descending', 'descending'), ('interleaved', 'interleaved')], max_length=200,
+                                            blank=True, help_text="Order of acquisition of slices (ascending, descending, or interleaved)", null=True, verbose_name="Order of acquisition")
+    repetition_time = models.FloatField(help_text="Repetition time (TR) in milliseconds",
+                                        null=True, verbose_name="Repetition time", blank=True)
+    echo_time = models.FloatField(help_text="Echo time (TE) in milliseconds",
+                                  null=True, verbose_name="Echo time", blank=True)
     flip_angle = models.FloatField(help_text="Flip angle in degrees", null=True, verbose_name="Flip angle", blank=True)
-    software_package = models.CharField(help_text="If a single software package was used for all analyses, specify that here", verbose_name="Software package", max_length=200, null=True, blank=True)
-    software_version = models.CharField(help_text="Version of software package used", verbose_name="Software version", max_length=200, null=True, blank=True)
-    order_of_preprocessing_operations = models.CharField(help_text="Specify order of preprocessing operations", verbose_name="Order of preprocessing", max_length=200, null=True, blank=True)
-    quality_control = models.CharField(help_text="Describe quality control measures", verbose_name="Quality control", max_length=200, null=True, blank=True)
-    used_b0_unwarping = models.NullBooleanField(help_text="Was B0 distortion correction used?", null=True, verbose_name="Used B0 unwarping?", blank=True)
-    b0_unwarping_software = models.CharField(help_text="Specify software used for distortion correction if different from the main package", verbose_name="B0 unwarping software", max_length=200, null=True, blank=True)
-    used_slice_timing_correction = models.NullBooleanField(help_text="Was slice timing correction used?", null=True, verbose_name="Slice timing correction?", blank=True)
-    slice_timing_correction_software = models.CharField(help_text="Specify software used for slice timing correction if different from the main package", verbose_name="Slice timing correction software", max_length=200, null=True, blank=True)
-    used_motion_correction = models.NullBooleanField(help_text="Was motion correction used?", null=True, verbose_name="Motion correction?", blank=True)
-    motion_correction_software = models.CharField(help_text="Specify software used for motion correction if different from the main package", verbose_name="Motion correction software", max_length=200, null=True, blank=True)
-    motion_correction_reference = models.CharField(help_text="Reference scan used for motion correction", verbose_name="Motion correction reference", max_length=200, null=True, blank=True)
-    motion_correction_metric = models.CharField(help_text="Similarity metric used for motion correction", verbose_name="Motion correction metric", max_length=200, null=True, blank=True)
-    motion_correction_interpolation = models.CharField(help_text="Interpolation method used for motion correction", verbose_name="Motion correction interpolation", max_length=200, null=True, blank=True)
-    used_motion_susceptibiity_correction = models.NullBooleanField(help_text="Was motion-susceptibility correction used?", null=True, verbose_name="Motion susceptibility correction?", blank=True)
-    used_intersubject_registration = models.NullBooleanField(help_text="Were subjects registered to a common stereotactic space?", null=True, verbose_name="Intersubject registration?", blank=True)
-    intersubject_registration_software = models.CharField(help_text="Specify software used for intersubject registration if different from main package", verbose_name="Registration software", max_length=200, null=True, blank=True)
-    intersubject_transformation_type = models.CharField(choices=[('linear', 'linear'), ('nonlinear', 'nonlinear')], max_length=200, blank=True, help_text="Was linear or nonlinear registration used?", null=True, verbose_name="Intersubject transformation type")
-    nonlinear_transform_type = models.CharField(help_text="If nonlinear registration was used, describe transform method", verbose_name="Nonlinear transform type", max_length=200, null=True, blank=True)
-    transform_similarity_metric = models.CharField(help_text="Similarity metric used for intersubject registration", verbose_name="Transform similarity metric", max_length=200, null=True, blank=True)
-    interpolation_method = models.CharField(help_text="Interpolation method used for intersubject registration", verbose_name="Interpolation method", max_length=200, null=True, blank=True)
-    object_image_type = models.CharField(help_text="What type of image was used to determine the transformation to the atlas? (e.g. T1, T2, EPI)", verbose_name="Object image type", max_length=200, null=True, blank=True)
-    functional_coregistered_to_structural = models.NullBooleanField(help_text="Were the functional images coregistered to the subject's structural image?", null=True, verbose_name="Coregistered to structural?", blank=True)
-    functional_coregistration_method = models.CharField(help_text="Method used to coregister functional to structural images", verbose_name="Coregistration method", max_length=200, null=True, blank=True)
-    coordinate_space = models.CharField(choices=[('mni', 'MNI'), ('talairach', 'Talairach'), ('mni2tal', 'MNI2Tal'), ('other', 'other')], max_length=200, blank=True, help_text="Name of coordinate space for registration target", null=True, verbose_name="Coordinate space")
-    target_template_image = models.CharField(help_text="Name of target template image", verbose_name="Target template image", max_length=200, null=True, blank=True)
-    target_resolution = models.FloatField(help_text="Voxel size of target template in millimeters", null=True, verbose_name="Target resolution", blank=True)
-    used_smoothing = models.NullBooleanField(help_text="Was spatial smoothing applied?", null=True, verbose_name="Used smoothing?", blank=True)
-    smoothing_type = models.CharField(help_text="Describe the type of smoothing applied", verbose_name="Type of smoothing", max_length=200, null=True, blank=True)
-    smoothing_fwhm = models.FloatField(help_text="The full-width at half-maximum of the smoothing kernel in millimeters", null=True, verbose_name="Smoothing FWHM", blank=True)
-    resampled_voxel_size = models.FloatField(help_text="Voxel size in mm of the resampled, atlas-space images", null=True, verbose_name="Resampled voxel size", blank=True)
-    intrasubject_model_type = models.CharField(help_text="Type of model used (e.g., regression)", verbose_name="Model type", max_length=200, null=True, blank=True)
-    intrasubject_estimation_type = models.CharField(help_text="Estimation method used for model (e.g., OLS, generalized least squares)", verbose_name="Estimation type", max_length=200, null=True, blank=True)
-    intrasubject_modeling_software = models.CharField(help_text="Software used for intrasubject modeling if different from overall package", verbose_name="Modeling software", max_length=200, null=True, blank=True)
-    hemodynamic_response_function = models.CharField(help_text="Nature of HRF model", verbose_name="Hemodynamic response function", max_length=200, null=True, blank=True)
-    used_temporal_derivatives = models.NullBooleanField(help_text="Were temporal derivatives included?", null=True, verbose_name="Temporal derivatives?", blank=True)
-    used_dispersion_derivatives = models.NullBooleanField(help_text="Were dispersion derivatives included?", null=True, verbose_name="Dispersion derivatives?", blank=True)
-    used_motion_regressors = models.NullBooleanField(help_text="Were motion regressors included?", null=True, verbose_name="Motion regressors?", blank=True)
-    used_reaction_time_regressor = models.NullBooleanField(help_text="Was a reaction time regressor included?", null=True, verbose_name="Reaction time regressor?", blank=True)
-    used_orthogonalization = models.NullBooleanField(help_text="Were any regressors specifically orthogonalized with respect to others?", null=True, verbose_name="Orthogonalization?", blank=True)
-    orthogonalization_description = models.CharField(help_text="If orthogonalization was used, describe here", verbose_name="Orthogonalization description", max_length=200, null=True, blank=True)
-    used_high_pass_filter = models.NullBooleanField(help_text="Was high pass filtering applied?", null=True, verbose_name="High-pass filter?", blank=True)
-    high_pass_filter_method = models.CharField(help_text="Describe method used for high pass filtering", verbose_name="High-pass filtering method", max_length=200, null=True, blank=True)
-    autocorrelation_model = models.CharField(help_text="What autocorrelation model was used (or 'none' of none was used)", verbose_name="Autocorrelation method", max_length=200, null=True, blank=True)
-    group_model_type = models.CharField(help_text="Type of group model used (e.g., regression)", verbose_name="Group model type", max_length=200, null=True, blank=True)
-    group_estimation_type = models.CharField(help_text="Estimation method used for group model (e.g., OLS, generalized least squares)", verbose_name="Group estimation type", max_length=200, null=True, blank=True)
-    group_modeling_software = models.CharField(help_text="Software used for group modeling if different from overall package", verbose_name="Group modeling software", max_length=200, null=True, blank=True)
-    group_inference_type = models.CharField(choices=[('randommixedeffects', 'random/mixed effects'), ('fixedeffects', 'fixed effects')], max_length=200, blank=True, help_text="Type of inference for group model", null=True, verbose_name="Group inference type")
-    group_model_multilevel = models.CharField(help_text="If more than 2-levels, describe the levels and assumptions of the model (e.g. are variances assumed equal between groups)", verbose_name="Multilevel modeling", max_length=200, null=True, blank=True)
-    group_repeated_measures = models.NullBooleanField(help_text="Was this a repeated measures design at the group level?", null=True, verbose_name="Repeated measures", blank=True)
-    group_repeated_measures_method = models.CharField(help_text="If multiple measurements per subject, list method to account for within subject correlation, exact assumptions made about correlation/variance", verbose_name="Repeated measures method", max_length=200, null=True, blank=True)
+    software_package = models.CharField(help_text="If a single software package was used for all analyses, specify that here",
+                                        verbose_name="Software package", max_length=200, null=True, blank=True)
+    software_version = models.CharField(help_text="Version of software package used",
+                                        verbose_name="Software version", max_length=200, null=True, blank=True)
+    order_of_preprocessing_operations = models.CharField(
+        help_text="Specify order of preprocessing operations", verbose_name="Order of preprocessing", max_length=200, null=True, blank=True)
+    quality_control = models.CharField(help_text="Describe quality control measures",
+                                       verbose_name="Quality control", max_length=200, null=True, blank=True)
+    used_b0_unwarping = models.NullBooleanField(
+        help_text="Was B0 distortion correction used?", null=True, verbose_name="Used B0 unwarping?", blank=True)
+    b0_unwarping_software = models.CharField(help_text="Specify software used for distortion correction if different from the main package",
+                                             verbose_name="B0 unwarping software", max_length=200, null=True, blank=True)
+    used_slice_timing_correction = models.NullBooleanField(
+        help_text="Was slice timing correction used?", null=True, verbose_name="Slice timing correction?", blank=True)
+    slice_timing_correction_software = models.CharField(help_text="Specify software used for slice timing correction if different from the main package",
+                                                        verbose_name="Slice timing correction software", max_length=200, null=True, blank=True)
+    used_motion_correction = models.NullBooleanField(
+        help_text="Was motion correction used?", null=True, verbose_name="Motion correction?", blank=True)
+    motion_correction_software = models.CharField(help_text="Specify software used for motion correction if different from the main package",
+                                                  verbose_name="Motion correction software", max_length=200, null=True, blank=True)
+    motion_correction_reference = models.CharField(
+        help_text="Reference scan used for motion correction", verbose_name="Motion correction reference", max_length=200, null=True, blank=True)
+    motion_correction_metric = models.CharField(help_text="Similarity metric used for motion correction",
+                                                verbose_name="Motion correction metric", max_length=200, null=True, blank=True)
+    motion_correction_interpolation = models.CharField(
+        help_text="Interpolation method used for motion correction", verbose_name="Motion correction interpolation", max_length=200, null=True, blank=True)
+    used_motion_susceptibiity_correction = models.NullBooleanField(
+        help_text="Was motion-susceptibility correction used?", null=True, verbose_name="Motion susceptibility correction?", blank=True)
+    used_intersubject_registration = models.NullBooleanField(
+        help_text="Were subjects registered to a common stereotactic space?", null=True, verbose_name="Intersubject registration?", blank=True)
+    intersubject_registration_software = models.CharField(
+        help_text="Specify software used for intersubject registration if different from main package", verbose_name="Registration software", max_length=200, null=True, blank=True)
+    intersubject_transformation_type = models.CharField(choices=[('linear', 'linear'), ('nonlinear', 'nonlinear')], max_length=200,
+                                                        blank=True, help_text="Was linear or nonlinear registration used?", null=True, verbose_name="Intersubject transformation type")
+    nonlinear_transform_type = models.CharField(help_text="If nonlinear registration was used, describe transform method",
+                                                verbose_name="Nonlinear transform type", max_length=200, null=True, blank=True)
+    transform_similarity_metric = models.CharField(help_text="Similarity metric used for intersubject registration",
+                                                   verbose_name="Transform similarity metric", max_length=200, null=True, blank=True)
+    interpolation_method = models.CharField(help_text="Interpolation method used for intersubject registration",
+                                            verbose_name="Interpolation method", max_length=200, null=True, blank=True)
+    object_image_type = models.CharField(help_text="What type of image was used to determine the transformation to the atlas? (e.g. T1, T2, EPI)",
+                                         verbose_name="Object image type", max_length=200, null=True, blank=True)
+    functional_coregistered_to_structural = models.NullBooleanField(
+        help_text="Were the functional images coregistered to the subject's structural image?", null=True, verbose_name="Coregistered to structural?", blank=True)
+    functional_coregistration_method = models.CharField(
+        help_text="Method used to coregister functional to structural images", verbose_name="Coregistration method", max_length=200, null=True, blank=True)
+    coordinate_space = models.CharField(choices=[('mni', 'MNI'), ('talairach', 'Talairach'), ('mni2tal', 'MNI2Tal'), ('other', 'other')],
+                                        max_length=200, blank=True, help_text="Name of coordinate space for registration target", null=True, verbose_name="Coordinate space")
+    target_template_image = models.CharField(
+        help_text="Name of target template image", verbose_name="Target template image", max_length=200, null=True, blank=True)
+    target_resolution = models.FloatField(
+        help_text="Voxel size of target template in millimeters", null=True, verbose_name="Target resolution", blank=True)
+    used_smoothing = models.NullBooleanField(
+        help_text="Was spatial smoothing applied?", null=True, verbose_name="Used smoothing?", blank=True)
+    smoothing_type = models.CharField(help_text="Describe the type of smoothing applied",
+                                      verbose_name="Type of smoothing", max_length=200, null=True, blank=True)
+    smoothing_fwhm = models.FloatField(
+        help_text="The full-width at half-maximum of the smoothing kernel in millimeters", null=True, verbose_name="Smoothing FWHM", blank=True)
+    resampled_voxel_size = models.FloatField(
+        help_text="Voxel size in mm of the resampled, atlas-space images", null=True, verbose_name="Resampled voxel size", blank=True)
+    intrasubject_model_type = models.CharField(
+        help_text="Type of model used (e.g., regression)", verbose_name="Model type", max_length=200, null=True, blank=True)
+    intrasubject_estimation_type = models.CharField(
+        help_text="Estimation method used for model (e.g., OLS, generalized least squares)", verbose_name="Estimation type", max_length=200, null=True, blank=True)
+    intrasubject_modeling_software = models.CharField(
+        help_text="Software used for intrasubject modeling if different from overall package", verbose_name="Modeling software", max_length=200, null=True, blank=True)
+    hemodynamic_response_function = models.CharField(
+        help_text="Nature of HRF model", verbose_name="Hemodynamic response function", max_length=200, null=True, blank=True)
+    used_temporal_derivatives = models.NullBooleanField(
+        help_text="Were temporal derivatives included?", null=True, verbose_name="Temporal derivatives?", blank=True)
+    used_dispersion_derivatives = models.NullBooleanField(
+        help_text="Were dispersion derivatives included?", null=True, verbose_name="Dispersion derivatives?", blank=True)
+    used_motion_regressors = models.NullBooleanField(
+        help_text="Were motion regressors included?", null=True, verbose_name="Motion regressors?", blank=True)
+    used_reaction_time_regressor = models.NullBooleanField(
+        help_text="Was a reaction time regressor included?", null=True, verbose_name="Reaction time regressor?", blank=True)
+    used_orthogonalization = models.NullBooleanField(
+        help_text="Were any regressors specifically orthogonalized with respect to others?", null=True, verbose_name="Orthogonalization?", blank=True)
+    orthogonalization_description = models.CharField(
+        help_text="If orthogonalization was used, describe here", verbose_name="Orthogonalization description", max_length=200, null=True, blank=True)
+    used_high_pass_filter = models.NullBooleanField(
+        help_text="Was high pass filtering applied?", null=True, verbose_name="High-pass filter?", blank=True)
+    high_pass_filter_method = models.CharField(help_text="Describe method used for high pass filtering",
+                                               verbose_name="High-pass filtering method", max_length=200, null=True, blank=True)
+    autocorrelation_model = models.CharField(help_text="What autocorrelation model was used (or 'none' of none was used)",
+                                             verbose_name="Autocorrelation method", max_length=200, null=True, blank=True)
+    group_model_type = models.CharField(help_text="Type of group model used (e.g., regression)",
+                                        verbose_name="Group model type", max_length=200, null=True, blank=True)
+    group_estimation_type = models.CharField(help_text="Estimation method used for group model (e.g., OLS, generalized least squares)",
+                                             verbose_name="Group estimation type", max_length=200, null=True, blank=True)
+    group_modeling_software = models.CharField(help_text="Software used for group modeling if different from overall package",
+                                               verbose_name="Group modeling software", max_length=200, null=True, blank=True)
+    group_inference_type = models.CharField(choices=[('randommixedeffects', 'random/mixed effects'), ('fixedeffects', 'fixed effects')],
+                                            max_length=200, blank=True, help_text="Type of inference for group model", null=True, verbose_name="Group inference type")
+    group_model_multilevel = models.CharField(help_text="If more than 2-levels, describe the levels and assumptions of the model (e.g. are variances assumed equal between groups)",
+                                              verbose_name="Multilevel modeling", max_length=200, null=True, blank=True)
+    group_repeated_measures = models.NullBooleanField(
+        help_text="Was this a repeated measures design at the group level?", null=True, verbose_name="Repeated measures", blank=True)
+    group_repeated_measures_method = models.CharField(
+        help_text="If multiple measurements per subject, list method to account for within subject correlation, exact assumptions made about correlation/variance", verbose_name="Repeated measures method", max_length=200, null=True, blank=True)
 
     @property
     def is_statisticmap_set(self):
@@ -163,13 +247,14 @@ class Collection(models.Model):
         for image in self.basecollectionitem_set.instance_of(Image):
             image.delete()
         ret = super(Collection, self).delete(using=using)
-        collDir = os.path.join(PRIVATE_MEDIA_ROOT, 'images',str(cid))
+        collDir = os.path.join(PRIVATE_MEDIA_ROOT, 'images', str(cid))
         try:
             shutil.rmtree(collDir)
         except OSError:
-            print 'Image directory for collection %s does not exist' %cid
+            print 'Image directory for collection %s does not exist' % cid
 
         return ret
+
 
 @receiver(post_save, sender=Collection)
 def collection_created(sender, instance, created, **kwargs):
@@ -179,6 +264,7 @@ def collection_created(sender, instance, created, **kwargs):
         for image in instance.basecollectionitem_set.all():
             assign_perm('change_basecollectionitem', instance.owner, image)
             assign_perm('delete_basecollectionitem', instance.owner, image)
+
 
 def contributors_changed(sender, instance, action, **kwargs):
     if action in ["post_remove", "post_add", "post_clear"]:
@@ -199,11 +285,13 @@ def contributors_changed(sender, instance, action, **kwargs):
                 remove_perm('change_basecollectionitem', contributor, image)
                 remove_perm('delete_basecollectionitem', contributor, image)
 
+
 m2m_changed.connect(contributors_changed, sender=Collection.contributors.through)
 
 
 def upload_img_to(instance, filename):
-    return os.path.join('images',str(instance.collection.id), filename)
+    return os.path.join('images', str(instance.collection.id), filename)
+
 
 upload_to = upload_img_to  # for migration backwards compat.
 
@@ -236,7 +324,6 @@ class BaseCollectionItem(PolymorphicModel, models.Model):
         self.collection.save()
         super(BaseCollectionItem, self).save()
 
-
     def delete(self):
         self.collection.modify_date = datetime.now()
         self.collection.save()
@@ -257,13 +344,15 @@ def basecollectionitem_created(sender, instance, created, **kwargs):
 
 class Image(BaseCollectionItem):
     allowed_extensions = ('.mat',)
-    file = models.FileField(upload_to=upload_img_to, null=False, blank=False, storage=DoubleExtensionStorage(), verbose_name='File with AFQ result (%s)' % ','.join(allowed_extensions))
+    file = models.FileField(upload_to=upload_img_to, null=False, blank=False, storage=DoubleExtensionStorage(
+    ), verbose_name='File with AFQ result (%s)' % ','.join(allowed_extensions))
     data_origin = models.CharField(
-                    help_text=("Was this map originaly derived from volume or surface?"),
-                    verbose_name="Data origin",
-                    default='volume',
-                    max_length=200, null=True, blank=True, choices=[('volume','volume'), ('surface', 'surface')])
-    figure = models.CharField(help_text="Which figure in the corresponding paper was this map displayed in?", verbose_name="Corresponding figure", max_length=200, null=True, blank=True)
+        help_text=("Was this map originaly derived from volume or surface?"),
+        verbose_name="Data origin",
+        default='volume',
+        max_length=200, null=True, blank=True, choices=[('volume', 'volume'), ('surface', 'surface')])
+    figure = models.CharField(help_text="Which figure in the corresponding paper was this map displayed in?",
+                              verbose_name="Corresponding figure", max_length=200, null=True, blank=True)
     thumbnail = models.FileField(help_text="The orthogonal view thumbnail path of the nifti image",
                                  null=True, blank=True, upload_to=upload_img_to,
                                  verbose_name='Image orthogonal view thumbnail 2D bitmap',
@@ -275,20 +364,19 @@ class Image(BaseCollectionItem):
     data = hstore.DictionaryField(blank=True, null=True)
     hstore_objects = hstore.HStoreManager()
 
-
     def get_absolute_url(self):
         return_args = [str(self.id)]
         url_name = 'image_details'
         if self.collection.private:
-            return_args.insert(0,str(self.collection.private_token))
+            return_args.insert(0, str(self.collection.private_token))
             url_name = 'private_image_details'
         return reverse(url_name, args=return_args)
 
     def get_thumbnail_url(self):
         try:
-            url =  self.thumbnail.url
+            url = self.thumbnail.url
         except ValueError:
-            url = os.path.abspath(os.path.join("/static","images","glass_brain_empty.jpg"))
+            url = os.path.abspath(os.path.join("/static", "images", "glass_brain_empty.jpg"))
         return url
 
     @classmethod
@@ -350,7 +438,6 @@ class Image(BaseCollectionItem):
             super(Image, self).save()
 
 
-
 class BaseAFQMap(Image):
     OTHER = 'Other'
     AFQ = 'AFQ'
@@ -370,9 +457,9 @@ class BaseAFQMap(Image):
     )
 
     map_type = models.CharField(
-                    help_text=("Type of statistic that is the basis of the inference"),
-                    verbose_name="Map type",
-                    max_length=200, null=False, blank=False, choices=MAP_TYPE_CHOICES)
+        help_text=("Type of statistic that is the basis of the inference"),
+        verbose_name="Map type",
+        max_length=200, null=False, blank=False, choices=MAP_TYPE_CHOICES)
 
     is_thresholded = models.NullBooleanField(null=True, blank=True)
     perc_bad_voxels = models.FloatField(null=True, blank=True)
@@ -380,9 +467,9 @@ class BaseAFQMap(Image):
     brain_coverage = models.FloatField(null=True, blank=True)
     perc_voxels_outside = models.FloatField(null=True, blank=True)
     analysis_level = models.CharField(
-                    help_text=("What level of summary data was used as the input to this analysis?"),
-                    verbose_name="Analysis level",
-                    max_length=200, null=True, blank=True, choices=ANALYSIS_LEVEL_CHOICES)
+        help_text=("What level of summary data was used as the input to this analysis?"),
+        verbose_name="Analysis level",
+        max_length=200, null=True, blank=True, choices=ANALYSIS_LEVEL_CHOICES)
     number_of_subjects = models.IntegerField(help_text="Number of subjects used to generate this map", null=True,
                                              verbose_name="No. of subjects", blank=True)
 
@@ -399,7 +486,7 @@ class BaseAFQMap(Image):
 
         # If we have an update, delete old pkl and comparisons first before saving
         if do_update and self.collection:
-            if self.reduced_representation: # not applicable for private collections
+            if self.reduced_representation:  # not applicable for private collections
                 self.reduced_representation.delete()
 
                 # If more than one metric is added to AFQVault, this must also filter based on metric
@@ -430,54 +517,65 @@ class AFQMap(BaseAFQMap):
                                               help_text="Ignore the warning when the map is sparse by nature, an ROI mask, or was acquired with limited field of view.")
     modality = models.CharField(verbose_name="Modality & Acquisition Type", help_text="Brain imaging procedure that was used to acquire the data.",
                                 max_length=200, null=False, blank=False, choices=MODALITY_CHOICES)
-    statistic_parameters = models.FloatField(help_text="Parameters of the null distribution of the test statistic, typically degrees of freedom (should be clear from the test statistic what these are).", null=True, verbose_name="Statistic parameters", blank=True)
-    smoothness_fwhm = models.FloatField(help_text="Noise smoothness for statistical inference; this is the estimated smoothness used with Random Field Theory or a simulation-based inference method.", verbose_name="Smoothness FWHM", null=True, blank=True)
+    statistic_parameters = models.FloatField(
+        help_text="Parameters of the null distribution of the test statistic, typically degrees of freedom (should be clear from the test statistic what these are).", null=True, verbose_name="Statistic parameters", blank=True)
+    smoothness_fwhm = models.FloatField(
+        help_text="Noise smoothness for statistical inference; this is the estimated smoothness used with Random Field Theory or a simulation-based inference method.", verbose_name="Smoothness FWHM", null=True, blank=True)
 
     @classmethod
     def get_fixed_fields(cls):
         return super(AFQMap, cls).get_fixed_fields() + (
             'modality')
 
+
 post_save.connect(basecollectionitem_created, sender=AFQMap, weak=True)
+
 
 class Atlas(Image):
     label_description_file = models.FileField(
-                                upload_to=upload_img_to,
-                                null=False, blank=False,
-                                storage=DoubleExtensionStorage(),
-                                verbose_name='FSL compatible label description file (.xml)')
+        upload_to=upload_img_to,
+        null=False, blank=False,
+        storage=DoubleExtensionStorage(),
+        verbose_name='FSL compatible label description file (.xml)')
 
     class Meta:
         verbose_name_plural = "Atlases"
 
+
 post_save.connect(basecollectionitem_created, sender=Atlas, weak=True)
 
+
 class Similarity(models.Model):
-    similarity_metric = models.CharField(max_length=200, null=False, blank=False, db_index=True,help_text="the name of the similarity metric to describe a relationship between two or more images.",verbose_name="similarity metric name")
-    transformation = models.CharField(max_length=200, blank=True, db_index=True,help_text="the name of the transformation of the data relevant to the metric",verbose_name="transformation of images name")
-    metric_ontology_iri = models.URLField(max_length=200, blank=True, db_index=True,help_text="If defined, a url of an ontology IRI to describe the similarity metric",verbose_name="similarity metric ontology IRI")
-    transformation_ontology_iri = models.URLField(max_length=200, blank=True, db_index=True,help_text="If defined, a url of an ontology IRI to describe the transformation metric",verbose_name="image transformation ontology IRI")
+    similarity_metric = models.CharField(max_length=200, null=False, blank=False, db_index=True,
+                                         help_text="the name of the similarity metric to describe a relationship between two or more images.", verbose_name="similarity metric name")
+    transformation = models.CharField(max_length=200, blank=True, db_index=True,
+                                      help_text="the name of the transformation of the data relevant to the metric", verbose_name="transformation of images name")
+    metric_ontology_iri = models.URLField(max_length=200, blank=True, db_index=True,
+                                          help_text="If defined, a url of an ontology IRI to describe the similarity metric", verbose_name="similarity metric ontology IRI")
+    transformation_ontology_iri = models.URLField(
+        max_length=200, blank=True, db_index=True, help_text="If defined, a url of an ontology IRI to describe the transformation metric", verbose_name="image transformation ontology IRI")
 
     class Meta:
         verbose_name = "similarity metric"
         verbose_name_plural = "similarity metrics"
-        unique_together = ("similarity_metric","transformation")
+        unique_together = ("similarity_metric", "transformation")
 
     def __unicode__(self):
-        return "<metric:%s><transformation:%s>" %(self.similarity_metric,self.transformation)
+        return "<metric:%s><transformation:%s>" % (self.similarity_metric, self.transformation)
 
 
 class Comparison(models.Model):
-    image1 = models.ForeignKey(Image,related_name="image1",db_index=True)
-    image2 = models.ForeignKey(Image,related_name="image2",db_index=True)
+    image1 = models.ForeignKey(Image, related_name="image1", db_index=True)
+    image2 = models.ForeignKey(Image, related_name="image2", db_index=True)
     similarity_metric = models.ForeignKey(Similarity)
-    similarity_score = models.FloatField(help_text="the comparison score between two or more statistical maps", verbose_name="the comparison score between two or more statistical maps")
+    similarity_score = models.FloatField(help_text="the comparison score between two or more statistical maps",
+                                         verbose_name="the comparison score between two or more statistical maps")
 
     def __unicode__(self):
-      return "<%s><%s><score:%s>" %(self.image1,self.image2,self.similarity_score)
+        return "<%s><%s><score:%s>" % (self.image1, self.image2, self.similarity_score)
 
     class Meta:
-        unique_together = ("image1","image2")
+        unique_together = ("image1", "image2")
         index_together = [["image1", "image2", "similarity_metric"],
                           ["image2", "similarity_metric"],
                           ["image1", "similarity_metric"]]

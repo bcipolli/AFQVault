@@ -38,33 +38,34 @@ class QueryTestCase(TestCase):
 
         # Image 1 is an atlas
         print "Adding atlas image..."
-        nii_path = os.path.join(self.app_path,"test_data/api/VentralFrontal_thr75_summaryimage_2mm.nii.gz")
-        xml_path = os.path.join(self.app_path,"test_data/api/VentralFrontal_thr75_summaryimage_2mm.xml")
-        image1 = save_atlas_form(nii_path=nii_path,xml_path=xml_path,collection = self.comparisonCollection1)
+        nii_path = os.path.join(self.app_path, "test_data/api/VentralFrontal_thr75_summaryimage_2mm.nii.gz")
+        xml_path = os.path.join(self.app_path, "test_data/api/VentralFrontal_thr75_summaryimage_2mm.xml")
+        image1 = save_atlas_form(nii_path=nii_path, xml_path=xml_path, collection=self.comparisonCollection1)
         self.pk1 = image1.id
 
         # Image 2 is a statistical map
         print "Adding statistical map..."
-        image_path = os.path.join(self.app_path,'test_data/afqmaps/beta_0001.nii.gz')
-        image2 = save_statmap_form(image_path=image_path,collection = self.comparisonCollection2)
+        image_path = os.path.join(self.app_path, 'test_data/afqmaps/beta_0001.nii.gz')
+        image2 = save_statmap_form(image_path=image_path, collection=self.comparisonCollection2)
         self.pk2 = image2.id
 
         # Image 3 is a thresholded statistical map
         print "Adding thresholded statistical map..."
-        image_paths = [os.path.join(self.app_path,'test_data/afqmaps/box_0b_vs_1b.img'),
-                       os.path.join(self.app_path,'test_data/afqmaps/box_0b_vs_1b.hdr')]
-        image3 = save_statmap_form(image_path=image_paths, collection = self.comparisonCollection3,ignore_file_warning=True)
+        image_paths = [os.path.join(self.app_path, 'test_data/afqmaps/box_0b_vs_1b.img'),
+                       os.path.join(self.app_path, 'test_data/afqmaps/box_0b_vs_1b.hdr')]
+        image3 = save_statmap_form(image_path=image_paths,
+                                   collection=self.comparisonCollection3, ignore_file_warning=True)
         self.pk3 = image3.id
 
         # Create similarity object
         Similarity.objects.update_or_create(similarity_metric="pearson product-moment correlation coefficient",
-                                         transformation="voxelwise",
-                                         metric_ontology_iri="http://webprotege.stanford.edu/RCS8W76v1MfdvskPLiOdPaA",
-                                         transformation_ontology_iri="http://webprotege.stanford.edu/R87C6eFjEftkceScn1GblDL")
+                                            transformation="voxelwise",
+                                            metric_ontology_iri="http://webprotege.stanford.edu/RCS8W76v1MfdvskPLiOdPaA",
+                                            transformation_ontology_iri="http://webprotege.stanford.edu/R87C6eFjEftkceScn1GblDL")
         self.pearson_metric = Similarity.objects.filter(similarity_metric="pearson product-moment correlation coefficient",
-                                         transformation="voxelwise",
-                                         metric_ontology_iri="http://webprotege.stanford.edu/RCS8W76v1MfdvskPLiOdPaA",
-                                         transformation_ontology_iri="http://webprotege.stanford.edu/R87C6eFjEftkceScn1GblDL")
+                                                        transformation="voxelwise",
+                                                        metric_ontology_iri="http://webprotege.stanford.edu/RCS8W76v1MfdvskPLiOdPaA",
+                                                        transformation_ontology_iri="http://webprotege.stanford.edu/R87C6eFjEftkceScn1GblDL")
 
     def tearDown(self):
         shutil.rmtree(self.tmpdir)
@@ -84,7 +85,7 @@ class QueryTestCase(TestCase):
         assert_equal(count_existing_comparisons(self.pk2), 0)
 
         # Add another statistical map
-        image_path = os.path.join(self.app_path,'test_data/afqmaps/motor_lips.nii.gz')
+        image_path = os.path.join(self.app_path, 'test_data/afqmaps/motor_lips.nii.gz')
         image4 = save_statmap_form(image_path=image_path, collection=self.comparisonCollection4)
         self.pk4 = image4.id
 
@@ -105,9 +106,9 @@ class QueryTestCase(TestCase):
         # This is the call that find_similar users to get images
         comparisons = get_existing_comparisons(self.pk4)
         for comp in comparisons:
-            pk1=comp.image1.pk
-            pk2=comp.image2.pk
+            pk1 = comp.image1.pk
+            pk2 = comp.image2.pk
             im1 = Image.objects.get(pk=pk1)
             im2 = Image.objects.get(pk=pk2)
-            assert_equal(im1.is_thresholded,False)
-            assert_equal(im2.is_thresholded,False)
+            assert_equal(im1.is_thresholded, False)
+            assert_equal(im2.is_thresholded, False)

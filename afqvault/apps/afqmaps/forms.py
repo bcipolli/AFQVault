@@ -1,8 +1,5 @@
 import os
-import re
 import shutil
-import subprocess
-from subprocess import CalledProcessError
 from cStringIO import StringIO
 
 import nibabel as nb
@@ -16,7 +13,9 @@ from django.forms.models import (
 # from form_utils.forms import BetterModelForm
 
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Submit, Button
+from crispy_forms.layout import Button
+from crispy_forms.layout import Layout
+from crispy_forms.layout import Submit
 from crispy_forms.bootstrap import TabHolder, Tab
 
 from .models import Collection, Image, User, AFQMap, BaseAFQMap, \
@@ -38,7 +37,6 @@ from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.core.files.base import ContentFile
 from django.forms.widgets import HiddenInput
 from afqvault import settings
-from gzip import GzipFile
 from file_resubmit.admin import AdminResubmitFileWidget
 from guardian.shortcuts import get_objects_for_user
 
@@ -525,6 +523,7 @@ class SimplifiedAFQMapForm(EditAFQMapForm):
                   'file', 'ignore_file_warning', 'tags', 'is_thresholded',
                   'perc_bad_voxels')
 
+
 class NeuropowerAFQMapForm(EditAFQMapForm):
     def __init__(self, *args, **kwargs):
         super(NeuropowerAFQMapForm, self).__init__(*args, **kwargs)
@@ -532,9 +531,10 @@ class NeuropowerAFQMapForm(EditAFQMapForm):
         self.fields['number_of_subjects'].required = True
 
     class Meta(EditAFQMapForm.Meta):
-        fields = ('name', 'collection', 'description', 'map_type', 'modality', 'map_type','analysis_level','number_of_subjects',
+        fields = ('name', 'collection', 'description', 'map_type', 'modality', 'map_type', 'analysis_level', 'number_of_subjects',
                   'file', 'ignore_file_warning', 'tags', 'is_thresholded',
                   'perc_bad_voxels')
+
 
 class UploadFileForm(Form):
 
@@ -569,6 +569,7 @@ class MapTypeListWidget(forms.Widget):
             v for k, v in BaseAFQMap.MAP_TYPE_CHOICES if k == value].pop()
         input = '<input type="hidden" name="%s" value="%s" />' % (name, value)
         return mark_safe('%s<strong>%s</strong><br /><br />' % (input, map_type))
+
 
 def clean_tags(self):
     """

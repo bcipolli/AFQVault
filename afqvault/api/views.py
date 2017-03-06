@@ -12,13 +12,13 @@ from rest_framework.views import APIView
 from taggit.models import Tag
 
 from afqvault.apps.afqmaps.models import (Atlas, Collection, Image,
-                                             AFQMap)
+                                          AFQMap)
 from afqvault.apps.afqmaps.views import (get_collection, get_image,
-                                            owner_or_contrib)
+                                         owner_or_contrib)
 from afqvault.apps.afqmaps.voxel_query_functions import (getAtlasVoxels,
-                                                            getSynonyms,
-                                                            toAtlas,
-                                                            voxelToRegion)
+                                                         getSynonyms,
+                                                         toAtlas,
+                                                         voxelToRegion)
 from .serializers import (UserSerializer, AtlasSerializer,
                           CollectionSerializer, EditableAtlasSerializer,
                           EditableAFQMapSerializer, ImageSerializer)
@@ -49,7 +49,7 @@ class APIHelper:
     """
     @staticmethod
     def wrap_for_datatables(data, fields_to_strip=[]):
-        '''
+        """
         Formats a model instance for the Datatables JQuery plugin.
 
         Args:
@@ -58,7 +58,7 @@ class APIHelper:
 
         Returns:
             A dict with an aaData field containing all of the
-            values (and no keys) in tabular format. '''
+            values (and no keys) in tabular format. """
         data = dict([(k, v) for k, v in data.items()
                      if v and k not in fields_to_strip])
         return Response(
@@ -95,8 +95,8 @@ class ImageViewSet(mixins.RetrieveModelMixin,
 
     @detail_route()
     def datatable(self, request, pk=None):
-        ''' A wrapper around standard retrieve() request that formats the
-        object for the Datatables plugin. '''
+        """ A wrapper around standard retrieve() request that formats the
+        object for the Datatables plugin. """
         image = self._get_api_image(request, pk)
         data = ImageSerializer(image, context={'request': request}).data
         return APIHelper.wrap_for_datatables(data, ['name', 'modify_date',

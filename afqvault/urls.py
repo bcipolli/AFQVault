@@ -10,8 +10,8 @@ from afqvault.api.urls import api_urls
 
 admin.autodiscover()
 
-sitemaps = {"Collections":CollectionSitemap,
-            "Images":ImageSitemap}
+sitemaps = {"Collections": CollectionSitemap,
+            "Images": ImageSitemap}
 
 oauth_urlpatterns = [
     url(r'^authorize/$', oauth_views.AuthorizationView.as_view(),

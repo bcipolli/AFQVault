@@ -4,10 +4,10 @@ template = "%(field_name)s = models.%(field_type)s(%(options)s)"
 
 field_type_map = {
     'char': 'CharField',
-    'Boolean':'NullBooleanField',
-    'int':'IntegerField',
-    'float':'FloatField',
-    }
+    'Boolean': 'NullBooleanField',
+    'int': 'IntegerField',
+    'float': 'FloatField',
+}
 
 default_options = {
     'CharField': {'max_length': 200}
@@ -18,6 +18,7 @@ fields_order = {}
 priorities = {}
 fieldsets = {}
 row_attrs = {}
+
 
 def get_field_type(field_format):
     extra_options = {}
@@ -31,6 +32,7 @@ def get_field_type(field_format):
         return 'CharField', extra_options
     else:
         return field_type_map[field_format], extra_options
+
 
 print '-' * 80
 print 'Collection Model'

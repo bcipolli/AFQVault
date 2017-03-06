@@ -3,13 +3,10 @@
 
 # In[33]:
 
-from glob import glob
-import os
 import pandas as pd
 import numpy as np
-import nibabel as nb
-import numpy.linalg as npl
-from scipy.stats.stats import pearsonr, ttest_1samp, percentileofscore, linregress, zscore
+from scipy.stats.stats import ttest_1samp
+from scipy.stats.stats import zscore
 from statsmodels.sandbox.stats.multicomp import multipletests
 
 
@@ -56,7 +53,7 @@ def calculate_gene_expression_similarity(reduced_stat_map_data):
     del results_df
     probe_info = pd.read_csv("/ahba_data/probe_info_max1.csv", index_col=0).drop(['chromosome', "gene_id"], axis=1)
     group_results_df = group_results_df.join(probe_info)
-    group_results_df = group_results_df[["gene_symbol", "entrez_id.1", "gene_name","t", "p", "p (FDR corrected)",
+    group_results_df = group_results_df[["gene_symbol", "entrez_id.1", "gene_name", "t", "p", "p (FDR corrected)",
                                          "variance explained (mean)", "variance explained (std)"]]
 
     return group_results_df
